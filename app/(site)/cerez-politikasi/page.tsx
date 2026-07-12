@@ -1,0 +1,44 @@
+import type { Metadata } from "next";
+import { ContactCta } from "@/components/site/contact-cta";
+import { ContentSection } from "@/components/site/content-section";
+import { PageHero } from "@/components/site/page-hero";
+
+export const metadata: Metadata = {
+  title: "Çerez Politikası | Voice Klinik İşitme Merkezi",
+  description:
+    "Voice Klinik İşitme Merkezi web sitesi çerez kullanımı hakkında genel bilgilendirme.",
+};
+
+export default function CookiePolicyPage() {
+  return (
+    <main className="bg-background text-foreground">
+      <PageHero
+        tag="Yasal Bilgilendirme"
+        title="Çerez Politikası"
+        description="Web sitesi deneyimini iyileştirmeye yardımcı olabilecek çerez kullanımı hakkında genel bilgilendirme."
+        breadcrumbs={[
+          { label: "Ana Sayfa", href: "/" },
+          { label: "Çerez Politikası" },
+        ]}
+      />
+
+      <ContentSection
+        eyebrow="Çerezler"
+        title="Web sitesi kullanım deneyimini destekleyen temel bilgiler"
+        description="Çerezler, web sitesinin daha düzenli çalışmasına ve kullanıcı deneyiminin anlaşılmasına yardımcı olabilen küçük veri parçalarıdır. Bu sayfa çerez kullanımına ilişkin genel bilgilendirme amacı taşır; hukuki danışmanlık niteliğinde değildir."
+        items={[
+          "Site işlevlerinin sağlıklı çalışmasına destek olma",
+          "Kullanıcı deneyimini ve site performansını anlama",
+          "Tercihlerin daha düzenli yönetilmesine yardımcı olma",
+          "Yasal bilgilendirme süreçlerini destekleme",
+        ]}
+        twoColumns
+      />
+
+      <ContactCta
+        title="Çerez kullanımı hakkında sorularınızı iletin."
+        description="Web sitesi gizlilik ve çerez süreçleriyle ilgili genel bilgi almak için bizimle iletişime geçebilirsiniz."
+      />
+    </main>
+  );
+}
