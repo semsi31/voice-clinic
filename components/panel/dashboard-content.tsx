@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   AlertTriangle,
   BarChart3,
@@ -10,6 +9,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { PanelCard } from "@/components/panel/panel-card";
+import { PanelLink } from "@/components/panel/panel-link";
 import { StatCard } from "@/components/panel/stat-card";
 import { StatusBadge } from "@/components/panel/status-badge";
 import type { DashboardData } from "@/lib/dashboard";
@@ -23,9 +23,9 @@ type DashboardContentProps = {
 
 function ViewAllLink({ href }: Readonly<{ href: string }>) {
   return (
-    <Link href={href} className={`${panelSecondaryButtonClassName} text-sm`}>
+    <PanelLink href={href} className={`${panelSecondaryButtonClassName} text-sm`}>
       Tümünü Gör
-    </Link>
+    </PanelLink>
   );
 }
 
@@ -76,7 +76,7 @@ export function DashboardContent({ data }: DashboardContentProps) {
           label="Bugünkü / Geciken Hatırlatmalar"
           value={String(metrics.todayReminders)}
           description="Bugün veya gecikmiş aktif görevler"
-          variant="purple"
+          variant="red"
         />
         <StatCard
           icon={PackageCheck}
@@ -134,12 +134,12 @@ export function DashboardContent({ data }: DashboardContentProps) {
                     <p className="font-bold text-slate-950">
                       {formatCurrency(transaction.saleAmount)}
                     </p>
-                    <Link
+                    <PanelLink
                       href={`/panel/transactions/${transaction.id}`}
                       className="mt-2 inline-block text-xs font-semibold text-sky-700 hover:text-sky-800"
                     >
                       Detaya git
-                    </Link>
+                    </PanelLink>
                   </div>
                 </div>
               ))}

@@ -312,8 +312,8 @@ export function schedulePaymentReceiptDocument(
       return;
     }
 
+    // Only the active transaction detail — never poke /panel/documents here.
     revalidatePath(`/panel/transactions/${params.transactionId}`);
-    revalidatePath("/panel/documents");
   });
 }
 
@@ -333,7 +333,6 @@ export function scheduleRecreatePaymentReceiptDocument(
     }
 
     revalidatePath(`/panel/transactions/${params.transactionId}`);
-    revalidatePath("/panel/documents");
   });
 }
 

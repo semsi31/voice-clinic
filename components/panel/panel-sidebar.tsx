@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { PanelLink } from "@/components/panel/panel-link";
 import { panelNavigation } from "@/components/panel/panel-navigation";
 
 type PanelSidebarProps = {
@@ -15,9 +15,8 @@ export function PanelSidebar({ onNavigate }: PanelSidebarProps) {
   return (
     <aside className="flex h-full w-72 shrink-0 flex-col bg-[#071225] text-white lg:min-h-screen">
       <div className="border-b border-white/10 px-6 py-6">
-        <Link
+        <PanelLink
           href="/panel/dashboard"
-          prefetch={false}
           className="flex items-center gap-3"
           onClick={onNavigate}
         >
@@ -34,7 +33,7 @@ export function PanelSidebar({ onNavigate }: PanelSidebarProps) {
             <span className="block text-base font-bold">Voice Klinik</span>
             <span className="block text-xs text-slate-300">Yönetim Paneli</span>
           </span>
-        </Link>
+        </PanelLink>
       </div>
 
       <nav className="space-y-1 px-4 py-5" aria-label="Panel menüsü">
@@ -50,17 +49,16 @@ export function PanelSidebar({ onNavigate }: PanelSidebarProps) {
           ].join(" ");
 
           return (
-            <Link
+            <PanelLink
               key={item.href}
               href={item.href}
-              prefetch={false}
               className={linkClassName}
               onClick={onNavigate}
               aria-current={isActive ? "page" : undefined}
             >
               <Icon className="size-[18px] shrink-0" aria-hidden="true" />
               <span className="leading-5">{item.title}</span>
-            </Link>
+            </PanelLink>
           );
         })}
       </nav>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition, type ReactNode } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { PanelLink } from "@/components/panel/panel-link";
 import {
   ArrowLeft,
   BellPlus,
@@ -334,13 +334,13 @@ export function TransactionDetailWorkspace({
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:justify-end">
-              <Link
+              <PanelLink
                 href="/panel/transactions"
                 className={`${panelSecondaryButtonClassName} w-full sm:w-auto`}
               >
                 <ArrowLeft className="size-4" aria-hidden="true" />
                 Listeye Dön
-              </Link>
+              </PanelLink>
               <button
                 type="button"
                 className={`${panelSecondaryButtonClassName} w-full opacity-60 sm:w-auto`}

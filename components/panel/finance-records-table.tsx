@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   useActionState,
   useEffect,
@@ -25,6 +24,7 @@ import {
   updateFinanceRecord,
   type FinanceActionResult,
 } from "@/app/(panel)/panel/income-expense/actions";
+import { PanelLink } from "@/components/panel/panel-link";
 import { PanelPendingSubmitButton } from "@/components/panel/panel-pending-submit-button";
 import {
   ActionModal,
@@ -76,7 +76,6 @@ type FinanceRecordFormProps = {
 };
 
 function FinanceRecordForm({ type, record, onClose }: FinanceRecordFormProps) {
-  const router = useRouter();
   const action = record ? updateFinanceRecord : createFinanceRecord;
   const [state, formAction] = useActionState<
     FinanceActionResult | undefined,
@@ -88,10 +87,9 @@ function FinanceRecordForm({ type, record, onClose }: FinanceRecordFormProps) {
   useEffect(() => {
     if (state?.ok) {
       onClose();
-      // Current route only — server already narrowed revalidatePath.
-      router.refresh();
+      // revalidatePath on the server action already refreshes this route.
     }
-  }, [onClose, router, state]);
+  }, [onClose, state]);
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -576,14 +574,14 @@ export function FinanceRecordsTable({
                       {entry.source === "patient_payment" &&
                       entry.transactionId ? (
                         <div className="flex shrink-0 items-center justify-end">
-                          <Link
+                          <PanelLink
                             href={`/panel/transactions/${entry.transactionId}`}
                             className={rowActionButtonClassName}
                             aria-label="İşleme Git"
                             title="İşleme Git"
                           >
                             <ExternalLink className="size-4" aria-hidden="true" />
-                          </Link>
+                          </PanelLink>
                         </div>
                       ) : entry.financeRecord ? (
                         <div className="flex shrink-0 items-center justify-end gap-1.5">

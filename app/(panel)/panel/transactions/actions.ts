@@ -315,27 +315,20 @@ function getTransactionReminderLookupValues(transaction: {
 }
 
 function revalidateTransactionReminderPaths(transactionId: string) {
-  // Detail + reminders only — avoid dashboard fan-out on every reminder edit.
+  // Active detail page only (reminder list refreshes when user navigates there).
   revalidatePath(`/panel/transactions/${transactionId}`);
-  revalidatePath("/panel/reminders");
 }
 
 function revalidatePaymentMutationPaths(transactionId: string) {
-  // Current detail page; documents refresh when deferred receipt finishes.
   revalidatePath(`/panel/transactions/${transactionId}`);
 }
 
-function revalidateTransactionDeletePaths(options?: {
+function revalidateTransactionDeletePaths(_options?: {
   touchStock?: boolean;
   touchDocuments?: boolean;
 }) {
+  // Delete happens from the list — only invalidate that route.
   revalidatePath("/panel/transactions");
-  if (options?.touchDocuments) {
-    revalidatePath("/panel/documents");
-  }
-  if (options?.touchStock) {
-    revalidatePath("/panel/stock");
-  }
 }
 
 function normalizePaymentMethod(value: FormDataEntryValue | null) {
@@ -591,12 +584,6 @@ export async function createPatientTransaction(
     timer.countSupabase();
 
     if (reminderError) {
-      revalidatePath("/panel/transactions");
-      timer.countRevalidate();
-      if (stockDeductEnabled) {
-        revalidatePath("/panel/stock");
-        timer.countRevalidate();
-      }
       timer.end({ warning: "reminder_failed" });
       return newTransactionFormError(
         formData,
@@ -607,22 +594,13 @@ export async function createPatientTransaction(
     reminderCreated = true;
   }
 
-  revalidatePath("/panel/transactions");
-  timer.countRevalidate();
-  if (stockDeductEnabled) {
-    revalidatePath("/panel/stock");
-    timer.countRevalidate();
-  }
-  if (reminderCreated) {
-    revalidatePath("/panel/reminders");
-    timer.countRevalidate();
-  }
-
+  // redirect loads the detail page — do not revalidate sibling panel routes.
   timer.end({
     scheduledReceipt,
     reminderCreated,
     stockDeductEnabled,
     redirect: true,
+    revalidateCount: 0,
   });
   redirect(`/panel/transactions/${transaction.id}`);
 }
@@ -872,8 +850,7 @@ export async function deleteTransactionPaymentAction(
   }
 
   revalidatePaymentMutationPaths(payment.transaction_id);
-  revalidatePath("/panel/documents");
-  timer.countRevalidate(2);
+  timer.countRevalidate();
   timer.end();
   return { ok: true };
 }
@@ -945,7 +922,6 @@ export async function regeneratePaymentReceiptAction(
   }
 
   revalidatePaymentMutationPaths(payment.transaction_id);
-  revalidatePath("/panel/documents");
   return { ok: true };
 }
 

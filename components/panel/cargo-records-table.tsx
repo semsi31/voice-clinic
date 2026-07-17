@@ -53,7 +53,6 @@ type CargoRecordFormProps = {
 };
 
 function CargoRecordForm({ record, onClose }: CargoRecordFormProps) {
-  const router = useRouter();
   const action = record ? updateCargoRecord : createCargoRecord;
   const [state, formAction] = useActionState<
     CargoActionResult | undefined,
@@ -65,9 +64,8 @@ function CargoRecordForm({ record, onClose }: CargoRecordFormProps) {
   useEffect(() => {
     if (state?.ok) {
       onClose();
-      router.refresh();
     }
-  }, [onClose, router, state]);
+  }, [onClose, state]);
 
   const today = new Date().toISOString().slice(0, 10);
 

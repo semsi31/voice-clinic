@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { Save } from "lucide-react";
@@ -9,6 +8,7 @@ import {
   type NewTransactionFormValues,
 } from "@/app/(panel)/panel/transactions/actions";
 import { PanelCard } from "@/components/panel/panel-card";
+import { PanelLink } from "@/components/panel/panel-link";
 import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
@@ -289,12 +289,12 @@ export function NewTransactionForm({
       ) : null}
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Link
+        <PanelLink
           href="/panel/transactions"
           className={`${panelSecondaryButtonClassName} w-full sm:w-auto`}
         >
           İptal
-        </Link>
+        </PanelLink>
         <SubmitButton />
       </div>
     </form>

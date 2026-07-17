@@ -77,7 +77,6 @@ type UploadDocumentFormProps = {
 };
 
 function UploadDocumentForm({ onClose }: UploadDocumentFormProps) {
-  const router = useRouter();
   const [state, formAction] = useActionState<
     DocumentActionResult | undefined,
     FormData
@@ -88,9 +87,8 @@ function UploadDocumentForm({ onClose }: UploadDocumentFormProps) {
   useEffect(() => {
     if (state?.ok) {
       onClose();
-      router.refresh();
     }
-  }, [onClose, router, state]);
+  }, [onClose, state]);
 
   return (
     <form key={formRestoreKey} action={formAction} className="grid gap-4 sm:grid-cols-2">
@@ -160,7 +158,6 @@ type EditDocumentFormProps = {
 };
 
 function EditDocumentForm({ document, onClose }: EditDocumentFormProps) {
-  const router = useRouter();
   const [state, formAction] = useActionState<
     DocumentActionResult | undefined,
     FormData
@@ -171,9 +168,8 @@ function EditDocumentForm({ document, onClose }: EditDocumentFormProps) {
   useEffect(() => {
     if (state?.ok) {
       onClose();
-      router.refresh();
     }
-  }, [onClose, router, state]);
+  }, [onClose, state]);
 
   return (
     <form key={formRestoreKey} action={formAction} className="grid gap-4">

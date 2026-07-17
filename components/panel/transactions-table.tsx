@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Eye, FileSearch, Search, Trash2 } from "lucide-react";
 import { ActionModal } from "@/components/panel/action-modal";
 import { EmptyState } from "@/components/panel/empty-state";
 import { PanelCard } from "@/components/panel/panel-card";
+import { PanelLink } from "@/components/panel/panel-link";
 import {
   panelFilterFieldClassName,
   panelFilterGridClassName,
@@ -300,12 +300,12 @@ export function TransactionsTable({
                 )
               }
             />
-            <Link
+            <PanelLink
             href="/panel/transactions/new"
             className={`${panelPrimaryButtonClassName} w-full sm:w-auto`}
           >
             Yeni İşlem
-          </Link>
+          </PanelLink>
         </div>
       }
     >
@@ -373,12 +373,12 @@ export function TransactionsTable({
         </label>
 
         <div className="flex items-end">
-          <Link
+          <PanelLink
             href="/panel/transactions"
             className={`${panelSecondaryButtonClassName} h-10 px-4 py-2`}
           >
             Sıfırla
-          </Link>
+          </PanelLink>
         </div>
       </div>
 
@@ -449,13 +449,13 @@ export function TransactionsTable({
                   </div>
                 </dl>
                 <div className="mt-3 flex gap-2">
-                  <Link
+                  <PanelLink
                     href={`/panel/transactions/${transaction.id}`}
                     className={`${panelPrimaryButtonClassName} min-h-11 flex-1`}
                   >
                     <Eye className="size-4" aria-hidden="true" />
                     Detay
-                  </Link>
+                  </PanelLink>
                   <TransactionDeleteAction
                     transaction={transaction}
                     onDeleted={handleRecordsDeleted}
@@ -558,14 +558,14 @@ export function TransactionsTable({
                   </td>
                   <td className={panelTableActionsCellClassName}>
                     <div className="flex shrink-0 items-center justify-end gap-1.5">
-                      <Link
+                      <PanelLink
                         href={`/panel/transactions/${transaction.id}`}
                         className={rowActionButtonClassName}
                         aria-label="Görüntüle"
                         title="Görüntüle"
                       >
                         <Eye className="size-4" aria-hidden="true" />
-                      </Link>
+                      </PanelLink>
                       <TransactionDeleteAction
                         transaction={transaction}
                         onDeleted={handleRecordsDeleted}
@@ -592,7 +592,7 @@ export function TransactionsTable({
             Sayfa {currentPage} / {totalPages}
           </p>
           <div className="flex gap-2">
-            <Link
+            <PanelLink
               href={buildTransactionsHref({
                 nextPage: Math.max(1, currentPage - 1),
               })}
@@ -602,8 +602,8 @@ export function TransactionsTable({
               }`}
             >
               Önceki
-            </Link>
-            <Link
+            </PanelLink>
+            <PanelLink
               href={buildTransactionsHref({
                 nextPage: Math.min(totalPages, currentPage + 1),
               })}
@@ -613,7 +613,7 @@ export function TransactionsTable({
               }`}
             >
               Sonraki
-            </Link>
+            </PanelLink>
           </div>
         </div>
       ) : null}

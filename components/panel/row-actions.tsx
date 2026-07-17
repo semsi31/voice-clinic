@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { ActionModal } from "@/components/panel/action-modal";
 import { ConfirmModal } from "@/components/panel/confirm-modal";
+import { PanelLink } from "@/components/panel/panel-link";
 
 export const rowActionButtonClassName =
   "inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-100";
@@ -54,14 +54,14 @@ export function RowActions({
       <div className="flex shrink-0 items-center justify-end gap-1.5">
         {showView ? (
           viewHref ? (
-            <Link
+            <PanelLink
               href={viewHref}
               className={rowActionButtonClassName}
               aria-label={viewLabel}
               title={viewLabel}
             >
               <Eye className="size-4" aria-hidden="true" />
-            </Link>
+            </PanelLink>
           ) : viewModal ? (
             <button
               type="button"
@@ -76,14 +76,14 @@ export function RowActions({
         ) : null}
 
         {editHref ? (
-          <Link
+          <PanelLink
             href={editHref}
             className={rowActionButtonClassName}
             aria-label={editLabel}
             title={editLabel}
           >
             <Pencil className="size-4" aria-hidden="true" />
-          </Link>
+          </PanelLink>
         ) : editModal ? (
           <button
             type="button"

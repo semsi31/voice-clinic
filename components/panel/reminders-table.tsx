@@ -101,7 +101,6 @@ function ReminderDateText({
 }
 
 function ReminderForm({ reminder, onClose }: ReminderFormProps) {
-  const router = useRouter();
   const action = reminder ? updateReminderAction : createReminderAction;
   const [state, formAction] = useActionState<
     ReminderActionResult | undefined,
@@ -113,9 +112,8 @@ function ReminderForm({ reminder, onClose }: ReminderFormProps) {
   useEffect(() => {
     if (state?.ok) {
       onClose();
-      router.refresh();
     }
-  }, [onClose, router, state]);
+  }, [onClose, state]);
 
   const today = new Date().toISOString().slice(0, 10);
 

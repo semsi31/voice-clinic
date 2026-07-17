@@ -63,7 +63,6 @@ type StockProductFormProps = {
 };
 
 function StockProductForm({ product, onClose }: StockProductFormProps) {
-  const router = useRouter();
   const action = product ? updateStockProduct : createStockProduct;
   const [state, formAction] = useActionState<StockActionResult | undefined, FormData>(
     action,
@@ -75,9 +74,8 @@ function StockProductForm({ product, onClose }: StockProductFormProps) {
   useEffect(() => {
     if (state?.ok) {
       onClose();
-      router.refresh();
     }
-  }, [onClose, router, state]);
+  }, [onClose, state]);
 
   return (
     <form key={formRestoreKey} action={formAction} className="grid gap-4 sm:grid-cols-2">
