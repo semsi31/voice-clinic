@@ -78,7 +78,7 @@ export function ReportsContent({ report }: ReportsContentProps) {
       <section className="grid gap-5 xl:grid-cols-2">
         <PanelCard
           title="Ödeme Yöntemi Dağılımı"
-          description="Seçili dönem tahsilat dağılımı."
+          description="Seçili dönem tahsilatları ve manuel gelirler."
         >
           {hasPaymentData ? (
             <ReportsPaymentChart data={report.paymentMethodChart} />

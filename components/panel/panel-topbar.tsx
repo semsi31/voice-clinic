@@ -6,12 +6,14 @@ import { signOut } from "@/lib/supabase/actions";
 
 type PanelTopbarProps = {
   onMenuClick: () => void;
+  userGreeting: string;
   userName: string;
   userEmail: string;
 };
 
 export function PanelTopbar({
   onMenuClick,
+  userGreeting,
   userName,
   userEmail,
 }: PanelTopbarProps) {
@@ -64,8 +66,8 @@ export function PanelTopbar({
               <span className="flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
                 <UserCircle className="size-5" aria-hidden="true" />
               </span>
-              <span className="hidden text-sm font-semibold text-slate-800 sm:inline">
-                Merhaba, {userName}
+              <span className="hidden max-w-[16rem] truncate text-sm font-semibold text-slate-800 sm:inline">
+                {userGreeting}
               </span>
               <ChevronDown
                 className="hidden size-4 text-slate-400 sm:inline"

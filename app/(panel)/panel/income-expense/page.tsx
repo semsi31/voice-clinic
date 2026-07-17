@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 
 import { FinanceRecordsTable } from "@/components/panel/finance-records-table";
-
+import { PanelCard } from "@/components/panel/panel-card";
+import { ReportsPaymentChart } from "@/components/panel/reports-payment-chart";
 import { panelPageClassName } from "@/components/panel/panel-styles";
 
 import { StatCard } from "@/components/panel/stat-card";
@@ -19,6 +20,8 @@ import { StatCard } from "@/components/panel/stat-card";
 import {
 
   fetchPatientPaymentFinanceEntries,
+
+  buildFinancePaymentMethodChart,
 
   mergeFinanceEntries,
 
@@ -86,6 +89,10 @@ export default async function IncomeExpensePage() {
 
   const summary = summarizeUnifiedFinanceEntries(entries);
 
+  const paymentMethodChart = buildFinancePaymentMethodChart(entries);
+
+  const hasPaymentChartData = paymentMethodChart.some((item) => item.value > 0);
+
 
 
   return (
@@ -151,6 +158,21 @@ export default async function IncomeExpensePage() {
         />
 
       </section>
+
+
+
+      <PanelCard
+        title="Bu Ay Gelir Dağılımı"
+        description="Hasta tahsilatları ve manuel gelirler; nakit, kredi kartı ve havale."
+      >
+        {hasPaymentChartData ? (
+          <ReportsPaymentChart data={paymentMethodChart} />
+        ) : (
+          <p className="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-8 text-center text-sm text-slate-600">
+            Bu ay gelir kaydı bulunamadı.
+          </p>
+        )}
+      </PanelCard>
 
 
 

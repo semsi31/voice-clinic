@@ -322,6 +322,36 @@ export function summarizeUnifiedFinanceEntries(entries: UnifiedFinanceEntry[]) {
   };
 }
 
+type FinanceChartBounds = {
+  start: string;
+  end: string;
+};
+
+export function buildFinancePaymentMethodChart(
+  entries: UnifiedFinanceEntry[],
+  bounds: FinanceChartBounds = getCurrentMonthBounds(),
+) {
+  const incomeEntries = entries.filter(
+    (entry) =>
+      entry.recordDate >= bounds.start &&
+      entry.recordDate <= bounds.end &&
+      (entry.source === "patient_payment" || entry.source === "manual_income"),
+  );
+
+  const sumByMethod = (
+    method: FinancePaymentMethod | PaymentMethod,
+  ) =>
+    incomeEntries
+      .filter((entry) => entry.paymentMethod === method)
+      .reduce((total, entry) => total + entry.amount, 0);
+
+  return [
+    { name: "Nakit", value: sumByMethod("cash"), color: "#059669" },
+    { name: "Kredi Kartı", value: sumByMethod("credit_card"), color: "#0284c7" },
+    { name: "Havale", value: sumByMethod("bank_transfer"), color: "#7c3aed" },
+  ];
+}
+
 export function filterUnifiedFinanceEntries(
   entries: UnifiedFinanceEntry[],
   {

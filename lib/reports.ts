@@ -1,6 +1,8 @@
 import type { ReportsPaymentChartDatum } from "@/components/panel/reports-payment-chart";
+import type { FinancePaymentMethod } from "@/lib/finance";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import type { PaymentMethod } from "@/lib/transactions";
 
 export type ReportFilter = {
   month: number;
@@ -95,6 +97,24 @@ function sumAmounts(values: Array<number | string | null | undefined>) {
   }, 0);
 }
 
+function sumIncomeByPaymentMethod(
+  payments: Array<{ amount: number | string; payment_method: PaymentMethod }>,
+  manualIncomeRecords: Array<{
+    amount: number | string;
+    payment_method: FinancePaymentMethod;
+  }>,
+  method: PaymentMethod | FinancePaymentMethod,
+) {
+  return sumAmounts([
+    ...payments
+      .filter((payment) => payment.payment_method === method)
+      .map((payment) => payment.amount),
+    ...manualIncomeRecords
+      .filter((record) => record.payment_method === method)
+      .map((record) => record.amount),
+  ]);
+}
+
 function buildTopOperations(
   transactions: Array<{ operation_description: string; sale_amount: number }>,
 ): TopOperationItem[] {
@@ -171,7 +191,7 @@ export async function fetchMonthlyReport(
       .lte("payment_date", end),
     supabase
       .from("finance_records")
-      .select("amount, type")
+      .select("amount, type, payment_method")
       .gte("record_date", start)
       .lte("record_date", end),
     supabase.from("stock_products").select("id, name, quantity, min_stock"),
@@ -181,28 +201,30 @@ export async function fetchMonthlyReport(
   const payments = paymentsResult.data ?? [];
   const financeRecords = financeResult.data ?? [];
   const stockProducts = stockResult.data ?? [];
+  const manualIncomeRecords = financeRecords.filter(
+    (record) => record.type === "income",
+  );
 
   const totalSales = sumAmounts(transactions.map((row) => row.sale_amount));
   const transactionCount = transactions.length;
 
-  const cashCollections = sumAmounts(
-    payments
-      .filter((payment) => payment.payment_method === "cash")
-      .map((payment) => payment.amount),
+  const cashChartValue = sumIncomeByPaymentMethod(
+    payments,
+    manualIncomeRecords,
+    "cash",
   );
-  const creditCardCollections = sumAmounts(
-    payments
-      .filter((payment) => payment.payment_method === "credit_card")
-      .map((payment) => payment.amount),
+  const creditCardChartValue = sumIncomeByPaymentMethod(
+    payments,
+    manualIncomeRecords,
+    "credit_card",
   );
-  const bankTransferCollections = sumAmounts(
-    payments
-      .filter((payment) => payment.payment_method === "bank_transfer")
-      .map((payment) => payment.amount),
+  const bankTransferChartValue = sumIncomeByPaymentMethod(
+    payments,
+    manualIncomeRecords,
+    "bank_transfer",
   );
 
-  const totalCollections =
-    cashCollections + creditCardCollections + bankTransferCollections;
+  const totalCollections = sumAmounts(payments.map((payment) => payment.amount));
 
   const totalExpenses = sumAmounts(
     financeRecords
@@ -211,9 +233,7 @@ export async function fetchMonthlyReport(
   );
 
   const manualIncome = sumAmounts(
-    financeRecords
-      .filter((record) => record.type === "income")
-      .map((record) => record.amount),
+    manualIncomeRecords.map((record) => record.amount),
   );
 
   const netBalance = totalCollections + manualIncome - totalExpenses;
@@ -244,13 +264,13 @@ export async function fetchMonthlyReport(
     netBalance,
     totalOpenDebt,
     transactionCount,
-    cashCollections,
-    creditCardCollections,
-    bankTransferCollections,
+    cashCollections: cashChartValue,
+    creditCardCollections: creditCardChartValue,
+    bankTransferCollections: bankTransferChartValue,
     paymentMethodChart: [
-      { name: "Nakit", value: cashCollections, color: "#059669" },
-      { name: "Kredi Kartı", value: creditCardCollections, color: "#0284c7" },
-      { name: "Havale", value: bankTransferCollections, color: "#7c3aed" },
+      { name: "Nakit", value: cashChartValue, color: "#059669" },
+      { name: "Kredi Kartı", value: creditCardChartValue, color: "#0284c7" },
+      { name: "Havale", value: bankTransferChartValue, color: "#7c3aed" },
     ],
     topOperations: buildTopOperations(transactions),
     criticalStock,
