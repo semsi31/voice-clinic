@@ -3,12 +3,10 @@ import Link from "next/link";
 import { MotionCard } from "@/components/site/motion/motion-card";
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { PageImageHero } from "@/components/site/page-image-hero";
-import { Reveal } from "@/components/site/motion/reveal";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 import type { IconType } from "react-icons";
 import { ContactRequestForm } from "@/components/site/contact-request-form";
-import { sectionHeadingDelays } from "@/lib/site-motion";
 
 export const metadata: Metadata = {
   title: "İletişim | Voice Klinik İşitme Merkezi",
@@ -176,22 +174,16 @@ export default function ContactPage() {
         className="scroll-mt-28 px-4 py-6 pb-12 sm:scroll-mt-32 sm:px-6 lg:px-8 lg:pb-14"
       >
         <div className="mx-auto max-w-4xl rounded-[1.75rem] border border-[#eadfca] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.08)] sm:p-7 lg:p-8">
-          <Reveal variant="fade-up-compact" preserveIfVisible>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#B88A28]">
-              Randevu Talebi
-            </p>
-          </Reveal>
-          <Reveal variant="fade-up" delay={sectionHeadingDelays.title} duration={650} preserveIfVisible>
-            <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#071225]">
-              Size dönüş yapalım
-            </h2>
-          </Reveal>
-          <Reveal variant="fade-up-compact" delay={sectionHeadingDelays.description} preserveIfVisible>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-              Bilgilerinizi bırakın, ekibimiz en kısa sürede sizinle iletişime
-              geçsin.
-            </p>
-          </Reveal>
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#B88A28]">
+            Randevu Talebi
+          </p>
+          <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#071225]">
+            Size dönüş yapalım
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+            Bilgilerinizi bırakın, ekibimiz en kısa sürede sizinle iletişime
+            geçsin.
+          </p>
 
           <ContactRequestForm />
         </div>
