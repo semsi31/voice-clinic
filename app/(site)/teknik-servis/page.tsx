@@ -1,22 +1,28 @@
-import type { Metadata } from "next";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import Image from "next/image";
 import { ContactCta } from "@/components/site/contact-cta";
+import { JsonLd } from "@/components/site/json-ld";
 import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-card";
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { PageImageHero } from "@/components/site/page-image-hero";
 import { Reveal } from "@/components/site/motion/reveal";
 import {
+  buildBreadcrumbJsonLd,
+  createPageMetadata,
+} from "@/lib/site-seo";
+import {
   getProcessStaggerDelay,
   sectionHeadingDelays,
 } from "@/lib/site-motion";
 
-export const metadata: Metadata = {
-  title: "Teknik Servis | Voice Klinik İşitme Merkezi",
+export const metadata = createPageMetadata({
+  title: "Teknik Servis",
   description:
     "İşitme cihazı bakım, kontrol, arıza tespit ve teknik servis süreçleri için Voice Klinik destek hizmetleri.",
-};
+  path: "/teknik-servis",
+  image: "/images/blog-hearing-aid-care.jpg",
+});
 
 const serviceItems = [
   {
@@ -60,6 +66,12 @@ function publicImageExists(src: string) {
 export default function TechnicalServicePage() {
   return (
     <main className="bg-[#faf8f3] text-foreground">
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: "Ana Sayfa", path: "/" },
+          { name: "Teknik Servis", path: "/teknik-servis" },
+        ])}
+      />
       <PageImageHero
         breadcrumbs={[
           { label: "Ana Sayfa", href: "/" },
@@ -68,10 +80,12 @@ export default function TechnicalServicePage() {
         eyebrow="TEKNİK SERVİS"
         title="İşitme cihazınız için güvenilir teknik destek"
         imageSrc="/images/blog-hearing-aid-care.jpg"
+        imageAlt="Voice Klinik işitme cihazı teknik servis"
       />
 
       <section className="px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-6xl">
+          <h2 className="sr-only">Teknik servis hizmetleri</h2>
           <MotionGrid className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {serviceItems.map((service, index) => {
               const hasImage = publicImageExists(service.image);

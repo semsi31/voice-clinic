@@ -14,6 +14,7 @@ export type PageImageHeroProps = {
   title: string;
   imageSrc: string;
   imageClassName?: string;
+  imageAlt?: string;
 };
 
 export function PageImageHero({
@@ -22,7 +23,10 @@ export function PageImageHero({
   title,
   imageSrc,
   imageClassName = "object-center",
+  imageAlt,
 }: PageImageHeroProps) {
+  const resolvedAlt = imageAlt?.trim() || title;
+
   return (
     <section className="px-4 pt-24 sm:px-6 sm:pt-28 lg:px-8 lg:pt-32">
       <div className="mx-auto max-w-7xl">
@@ -37,8 +41,12 @@ export function PageImageHero({
             {/* eslint-disable-next-line @next/next/no-img-element -- Hero banner uses direct img for reliable object-cover crop. */}
             <img
               src={imageSrc}
-              alt=""
-              aria-hidden="true"
+              alt={resolvedAlt}
+              width={1600}
+              height={900}
+              decoding="async"
+              fetchPriority="high"
+              sizes="(max-width: 1280px) 100vw, 1280px"
               className={`size-full object-cover ${imageClassName}`}
             />
           </m.div>

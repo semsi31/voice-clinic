@@ -3,11 +3,18 @@ import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Reveal } from "@/components/site/motion/reveal";
+import { ContactCta } from "@/components/site/contact-cta";
+import { JsonLd } from "@/components/site/json-ld";
 import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-card";
 import { MotionGrid } from "@/components/site/motion/motion-grid";
-import { ContactCta } from "@/components/site/contact-cta";
+import { Reveal } from "@/components/site/motion/reveal";
 import { heroDelays, IMAGE_REVEAL_DURATION_MS, sectionHeadingDelays } from "@/lib/site-motion";
+import {
+  buildBlogPostingJsonLd,
+  buildBreadcrumbJsonLd,
+  createPageMetadata,
+  parseTurkishDisplayDate,
+} from "@/lib/site-seo";
 import { blogPosts, getBlogPostBySlug } from "../blog-posts";
 
 type BlogDetailPageProps = {
@@ -40,14 +47,22 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: "Blog Yazısı Bulunamadı | Voice Klinik İşitme Merkezi",
+      title: { absolute: "Blog Yazısı Bulunamadı | Voice Klinik" },
+      robots: { index: false, follow: false },
     };
   }
 
-  return {
-    title: `${post.title} | Voice Klinik İşitme Merkezi`,
+  const publishedTime = parseTurkishDisplayDate(post.date);
+
+  return createPageMetadata({
+    title: post.title,
     description: post.excerpt,
-  };
+    path: `/blog/${post.slug}`,
+    image: post.image,
+    type: "article",
+    publishedTime,
+    modifiedTime: publishedTime,
+  });
 }
 
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
@@ -63,9 +78,28 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     .filter((relatedPost) => relatedPost.slug !== post.slug)
     .slice(0, 3);
   const visibleSections = post.sections.slice(0, 3);
+  const publishedTime = parseTurkishDisplayDate(post.date);
+  const postPath = `/blog/${post.slug}`;
 
   return (
     <main className="overflow-x-hidden bg-[#faf8f3] text-foreground">
+      <JsonLd
+        data={[
+          buildBreadcrumbJsonLd([
+            { name: "Ana Sayfa", path: "/" },
+            { name: "Blog", path: "/blog" },
+            { name: post.title, path: postPath },
+          ]),
+          buildBlogPostingJsonLd({
+            title: post.title,
+            description: post.excerpt,
+            path: postPath,
+            image: post.image,
+            datePublished: publishedTime,
+            dateModified: publishedTime,
+          }),
+        ]}
+      />
       <div className="relative h-[240px] w-full overflow-hidden sm:h-[300px] lg:h-[360px] xl:h-[400px]">
         {imageSrc ? (
           <Reveal
@@ -76,8 +110,12 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             {/* eslint-disable-next-line @next/next/no-img-element -- Full-bleed hero banner requires direct img with object-cover crop. */}
             <img
               src={imageSrc}
-              alt=""
-              aria-hidden="true"
+              alt={post.title}
+              width={1600}
+              height={900}
+              decoding="async"
+              fetchPriority="high"
+              sizes="100vw"
               className="size-full object-cover object-[68%_42%]"
             />
           </Reveal>
@@ -123,7 +161,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             </Reveal>
             <Reveal variant="fade-up-hero" delay={heroDelays.description} animateOnLoad>
               <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                <time>{post.date}</time>
+                <time dateTime={publishedTime}>{post.date}</time>
                 <span className="h-1 w-1 rounded-full bg-[#D4AF37]" aria-hidden="true" />
                 <span>{post.readingTime}</span>
               </div>

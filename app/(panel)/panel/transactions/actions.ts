@@ -17,6 +17,7 @@ import {
 } from "@/lib/panel-auth";
 import { createR2SignedDownloadUrl } from "@/lib/r2-storage";
 import { deleteRecordsSequentially } from "@/lib/supabase-bulk-delete";
+import type { BulkDeleteActionResult } from "@/lib/panel-bulk-delete";
 import type { createClient } from "@/lib/supabase/server";
 import {
   optionalText,
@@ -118,14 +119,18 @@ const paymentFormFields = [
   "received_by",
 ] as const;
 
-export type TransactionActionState =
+type FormActionState<TValues> =
   | {
       error?: string;
       warning?: string;
       success?: boolean;
-      values?: NewTransactionFormValues | PaymentFormValues;
+      values?: TValues;
     }
   | undefined;
+
+export type NewTransactionActionState = FormActionState<NewTransactionFormValues>;
+
+export type TransactionActionState = FormActionState<PaymentFormValues>;
 
 export type PaymentActionResult =
   | { ok: true; warning?: string }
@@ -232,7 +237,7 @@ function paymentFormError(
 function newTransactionFormError(
   formData: FormData,
   error: string,
-): TransactionActionState {
+): NewTransactionActionState {
   return { error, values: extractNewTransactionFormValues(formData) };
 }
 
@@ -303,9 +308,9 @@ function normalizePaymentMethod(value: FormDataEntryValue | null) {
 }
 
 export async function createPatientTransaction(
-  _prevState: TransactionActionState,
+  _prevState: NewTransactionActionState,
   formData: FormData,
-): Promise<TransactionActionState> {
+): Promise<NewTransactionActionState> {
   const patientName = readText(formData.get("patient_name"));
   const operationDescription = readText(formData.get("operation_description"));
   const saleAmount = parseMoneyInput(formData.get("sale_amount"));
@@ -1078,7 +1083,9 @@ export async function updateTransactionReminderAction(
   return { ok: true };
 }
 
-export async function deletePatientTransaction(id: string) {
+async function deletePatientTransactionById(
+  id: string,
+): Promise<BulkDeleteActionResult> {
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
     auth = await requireActivePanelUser();
@@ -1168,7 +1175,15 @@ export async function deletePatientTransaction(id: string) {
   return { ok: true };
 }
 
-export async function deletePatientTransactions(ids: string[]) {
+export async function deletePatientTransaction(
+  id: string,
+): Promise<BulkDeleteActionResult> {
+  return deletePatientTransactionById(id);
+}
+
+export async function deletePatientTransactions(
+  ids: string[],
+): Promise<BulkDeleteActionResult> {
   try {
     await requireActivePanelUser();
   } catch (error) {
@@ -1177,7 +1192,7 @@ export async function deletePatientTransactions(ids: string[]) {
 
   return deleteRecordsSequentially(
     ids,
-    deletePatientTransaction,
+    deletePatientTransactionById,
     "işlem kayıtları silinemedi",
   );
 }

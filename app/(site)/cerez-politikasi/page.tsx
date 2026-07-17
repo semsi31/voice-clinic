@@ -1,17 +1,29 @@
-import type { Metadata } from "next";
 import { ContactCta } from "@/components/site/contact-cta";
 import { ContentSection } from "@/components/site/content-section";
+import { JsonLd } from "@/components/site/json-ld";
 import { PageHero } from "@/components/site/page-hero";
+import {
+  buildBreadcrumbJsonLd,
+  createPageMetadata,
+} from "@/lib/site-seo";
 
-export const metadata: Metadata = {
-  title: "Çerez Politikası | Voice Klinik İşitme Merkezi",
+export const metadata = createPageMetadata({
+  title: "Çerez Politikası",
   description:
     "Voice Klinik İşitme Merkezi web sitesi çerez kullanımı hakkında genel bilgilendirme.",
-};
+  path: "/cerez-politikasi",
+  image: "/images/about-clinic.jpg",
+});
 
 export default function CookiePolicyPage() {
   return (
     <main className="bg-background text-foreground">
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: "Ana Sayfa", path: "/" },
+          { name: "Çerez Politikası", path: "/cerez-politikasi" },
+        ])}
+      />
       <PageHero
         tag="Yasal Bilgilendirme"
         title="Çerez Politikası"

@@ -18,10 +18,12 @@ export function HomeHeroSlider() {
         animateOnLoad
         className="pointer-events-none absolute inset-0"
       >
+        {/* Decorative LCP background; CSS layers preserved for existing visual treatment. */}
         <div
           className="size-full bg-cover bg-center lg:bg-[position:center_right]"
           style={{ backgroundImage: heroBackgroundImage }}
-          aria-hidden="true"
+          role="img"
+          aria-label="Voice Klinik İşitme Merkezi"
         />
       </Reveal>
 

@@ -1,10 +1,9 @@
 "use client";
 
-import { m } from "motion/react";
+import { m, type HTMLMotionProps } from "motion/react";
 import {
   useEffect,
   useState,
-  type ComponentPropsWithoutRef,
   type CSSProperties,
   type ReactNode,
 } from "react";
@@ -30,7 +29,18 @@ type MotionCardProps = {
   index?: number;
   className?: string;
   as?: MotionCardElement;
-} & Omit<ComponentPropsWithoutRef<"article">, "children">;
+} & Omit<
+  HTMLMotionProps<"a">,
+  | "children"
+  | "className"
+  | "custom"
+  | "initial"
+  | "whileInView"
+  | "whileHover"
+  | "whileTap"
+  | "viewport"
+  | "variants"
+>;
 
 function useIsMobileStagger() {
   const [isMobile, setIsMobile] = useState(false);
@@ -74,7 +84,8 @@ export function MotionCard({
 }: MotionCardProps) {
   const isMobile = useIsMobileStagger();
   const canHover = useCanHover();
-  const Component = motionElements[as];
+  // Polymorphic lookup is safe at runtime; cast keeps Motion props typed.
+  const Component = motionElements[as] as typeof m.a;
   const delay = getMotionCardStaggerDelay(index, { mobile: isMobile });
 
   return (

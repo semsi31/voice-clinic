@@ -1,16 +1,22 @@
-import type { Metadata } from "next";
 import { ContactCta } from "@/components/site/contact-cta";
+import { JsonLd } from "@/components/site/json-ld";
 import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-card";
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { Reveal } from "@/components/site/motion/reveal";
 import { PageImageHero } from "@/components/site/page-image-hero";
+import {
+  buildBreadcrumbJsonLd,
+  createPageMetadata,
+} from "@/lib/site-seo";
 import { sectionHeadingDelays } from "@/lib/site-motion";
 
-export const metadata: Metadata = {
-  title: "Hizmetlerimiz | Voice Klinik İşitme Merkezi",
+export const metadata = createPageMetadata({
+  title: "Hizmetlerimiz",
   description:
     "Voice Klinik işitme testi, cihaz uygulaması, satış, bakım, aksesuar ve satış sonrası destek hizmetleri.",
-};
+  path: "/hizmetlerimiz",
+  image: "/images/about-clinic.jpg",
+});
 
 const services = [
   {
@@ -48,6 +54,12 @@ const services = [
 export default function ServicesPage() {
   return (
     <main className="bg-background text-foreground">
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: "Ana Sayfa", path: "/" },
+          { name: "Hizmetlerimiz", path: "/hizmetlerimiz" },
+        ])}
+      />
       <PageImageHero
         breadcrumbs={[
           { label: "Ana Sayfa", href: "/" },
@@ -56,6 +68,7 @@ export default function ServicesPage() {
         eyebrow="TÜM HİZMETLER"
         title="İşitme sağlığınız için profesyonel hizmet alanları"
         imageSrc="/images/about-clinic.jpg"
+        imageAlt="Voice Klinik işitme sağlığı hizmetleri"
       />
 
       <section className="px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20">

@@ -1,21 +1,27 @@
-import type { Metadata } from "next";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import Link from "next/link";
+import { JsonLd } from "@/components/site/json-ld";
 import { PageImageHero } from "@/components/site/page-image-hero";
 import { Reveal } from "@/components/site/motion/reveal";
 import { SiteIcon } from "@/components/site/site-icon";
+import {
+  buildBreadcrumbJsonLd,
+  createPageMetadata,
+} from "@/lib/site-seo";
 import {
   getTrustStaggerDelay,
   SPLIT_TEXT_DELAY_MS,
 } from "@/lib/site-motion";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Hakkımızda | Voice Klinik İşitme Merkezi",
+export const metadata = createPageMetadata({
+  title: "Kurumsal",
   description:
-    "Voice Klinik İşitme Merkezi hakkında kurumsal bilgilendirme ve hizmet yaklaşımı.",
-};
+    "Voice Klinik İşitme Merkezi hakkında kurumsal bilgilendirme, hizmet yaklaşımı ve profesyonel uygulama anlayışı.",
+  path: "/kurumsal",
+  image: "/images/about-clinic.jpg",
+});
 
 const serviceValues = [
   "Kişiye özel değerlendirme",
@@ -29,6 +35,12 @@ const hasAboutImage = existsSync(join(process.cwd(), "public/images/about-clinic
 export default function CorporatePage() {
   return (
     <main className="bg-background text-foreground">
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: "Ana Sayfa", path: "/" },
+          { name: "Kurumsal", path: "/kurumsal" },
+        ])}
+      />
       <PageImageHero
         breadcrumbs={[
           { label: "Ana Sayfa", href: "/" },
@@ -37,6 +49,7 @@ export default function CorporatePage() {
         eyebrow="KURUMSAL"
         title="Doğru bilgilendirme ve profesyonel uygulama"
         imageSrc={hasAboutImage ? "/images/about-clinic.jpg" : "/images/hero-hearing-care..jpg"}
+        imageAlt="Voice Klinik İşitme Merkezi kurumsal bilgilendirme"
       />
 
       <section className="px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20">

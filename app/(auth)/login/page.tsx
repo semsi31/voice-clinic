@@ -1,4 +1,18 @@
+import type { Metadata } from "next";
 import { LoginForm } from "@/components/auth/login-form";
+
+export const metadata: Metadata = {
+  title: "Yönetim Paneli Girişi",
+  description: "Voice Klinik yönetim paneli giriş sayfası.",
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
+};
 
 export default function LoginPage() {
   return (

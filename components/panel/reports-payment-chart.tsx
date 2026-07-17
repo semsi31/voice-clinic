@@ -39,12 +39,12 @@ export function ReportsPaymentChart({ data }: ReportsPaymentChartProps) {
               ))}
             </Pie>
             <Tooltip
-              formatter={(value: number, name: string) => [
+              formatter={(value, name) => [
                 new Intl.NumberFormat("tr-TR", {
                   style: "currency",
                   currency: "TRY",
                   maximumFractionDigits: 0,
-                }).format(value),
+                }).format(Number(value ?? 0)),
                 name,
               ]}
               contentStyle={{

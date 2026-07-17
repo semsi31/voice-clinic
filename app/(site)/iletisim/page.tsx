@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { MotionCard } from "@/components/site/motion/motion-card";
 import { MotionGrid } from "@/components/site/motion/motion-grid";
@@ -7,12 +6,19 @@ import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 import type { IconType } from "react-icons";
 import { ContactRequestForm } from "@/components/site/contact-request-form";
+import { JsonLd } from "@/components/site/json-ld";
+import {
+  buildBreadcrumbJsonLd,
+  createPageMetadata,
+} from "@/lib/site-seo";
 
-export const metadata: Metadata = {
-  title: "İletişim | Voice Klinik İşitme Merkezi",
+export const metadata = createPageMetadata({
+  title: "İletişim",
   description:
-    "Voice Klinik İşitme Merkezi iletişim bilgileri, şube adresleri, çalışma saatleri ve randevu talep formu.",
-};
+    "Voice Klinik İşitme Merkezi iletişim bilgileri, adres, çalışma saatleri ve randevu talep formu.",
+  path: "/iletisim",
+  image: "/images/hero-hearing-care..jpg",
+});
 
 const contactCards = [
   {
@@ -95,6 +101,12 @@ export default function ContactPage() {
 
   return (
     <main className="bg-[#faf8f3] text-foreground">
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: "Ana Sayfa", path: "/" },
+          { name: "İletişim", path: "/iletisim" },
+        ])}
+      />
       <PageImageHero
         breadcrumbs={[
           { label: "Ana Sayfa", href: "/" },
@@ -103,10 +115,12 @@ export default function ContactPage() {
         eyebrow="İLETİŞİM"
         title="Bizimle iletişime geçin"
         imageSrc="/images/hero-hearing-care..jpg"
+        imageAlt="Voice Klinik İşitme Merkezi iletişim"
       />
 
       <section className="px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-6xl">
+          <h2 className="sr-only">İletişim bilgileri</h2>
           <MotionGrid className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {contactCards.map((card, index) => {
               const Icon = card.icon;

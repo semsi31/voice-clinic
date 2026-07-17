@@ -70,7 +70,8 @@ export function SiteFooter() {
 
   const legalLinks = [
     { title: "KVKK ve Gizlilik", href: "/kvkk-gizlilik" },
-    { title: "Site Haritası", href: "/" },
+    { title: "Çerez Politikası", href: "/cerez-politikasi" },
+    { title: "Site Haritası", href: "/sitemap.xml" },
   ];
 
   const contactItems: {

@@ -1,19 +1,25 @@
-import type { Metadata } from "next";
 import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import Image from "next/image";
 import { ContactCta } from "@/components/site/contact-cta";
+import { JsonLd } from "@/components/site/json-ld";
 import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-card";
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { PageImageHero } from "@/components/site/page-image-hero";
 import { Reveal } from "@/components/site/motion/reveal";
+import {
+  buildBreadcrumbJsonLd,
+  createPageMetadata,
+} from "@/lib/site-seo";
 import { sectionHeadingDelays } from "@/lib/site-motion";
 
-export const metadata: Metadata = {
-  title: "İşitme Cihazları | Voice Klinik İşitme Merkezi",
+export const metadata = createPageMetadata({
+  title: "İşitme Cihazları",
   description:
     "İşitme cihazı türleri, kullanım seçenekleri ve doğru cihaz seçimi hakkında Voice Klinik bilgilendirme sayfası.",
-};
+  path: "/isitme-cihazlari",
+  image: "/images/blog-hearing-aid-selection.jpg",
+});
 
 const deviceTypes = [
   {
@@ -67,6 +73,12 @@ function getPublicImageVersion(src: string): string | null {
 export default function HearingDevicesPage() {
   return (
     <main className="bg-[#faf8f3] text-foreground">
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: "Ana Sayfa", path: "/" },
+          { name: "İşitme Cihazları", path: "/isitme-cihazlari" },
+        ])}
+      />
       <PageImageHero
         breadcrumbs={[
           { label: "Ana Sayfa", href: "/" },
@@ -76,6 +88,7 @@ export default function HearingDevicesPage() {
         title="Yaşam tarzınıza uygun işitme cihazı seçenekleri"
         imageSrc="/images/blog-hearing-aid-selection.jpg"
         imageClassName="object-[center_35%]"
+        imageAlt="Voice Klinik işitme cihazı seçenekleri"
       />
 
       <section className="px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20">

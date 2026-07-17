@@ -304,16 +304,16 @@ export function Reveal({
   const asChildTarget = asChild ? getAsChildTarget(children) : null;
 
   if (asChildTarget && isDomElement(asChildTarget)) {
-    const childProps = asChildTarget.props as {
+    const element = asChildTarget as ReactElement<{
       className?: string;
       style?: CSSProperties;
       ref?: Ref<HTMLElement>;
-    };
+    }>;
+    const childProps = element.props;
 
     // asChild reveal must attach the observer ref to the cloned DOM element.
     // eslint-disable-next-line react-hooks/refs -- callback ref is assigned after render commit.
-    return cloneElement(asChildTarget, {
-      ...(asChildTarget.props as Record<string, unknown>),
+    return cloneElement(element, {
       ref: (node: HTMLElement | null) => {
         ref.current = node;
         assignRef(childProps.ref, node);

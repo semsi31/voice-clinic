@@ -1,15 +1,29 @@
 import { HomeHeroSlider } from "@/components/site/home-hero-slider";
+import { JsonLd } from "@/components/site/json-ld";
 import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-card";
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { Reveal } from "@/components/site/motion/reveal";
 import { StatsSection } from "@/components/site/stats-section";
 import { IconBadge, SiteIcon, type SiteIconName } from "@/components/site/site-icon";
 import {
+  buildLocalBusinessJsonLd,
+  createPageMetadata,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+} from "@/lib/site-seo";
+import {
   getTrustStaggerDelay,
   sectionHeadingDelays,
   SPLIT_TEXT_DELAY_MS,
 } from "@/lib/site-motion";
 import Link from "next/link";
+
+export const metadata = createPageMetadata({
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  path: "/",
+  absoluteTitle: true,
+});
 
 const trustItems = [
   {
@@ -92,6 +106,7 @@ const stats = [
 export default function HomePage() {
   return (
     <main className="bg-background text-foreground">
+      <JsonLd data={buildLocalBusinessJsonLd()} />
       <HomeHeroSlider />
 
       <section className="relative z-10 mt-0 px-4 pb-4 sm:-mt-9 sm:px-6 lg:px-8">

@@ -1,20 +1,26 @@
-import type { Metadata } from "next";
 import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import Link from "next/link";
 import { ContactCta } from "@/components/site/contact-cta";
+import { JsonLd } from "@/components/site/json-ld";
 import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-card";
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { PageImageHero } from "@/components/site/page-image-hero";
 import { Reveal } from "@/components/site/motion/reveal";
+import {
+  buildBreadcrumbJsonLd,
+  createPageMetadata,
+} from "@/lib/site-seo";
 import { IMAGE_REVEAL_DURATION_MS, sectionHeadingDelays, SPLIT_TEXT_DELAY_MS } from "@/lib/site-motion";
 import { featuredPost, otherBlogPosts } from "./blog-posts";
 
-export const metadata: Metadata = {
-  title: "Blog | Voice Klinik İşitme Merkezi",
+export const metadata = createPageMetadata({
+  title: "Blog",
   description:
     "İşitme sağlığı, işitme cihazı kullanımı ve bakım süreçleri hakkında Voice Klinik bilgilendirme yazıları.",
-};
+  path: "/blog",
+  image: "/images/blog-hearing-test.jpg",
+});
 
 function getPublicImage(src: string) {
   const imagePath = join(process.cwd(), "public", src.replace(/^\//, ""));
@@ -74,6 +80,12 @@ function BlogImage({
 export default function BlogPage() {
   return (
     <main className="bg-[#faf8f3] text-foreground">
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: "Ana Sayfa", path: "/" },
+          { name: "Blog", path: "/blog" },
+        ])}
+      />
       <PageImageHero
         breadcrumbs={[
           { label: "Ana Sayfa", href: "/" },
@@ -82,6 +94,7 @@ export default function BlogPage() {
         eyebrow="BİLGİ MERKEZİ"
         title="İşitme sağlığı hakkında bilgilendirici içerikler"
         imageSrc="/images/blog-hearing-test.jpg"
+        imageAlt="Voice Klinik blog ve bilgilendirici içerikler"
       />
 
       <section className="px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20">
@@ -169,14 +182,14 @@ export default function BlogPage() {
                       <span className="h-1 w-1 rounded-full bg-[#D4AF37]" aria-hidden="true" />
                       <time>{post.date}</time>
                     </div>
-                    <h2 className="mt-2 line-clamp-2 font-serif text-lg font-bold leading-snug tracking-tight text-[#071225]">
+                    <h3 className="mt-2 line-clamp-2 font-serif text-lg font-bold leading-snug tracking-tight text-[#071225]">
                       <Link
                         href={`/blog/${post.slug}`}
                         className="transition hover:text-[#B88A28]"
                       >
                         {post.title}
                       </Link>
-                    </h2>
+                    </h3>
                     <p className="mt-1.5 line-clamp-3 flex-1 text-sm leading-6 text-slate-600">
                       {post.excerpt}
                     </p>

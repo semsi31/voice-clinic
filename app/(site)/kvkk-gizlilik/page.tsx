@@ -1,17 +1,29 @@
-import type { Metadata } from "next";
 import { ContactCta } from "@/components/site/contact-cta";
 import { ContentSection } from "@/components/site/content-section";
+import { JsonLd } from "@/components/site/json-ld";
 import { PageHero } from "@/components/site/page-hero";
+import {
+  buildBreadcrumbJsonLd,
+  createPageMetadata,
+} from "@/lib/site-seo";
 
-export const metadata: Metadata = {
-  title: "KVKK ve Gizlilik | Voice Klinik İşitme Merkezi",
+export const metadata = createPageMetadata({
+  title: "KVKK ve Gizlilik",
   description:
     "Voice Klinik İşitme Merkezi KVKK ve gizlilik bilgilendirmesi.",
-};
+  path: "/kvkk-gizlilik",
+  image: "/images/about-clinic.jpg",
+});
 
 export default function PrivacyPage() {
   return (
     <main className="bg-background text-foreground">
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: "Ana Sayfa", path: "/" },
+          { name: "KVKK ve Gizlilik", path: "/kvkk-gizlilik" },
+        ])}
+      />
       <PageHero
         tag="Yasal Bilgilendirme"
         title="KVKK ve Gizlilik"
