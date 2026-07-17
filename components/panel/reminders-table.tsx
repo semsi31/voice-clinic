@@ -24,6 +24,7 @@ import {
 } from "@/components/panel/action-modal";
 import { EmptyState } from "@/components/panel/empty-state";
 import { PanelCard } from "@/components/panel/panel-card";
+import { PanelPendingSubmitButton } from "@/components/panel/panel-pending-submit-button";
 import {
   panelFilterFieldClassName,
   panelFilterGridClassName,
@@ -226,12 +227,11 @@ function ReminderForm({ reminder, onClose }: ReminderFormProps) {
         >
           İptal
         </button>
-        <button
-          type="submit"
+        <PanelPendingSubmitButton
           className={`${panelPrimaryButtonClassName} w-full sm:w-auto`}
-        >
-          {reminder ? "Kaydet" : "Hatırlatıcıyı Kaydet"}
-        </button>
+          idleLabel={reminder ? "Kaydet" : "Hatırlatıcıyı Kaydet"}
+          pendingLabel="Kaydediliyor..."
+        />
       </div>
     </form>
   );

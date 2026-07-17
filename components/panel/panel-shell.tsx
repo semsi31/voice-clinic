@@ -8,6 +8,7 @@ import { PanelTopbar } from "@/components/panel/panel-topbar";
 type PanelShellProps = {
   children: ReactNode;
   userGreeting: string;
+  userTopbarGreeting: string;
   userName: string;
   userEmail: string;
 };
@@ -15,6 +16,7 @@ type PanelShellProps = {
 export function PanelShell({
   children,
   userGreeting,
+  userTopbarGreeting,
   userName,
   userEmail,
 }: Readonly<PanelShellProps>) {
@@ -84,6 +86,7 @@ export function PanelShell({
         <PanelTopbar
           onMenuClick={() => setIsMobileMenuOpen(true)}
           userGreeting={userGreeting}
+          userTopbarGreeting={userTopbarGreeting}
           userName={userName}
           userEmail={userEmail}
         />

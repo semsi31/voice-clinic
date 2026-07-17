@@ -203,7 +203,7 @@ export async function deleteReminderRecords(
     supabase,
     "reminders",
     ids,
-    ["/panel/reminders", "/panel/dashboard"],
+    ["/panel/reminders"],
     "hatırlatıcılar silinemedi",
   );
 }

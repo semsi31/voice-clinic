@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { getActivePanelUser } from "@/lib/panel-auth";
-import { getPanelDisplayName, getPanelGreeting } from "@/lib/panel-display";
+import { getPanelDisplayName, getPanelGreeting, getPanelTopbarGreeting } from "@/lib/panel-display";
 import {
   allowUnauthenticatedPanelMock,
   isSupabaseConfigured,
@@ -28,7 +28,12 @@ export default async function PanelLayout({
   if (!isSupabaseConfigured()) {
     if (allowUnauthenticatedPanelMock()) {
       return (
-        <PanelShell userGreeting="Merhaba Admin, iyi günler dileriz." userName="Admin" userEmail="">
+        <PanelShell
+          userGreeting="Merhaba Admin, iyi günler dileriz."
+          userTopbarGreeting="Merhaba, Admin"
+          userName="Admin"
+          userEmail=""
+        >
           {children}
         </PanelShell>
       );
@@ -48,10 +53,12 @@ export default async function PanelLayout({
   const userName = getPanelDisplayName(profile.full_name, user.email);
   const userEmail = user.email ?? "";
   const userGreeting = getPanelGreeting(profile.full_name, user.email);
+  const userTopbarGreeting = getPanelTopbarGreeting(profile.full_name, user.email);
 
   return (
     <PanelShell
       userGreeting={userGreeting}
+      userTopbarGreeting={userTopbarGreeting}
       userName={userName}
       userEmail={userEmail}
     >

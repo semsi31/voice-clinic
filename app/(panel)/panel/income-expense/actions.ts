@@ -206,7 +206,7 @@ export async function deleteFinanceRecords(
     supabase,
     "finance_records",
     ids,
-    ["/panel/income-expense", "/panel/dashboard", "/panel/reports"],
+    ["/panel/income-expense"],
     "kayıtlar silinemedi",
   );
 }

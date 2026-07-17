@@ -1,5 +1,7 @@
 import "server-only";
 
+import { after } from "next/server";
+import { revalidatePath } from "next/cache";
 import { generatePaymentReceiptPdfBuffer } from "@/lib/receipt-pdf";
 import {
   buildReceiptR2Key,
@@ -22,12 +24,17 @@ type CreatePaymentReceiptDocumentParams = {
   paymentId: string;
   fallbackReceivedBy?: string | null;
   createdByUserId?: string | null;
+  /** Skip re-fetch when caller already has the rows (insert/update path). */
+  transaction?: ReceiptTransaction;
+  payment?: ReceiptPayment;
 };
 
 type CleanupPaymentReceiptParams = {
   supabase: SupabaseClient;
   paymentId: string;
   clearPaymentReference?: boolean;
+  /** When already loaded, avoids an extra payment select. */
+  receiptDocumentId?: string | null;
 };
 
 type CleanupTransactionPaymentReceiptsParams = {
@@ -96,13 +103,26 @@ async function fetchReceiptContext(
   transactionId: string,
   paymentId: string,
 ) {
-  const { data: transaction, error: transactionError } = await supabase
-    .from("patient_transactions")
-    .select(
-      "id, transaction_no, patient_name, operation_description, sale_amount, staff_name",
-    )
-    .eq("id", transactionId)
-    .single();
+  const [transactionResult, paymentResult] = await Promise.all([
+    supabase
+      .from("patient_transactions")
+      .select(
+        "id, transaction_no, patient_name, operation_description, sale_amount, staff_name",
+      )
+      .eq("id", transactionId)
+      .single(),
+    supabase
+      .from("transaction_payments")
+      .select(
+        "id, transaction_id, payment_date, payment_method, amount, description, received_by, receipt_document_id",
+      )
+      .eq("id", paymentId)
+      .eq("transaction_id", transactionId)
+      .single(),
+  ]);
+
+  const { data: transaction, error: transactionError } = transactionResult;
+  const { data: payment, error: paymentError } = paymentResult;
 
   if (transactionError || !transaction) {
     console.error("Receipt context transaction fetch failed", {
@@ -113,15 +133,6 @@ async function fetchReceiptContext(
     });
     return { ok: false as const, error: "İşlem kaydı bulunamadı." };
   }
-
-  const { data: payment, error: paymentError } = await supabase
-    .from("transaction_payments")
-    .select(
-      "id, transaction_id, payment_date, payment_method, amount, description, received_by, receipt_document_id",
-    )
-    .eq("id", paymentId)
-    .eq("transaction_id", transactionId)
-    .single();
 
   if (paymentError || !payment) {
     console.error("Receipt context payment fetch failed", {
@@ -169,38 +180,31 @@ export async function createPaymentReceiptDocument({
   paymentId,
   fallbackReceivedBy,
   createdByUserId,
+  transaction: providedTransaction,
+  payment: providedPayment,
 }: CreatePaymentReceiptDocumentParams): Promise<ReceiptResult> {
-  const context = await fetchReceiptContext(supabase, transactionId, paymentId);
+  let transaction = providedTransaction;
+  let payment = providedPayment;
 
-  if (!context.ok) {
-    return { ok: false, error: "Tahsilat makbuzu oluşturulamadı." };
+  if (!transaction || !payment) {
+    const context = await fetchReceiptContext(supabase, transactionId, paymentId);
+
+    if (!context.ok) {
+      return { ok: false, error: "Tahsilat makbuzu oluşturulamadı." };
+    }
+
+    transaction = context.transaction;
+    payment = context.payment;
   }
 
-  const { transaction, payment } = context;
   const r2Key = buildReceiptR2Key(transaction.id, payment.id);
   let buffer: Buffer;
 
-  console.error("Receipt PDF params prepared", {
-    transactionId,
-    paymentId,
-    transactionNo: transaction.transaction_no,
-    r2Key,
-  });
-
   try {
-    console.error("Receipt PDF buffer generation started", {
-      transactionId,
-      paymentId,
-    });
     buffer = await generatePaymentReceiptPdfBuffer({
       transaction,
       payment,
       fallbackReceivedBy,
-    });
-    console.error("Receipt PDF buffer generated", {
-      transactionId,
-      paymentId,
-      bytes: buffer.length,
     });
   } catch (error) {
     console.error("Receipt PDF generation failed", {
@@ -211,23 +215,13 @@ export async function createPaymentReceiptDocument({
     return { ok: false, error: "Tahsilat makbuzu oluşturulamadı." };
   }
 
+  const r2StartedAt = performance.now();
   try {
-    console.error("Receipt PDF R2 upload started", {
-      transactionId,
-      paymentId,
-      r2Key,
-      bytes: buffer.length,
-    });
     await uploadFileToR2({
       key: r2Key,
       body: buffer,
       contentType: "application/pdf",
       contentLength: buffer.length,
-    });
-    console.error("Receipt PDF R2 upload succeeded", {
-      transactionId,
-      paymentId,
-      r2Key,
     });
   } catch (error) {
     console.error("Receipt PDF R2 upload failed", {
@@ -235,15 +229,11 @@ export async function createPaymentReceiptDocument({
       paymentId,
       r2Key,
       error: errorDetails(error),
+      r2Ms: Math.round(performance.now() - r2StartedAt),
     });
     return { ok: false, error: "Tahsilat makbuzu oluşturulamadı." };
   }
 
-  console.error("Receipt document insert started", {
-    transactionId,
-    paymentId,
-    r2Key,
-  });
   const { data: document, error: documentError } = await supabase
     .from("documents")
     .insert({
@@ -275,17 +265,6 @@ export async function createPaymentReceiptDocument({
     return { ok: false, error: "Tahsilat makbuzu oluşturulamadı." };
   }
 
-  console.error("Receipt document insert succeeded", {
-    transactionId,
-    paymentId,
-    documentId: document.id,
-  });
-
-  console.error("Receipt payment update started", {
-    transactionId,
-    paymentId,
-    documentId: document.id,
-  });
   const { error: paymentUpdateError } = await supabase
     .from("transaction_payments")
     .update({
@@ -311,13 +290,51 @@ export async function createPaymentReceiptDocument({
     return { ok: false, error: "Tahsilat makbuzu oluşturulamadı." };
   }
 
-  console.error("Receipt payment update succeeded", {
-    transactionId,
-    paymentId,
-    documentId: document.id,
-  });
-
   return { ok: true, documentId: document.id };
+}
+
+/**
+ * Non-blocking receipt generation after the mutation response is sent.
+ * Keeps payment insert/update fast; documents page refreshes when ready.
+ */
+export function schedulePaymentReceiptDocument(
+  params: CreatePaymentReceiptDocumentParams,
+) {
+  after(async () => {
+    const result = await createPaymentReceiptDocument(params);
+
+    if (!result.ok) {
+      console.error("Deferred payment receipt failed", {
+        transactionId: params.transactionId,
+        paymentId: params.paymentId,
+        error: result.error,
+      });
+      return;
+    }
+
+    revalidatePath(`/panel/transactions/${params.transactionId}`);
+    revalidatePath("/panel/documents");
+  });
+}
+
+export function scheduleRecreatePaymentReceiptDocument(
+  params: RecreatePaymentReceiptDocumentParams,
+) {
+  after(async () => {
+    const result = await recreatePaymentReceiptDocument(params);
+
+    if (!result.ok) {
+      console.error("Deferred payment receipt recreate failed", {
+        transactionId: params.transactionId,
+        paymentId: params.paymentId,
+        error: result.error,
+      });
+      return;
+    }
+
+    revalidatePath(`/panel/transactions/${params.transactionId}`);
+    revalidatePath("/panel/documents");
+  });
 }
 
 async function clearPaymentReceiptReference(
@@ -364,23 +381,14 @@ async function cleanupReceiptDocumentById(
       }
     }
 
-    console.error("Receipt document metadata missing during cleanup", {
-      documentId,
-      paymentId: paymentId ?? null,
-    });
     return { ok: true };
   }
 
-  if (document.file_path) {
-    try {
-      await deleteFileFromR2(document.file_path);
-    } catch (error) {
-      console.error("Receipt PDF R2 delete failed", {
-        documentId,
-        key: document.file_path,
-        error: errorDetails(error),
-      });
-      return { ok: false, error: "Tahsilat makbuzu silinemedi." };
+  // Clear DB references first so payment/document stay consistent if R2 fails later.
+  if (clearPaymentReference && paymentId) {
+    const clearResult = await clearPaymentReceiptReference(supabase, paymentId);
+    if (!clearResult.ok) {
+      return clearResult;
     }
   }
 
@@ -393,10 +401,16 @@ async function cleanupReceiptDocumentById(
     return { ok: false, error: "Tahsilat makbuzu silinemedi." };
   }
 
-  if (clearPaymentReference && paymentId) {
-    const clearResult = await clearPaymentReceiptReference(supabase, paymentId);
-    if (!clearResult.ok) {
-      return clearResult;
+  if (document.file_path) {
+    try {
+      await deleteFileFromR2(document.file_path);
+    } catch (error) {
+      console.error("Receipt PDF R2 delete failed after DB cleanup", {
+        documentId,
+        key: document.file_path,
+        error: errorDetails(error),
+      });
+      // DB already consistent; orphan R2 object is acceptable.
     }
   }
 
@@ -407,22 +421,29 @@ export async function cleanupPaymentReceipt({
   supabase,
   paymentId,
   clearPaymentReference = true,
+  receiptDocumentId,
 }: CleanupPaymentReceiptParams): Promise<ReceiptResult> {
-  const { data: payment, error: paymentError } = await supabase
-    .from("transaction_payments")
-    .select("receipt_document_id")
-    .eq("id", paymentId)
-    .maybeSingle();
+  let documentId = receiptDocumentId;
 
-  if (paymentError) {
-    return { ok: false, error: "Tahsilat makbuzu silinemedi." };
+  if (documentId === undefined) {
+    const { data: payment, error: paymentError } = await supabase
+      .from("transaction_payments")
+      .select("receipt_document_id")
+      .eq("id", paymentId)
+      .maybeSingle();
+
+    if (paymentError) {
+      return { ok: false, error: "Tahsilat makbuzu silinemedi." };
+    }
+
+    documentId = payment?.receipt_document_id ?? null;
   }
 
-  if (!payment?.receipt_document_id) {
+  if (!documentId) {
     return { ok: true };
   }
 
-  return cleanupReceiptDocumentById(supabase, payment.receipt_document_id, {
+  return cleanupReceiptDocumentById(supabase, documentId, {
     clearPaymentReference,
     paymentId,
   });
@@ -442,16 +463,24 @@ export async function cleanupTransactionPaymentReceipts({
     return { ok: false, error: "Tahsilat makbuzu silinemedi." };
   }
 
-  for (const payment of payments ?? []) {
-    const cleanupResult = await cleanupPaymentReceipt({
-      supabase,
-      paymentId: payment.id,
-      clearPaymentReference: true,
-    });
+  if (!payments?.length) {
+    return { ok: true };
+  }
 
-    if (!cleanupResult.ok) {
-      return cleanupResult;
-    }
+  const results = await Promise.all(
+    payments.map((payment) =>
+      cleanupPaymentReceipt({
+        supabase,
+        paymentId: payment.id,
+        clearPaymentReference: true,
+        receiptDocumentId: payment.receipt_document_id,
+      }),
+    ),
+  );
+
+  const failed = results.find((result) => !result.ok);
+  if (failed && !failed.ok) {
+    return failed;
   }
 
   return { ok: true };
@@ -470,19 +499,25 @@ export async function recreatePaymentReceiptDocument({
   paymentId,
   fallbackReceivedBy,
   createdByUserId,
+  transaction,
+  payment: providedPayment,
 }: RecreatePaymentReceiptDocumentParams): Promise<ReceiptResult> {
-  const { data: payment, error: paymentError } = await supabase
-    .from("transaction_payments")
-    .select("receipt_document_id")
-    .eq("id", paymentId)
-    .eq("transaction_id", transactionId)
-    .maybeSingle();
+  let previousDocumentId = providedPayment?.receipt_document_id;
 
-  if (paymentError || !payment) {
-    return { ok: false, error: "Tahsilat makbuzu yenilenemedi." };
+  if (previousDocumentId === undefined) {
+    const { data: payment, error: paymentError } = await supabase
+      .from("transaction_payments")
+      .select("receipt_document_id")
+      .eq("id", paymentId)
+      .eq("transaction_id", transactionId)
+      .maybeSingle();
+
+    if (paymentError || !payment) {
+      return { ok: false, error: "Tahsilat makbuzu yenilenemedi." };
+    }
+
+    previousDocumentId = payment.receipt_document_id;
   }
-
-  const previousDocumentId = payment.receipt_document_id;
 
   const createResult = await createPaymentReceiptDocument({
     supabase,
@@ -490,6 +525,8 @@ export async function recreatePaymentReceiptDocument({
     paymentId,
     fallbackReceivedBy,
     createdByUserId,
+    transaction,
+    payment: providedPayment,
   });
 
   if (!createResult.ok) {
@@ -517,4 +554,3 @@ export async function recreatePaymentReceiptDocument({
 
   return createResult;
 }
-

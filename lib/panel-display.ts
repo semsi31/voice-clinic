@@ -17,3 +17,10 @@ export function getPanelGreeting(
 ) {
   return `Merhaba ${getPanelDisplayName(fullName, email)}, iyi günler dileriz.`;
 }
+
+export function getPanelTopbarGreeting(
+  fullName: string | null | undefined,
+  email: string | null | undefined,
+) {
+  return `Merhaba, ${getPanelDisplayName(fullName, email)}`;
+}

@@ -200,8 +200,6 @@ export async function deleteCargoRecord(id: string): Promise<CargoActionResult> 
   }
 
   revalidatePath("/panel/cargo");
-  revalidatePath("/panel/dashboard");
-  revalidatePath("/panel/reports");
   return { ok: true, deletedCount: data.length };
 }
 
@@ -220,7 +218,7 @@ export async function deleteCargoRecords(
     supabase,
     "cargo_records",
     ids,
-    ["/panel/cargo", "/panel/dashboard", "/panel/reports"],
+    ["/panel/cargo"],
     "kargo kayıtları silinemedi",
   );
 }

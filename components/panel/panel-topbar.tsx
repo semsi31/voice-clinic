@@ -7,6 +7,7 @@ import { signOut } from "@/lib/supabase/actions";
 type PanelTopbarProps = {
   onMenuClick: () => void;
   userGreeting: string;
+  userTopbarGreeting: string;
   userName: string;
   userEmail: string;
 };
@@ -14,6 +15,7 @@ type PanelTopbarProps = {
 export function PanelTopbar({
   onMenuClick,
   userGreeting,
+  userTopbarGreeting,
   userName,
   userEmail,
 }: PanelTopbarProps) {
@@ -66,8 +68,8 @@ export function PanelTopbar({
               <span className="flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
                 <UserCircle className="size-5" aria-hidden="true" />
               </span>
-              <span className="hidden max-w-[16rem] truncate text-sm font-semibold text-slate-800 sm:inline">
-                {userGreeting}
+              <span className="hidden whitespace-nowrap text-sm font-semibold text-slate-800 sm:inline">
+                {userTopbarGreeting}
               </span>
               <ChevronDown
                 className="hidden size-4 text-slate-400 sm:inline"
@@ -81,11 +83,12 @@ export function PanelTopbar({
                 className="absolute right-0 top-full z-40 mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg"
               >
                 <div className="px-3 py-2">
-                  <p className="truncate text-sm font-bold text-slate-950">
-                    {userName}
+                  <p className="text-sm font-bold text-slate-950">{userName}</p>
+                  <p className="mt-1 text-sm leading-5 text-slate-700">
+                    {userGreeting}
                   </p>
                   {userEmail ? (
-                    <p className="truncate text-xs text-slate-500">
+                    <p className="mt-1 truncate text-xs text-slate-500">
                       {userEmail}
                     </p>
                   ) : null}

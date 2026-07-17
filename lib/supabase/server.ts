@@ -1,12 +1,13 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { requireSupabasePublicEnv } from "@/lib/supabase/config";
 
 /**
  * Server Component / Server Action / Route Handler için Supabase istemcisi.
- * Her çağrıda yeni bir istemci oluşturulur (Next.js App Router önerisi).
+ * React cache() ile aynı request içinde tek örnek paylaşılır (auth/profile dedupe).
  */
-export async function createClient() {
+export const createClient = cache(async () => {
   const { url, anonKey } = requireSupabasePublicEnv();
   const cookieStore = await cookies();
 
@@ -27,4 +28,4 @@ export async function createClient() {
       },
     },
   });
-}
+});

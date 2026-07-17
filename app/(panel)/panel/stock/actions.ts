@@ -268,7 +268,7 @@ export async function deleteStockProducts(
     supabase,
     "stock_products",
     ids,
-    ["/panel/stock", "/panel/dashboard", "/panel/reports"],
+    ["/panel/stock"],
     "ürün kayıtları silinemedi",
   );
 }

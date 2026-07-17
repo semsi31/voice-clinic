@@ -11,11 +11,11 @@ type StatCardProps = {
 };
 
 const variantClassNames: Record<StatCardVariant, string> = {
-  blue: "bg-sky-50 text-sky-700",
-  green: "bg-emerald-50 text-emerald-700",
-  amber: "bg-amber-50 text-amber-700",
-  red: "bg-rose-50 text-rose-700",
-  purple: "bg-violet-50 text-violet-700",
+  blue: "bg-sky-50 text-sky-700 ring-sky-100",
+  green: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+  amber: "bg-amber-50 text-amber-700 ring-amber-100",
+  red: "bg-rose-50 text-rose-700 ring-rose-100",
+  purple: "bg-slate-50 text-slate-600 ring-slate-200",
 };
 
 export function StatCard({
@@ -33,9 +33,9 @@ export function StatCard({
           <p className="mt-3 text-2xl font-bold text-slate-950">{value}</p>
         </div>
         <span
-          className={`flex size-12 shrink-0 items-center justify-center rounded-2xl ${variantClassNames[variant]}`}
+          className={`flex size-10 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ${variantClassNames[variant]}`}
         >
-          <Icon className="size-6" aria-hidden="true" />
+          <Icon className="size-5" aria-hidden="true" />
         </span>
       </div>
       <p className="mt-4 text-sm leading-6 text-slate-600">{description}</p>

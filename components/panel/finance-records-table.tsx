@@ -25,6 +25,7 @@ import {
   updateFinanceRecord,
   type FinanceActionResult,
 } from "@/app/(panel)/panel/income-expense/actions";
+import { PanelPendingSubmitButton } from "@/components/panel/panel-pending-submit-button";
 import {
   ActionModal,
   FormField,
@@ -87,6 +88,7 @@ function FinanceRecordForm({ type, record, onClose }: FinanceRecordFormProps) {
   useEffect(() => {
     if (state?.ok) {
       onClose();
+      // Current route only — server already narrowed revalidatePath.
       router.refresh();
     }
   }, [onClose, router, state]);
@@ -177,16 +179,17 @@ function FinanceRecordForm({ type, record, onClose }: FinanceRecordFormProps) {
         >
           İptal
         </button>
-        <button
-          type="submit"
+        <PanelPendingSubmitButton
           className={`${panelPrimaryButtonClassName} w-full sm:w-auto`}
-        >
-          {record
-            ? "Kaydet"
-            : type === "income"
-              ? "Geliri Kaydet"
-              : "Gideri Kaydet"}
-        </button>
+          idleLabel={
+            record
+              ? "Kaydet"
+              : type === "income"
+                ? "Geliri Kaydet"
+                : "Gideri Kaydet"
+          }
+          pendingLabel="Kaydediliyor..."
+        />
       </div>
     </form>
   );

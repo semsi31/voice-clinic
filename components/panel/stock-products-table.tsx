@@ -18,6 +18,7 @@ import {
 } from "@/components/panel/action-modal";
 import { EmptyState } from "@/components/panel/empty-state";
 import { PanelCard } from "@/components/panel/panel-card";
+import { PanelPendingSubmitButton } from "@/components/panel/panel-pending-submit-button";
 import {
   panelFilterFieldClassName,
   panelFilterGridClassName,
@@ -210,12 +211,11 @@ function StockProductForm({ product, onClose }: StockProductFormProps) {
         >
           İptal
         </button>
-        <button
-          type="submit"
+        <PanelPendingSubmitButton
           className={`${panelPrimaryButtonClassName} w-full sm:w-auto`}
-        >
-          {product ? "Kaydet" : "Ürünü Kaydet"}
-        </button>
+          idleLabel={product ? "Kaydet" : "Ürünü Kaydet"}
+          pendingLabel="Kaydediliyor..."
+        />
       </div>
     </form>
   );

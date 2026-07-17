@@ -12,6 +12,7 @@ import {
   getPanelAuthErrorMessage,
   requireActivePanelUser,
 } from "@/lib/panel-auth";
+import { createMutationTimer } from "@/lib/mutation-timing";
 import {
   buildDocumentR2Key,
   createR2SignedDownloadUrl,
@@ -105,6 +106,7 @@ export async function createDocumentAction(
   _prevState: DocumentActionResult | undefined,
   formData: FormData,
 ): Promise<DocumentActionResult | undefined> {
+  const timer = createMutationTimer({ name: "createDocument" });
   const title = readText(formData.get("title"));
   const file = readFile(formData);
 
@@ -123,12 +125,15 @@ export async function createDocumentAction(
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
     auth = await requireActivePanelUser();
+    timer.countAuthProfile();
   } catch (error) {
     return documentFormError(formData, getPanelAuthErrorMessage(error));
   }
 
   const { supabase, userId } = auth;
+  const r2StartedAt = performance.now();
   const uploadResult = await uploadDocumentFile(file);
+  timer.addR2Ms(performance.now() - r2StartedAt);
 
   if (!uploadResult.ok) {
     return documentFormError(formData, uploadResult.error);
@@ -143,6 +148,7 @@ export async function createDocumentAction(
     file_size: uploadResult.data.file_size,
     created_by: userId,
   });
+  timer.countSupabase();
 
   if (error) {
     await removeDocumentFile(uploadResult.data.file_path);
@@ -150,6 +156,8 @@ export async function createDocumentAction(
   }
 
   revalidatePath("/panel/documents");
+  timer.countRevalidate();
+  timer.end();
   return { ok: true };
 }
 
@@ -195,6 +203,7 @@ export async function updateDocumentAction(
 export async function deleteDocumentAction(
   id: string,
 ): Promise<DocumentActionResult> {
+  const timer = createMutationTimer({ name: "deleteDocument" });
   if (!id) {
     return { ok: false, error: "Kayıt kimliği bulunamadı." };
   }
@@ -202,6 +211,7 @@ export async function deleteDocumentAction(
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
     auth = await requireActivePanelUser();
+    timer.countAuthProfile();
   } catch (error) {
     return { ok: false, error: getPanelAuthErrorMessage(error) };
   }
@@ -212,23 +222,35 @@ export async function deleteDocumentAction(
     .select("file_path")
     .eq("id", id)
     .single();
+  timer.countSupabase();
 
   if (fetchError || !document) {
     return { ok: false, error: "Belge bulunamadı." };
   }
 
-  const removeResult = await removeDocumentFile(document.file_path);
-  if (!removeResult.ok) {
-    return removeResult;
-  }
-
+  // Delete DB row first so RLS/consistency wins; R2 orphan is cleaned best-effort.
   const { error } = await supabase.from("documents").delete().eq("id", id);
+  timer.countSupabase();
 
   if (error) {
     return { ok: false, error: "Belge silinemedi." };
   }
 
+  const r2StartedAt = performance.now();
+  const removeResult = await removeDocumentFile(document.file_path);
+  timer.addR2Ms(performance.now() - r2StartedAt);
+
+  if (!removeResult.ok) {
+    console.error("Document R2 cleanup failed after DB delete", {
+      id,
+      filePath: document.file_path,
+      error: removeResult.error,
+    });
+  }
+
   revalidatePath("/panel/documents");
+  timer.countRevalidate();
+  timer.end({ r2CleanupOk: removeResult.ok });
   return { ok: true };
 }
 

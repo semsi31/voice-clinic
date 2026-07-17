@@ -56,8 +56,11 @@ function isLegacyTransaction(transaction: PatientTransactionRecord) {
 
 function LegacyBadge() {
   return (
-    <span className="inline-flex w-fit items-center rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[11px] font-bold text-violet-800">
-      Eski Excel Kaydı
+    <span
+      className="inline-flex shrink-0 items-center whitespace-nowrap rounded-md border border-violet-200 bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-800"
+      title="Eski Excel Kaydı"
+    >
+      Excel
     </span>
   );
 }
@@ -417,11 +420,13 @@ export function TransactionsTable({
                         : ""}
                     </p>
                   </div>
-                  {isLegacyTransaction(transaction) ? (
-                    <LegacyBadge />
-                  ) : (
-                    <StatusBadge status={transaction.payment_status} />
-                  )}
+                  <div className="flex shrink-0 items-end">
+                    {isLegacyTransaction(transaction) ? (
+                      <LegacyBadge />
+                    ) : (
+                      <StatusBadge status={transaction.payment_status} />
+                    )}
+                  </div>
                 </div>
                 <dl className="mt-3 grid grid-cols-2 gap-3">
                   <div>
@@ -519,8 +524,8 @@ export function TransactionsTable({
                   >
                     {transaction.patient_name}
                   </td>
-                  <td className={tableCellClassName}>
-                    {isLegacyTransaction(transaction) ? <LegacyBadge /> : "-"}
+                  <td className={`${tableCellClassName} whitespace-nowrap`}>
+                    {isLegacyTransaction(transaction) ? <LegacyBadge /> : "Normal"}
                   </td>
                   <td className={`${tableCellClassName} whitespace-nowrap`}>
                     {transaction.patient_phone || "-"}
@@ -546,7 +551,7 @@ export function TransactionsTable({
                   </td>
                   <td className={tableCellClassName}>
                     {isLegacyTransaction(transaction) ? (
-                      <LegacyBadge />
+                      "-"
                     ) : (
                       <StatusBadge status={transaction.payment_status} />
                     )}

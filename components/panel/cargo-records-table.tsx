@@ -24,6 +24,7 @@ import {
 } from "@/components/panel/action-modal";
 import { EmptyState } from "@/components/panel/empty-state";
 import { PanelCard } from "@/components/panel/panel-card";
+import { PanelPendingSubmitButton } from "@/components/panel/panel-pending-submit-button";
 import {
   panelFilterFieldClassName,
   panelFilterGridClassName,
@@ -181,12 +182,11 @@ function CargoRecordForm({ record, onClose }: CargoRecordFormProps) {
         >
           İptal
         </button>
-        <button
-          type="submit"
+        <PanelPendingSubmitButton
           className={`${panelPrimaryButtonClassName} w-full sm:w-auto`}
-        >
-          {record ? "Kaydet" : "Kargoyu Kaydet"}
-        </button>
+          idleLabel={record ? "Kaydet" : "Kargoyu Kaydet"}
+          pendingLabel="Kaydediliyor..."
+        />
       </div>
     </form>
   );

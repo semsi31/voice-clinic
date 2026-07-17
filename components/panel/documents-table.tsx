@@ -24,6 +24,7 @@ import {
 } from "@/components/panel/action-modal";
 import { EmptyState } from "@/components/panel/empty-state";
 import { PanelCard } from "@/components/panel/panel-card";
+import { PanelPendingSubmitButton } from "@/components/panel/panel-pending-submit-button";
 import {
   panelFilterFieldClassName,
   panelFilterGridClassName,
@@ -143,12 +144,11 @@ function UploadDocumentForm({ onClose }: UploadDocumentFormProps) {
         >
           İptal
         </button>
-        <button
-          type="submit"
+        <PanelPendingSubmitButton
           className={`${panelPrimaryButtonClassName} w-full sm:w-auto`}
-        >
-          Belgeyi Kaydet
-        </button>
+          idleLabel="Belgeyi Kaydet"
+          pendingLabel="Yükleniyor..."
+        />
       </div>
     </form>
   );
@@ -211,12 +211,11 @@ function EditDocumentForm({ document, onClose }: EditDocumentFormProps) {
         >
           İptal
         </button>
-        <button
-          type="submit"
+        <PanelPendingSubmitButton
           className={`${panelPrimaryButtonClassName} w-full sm:w-auto`}
-        >
-          Değişiklikleri Kaydet
-        </button>
+          idleLabel="Değişiklikleri Kaydet"
+          pendingLabel="Kaydediliyor..."
+        />
       </div>
     </form>
   );
