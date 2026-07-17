@@ -64,6 +64,13 @@ function isActiveReminder(reminder: ReminderRecord) {
   return reminder.status === "pending" || reminder.status === "delayed";
 }
 
+export function isOverdueReminder(
+  reminder: ReminderRecord,
+  today = getTodayDateString(),
+) {
+  return reminder.reminder_date < today && isActiveReminder(reminder);
+}
+
 export function summarizeReminders(reminders: ReminderRecord[]) {
   const today = getTodayDateString();
   const { start, end } = getWeekBounds();

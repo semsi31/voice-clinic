@@ -45,6 +45,7 @@ import { rowActionButtonClassName } from "@/components/panel/row-actions";
 import { StatusBadge } from "@/components/panel/status-badge";
 import {
   formatReminderTime,
+  isOverdueReminder,
   reminderStatusOptions,
   type ReminderRecord,
   type ReminderStatus,
@@ -62,6 +63,41 @@ type ReminderFormProps = {
   reminder?: ReminderRecord;
   onClose: () => void;
 };
+
+function ReminderDateText({
+  reminder,
+  variant = "table",
+}: Readonly<{ reminder: ReminderRecord; variant?: "table" | "mobile" }>) {
+  const overdue = isOverdueReminder(reminder);
+  const dateClassName =
+    variant === "mobile"
+      ? overdue
+        ? "mt-1 text-xs font-semibold text-rose-700"
+        : "mt-1 text-xs text-slate-500"
+      : overdue
+        ? "font-semibold text-rose-700"
+        : "font-semibold text-slate-950";
+
+  return (
+    <div className={variant === "table" ? undefined : dateClassName}>
+      {variant === "table" ? (
+        <div className={dateClassName}>{formatDate(reminder.reminder_date)}</div>
+      ) : (
+        <>
+          {formatDate(reminder.reminder_date)}
+          {reminder.reminder_time
+            ? ` · ${formatReminderTime(reminder.reminder_time)}`
+            : ""}
+        </>
+      )}
+      {variant === "table" && reminder.reminder_time ? (
+        <div className="mt-1 text-xs text-slate-500">
+          {formatReminderTime(reminder.reminder_time)}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function ReminderForm({ reminder, onClose }: ReminderFormProps) {
   const router = useRouter();
@@ -455,12 +491,7 @@ export function RemindersTable({
                       <p className="break-words font-bold text-slate-950">
                         {reminder.title}
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {formatDate(reminder.reminder_date)}
-                        {reminder.reminder_time
-                          ? ` · ${formatReminderTime(reminder.reminder_time)}`
-                          : ""}
-                      </p>
+                      <ReminderDateText reminder={reminder} variant="mobile" />
                     </div>
                     <StatusBadge status={reminder.status} />
                   </div>
@@ -552,14 +583,7 @@ export function RemindersTable({
                       />
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 whitespace-nowrap">
-                      <div className="font-semibold text-slate-950">
-                        {formatDate(reminder.reminder_date)}
-                      </div>
-                      {reminder.reminder_time ? (
-                        <div className="mt-1 text-xs text-slate-500">
-                          {formatReminderTime(reminder.reminder_time)}
-                        </div>
-                      ) : null}
+                      <ReminderDateText reminder={reminder} />
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 font-semibold text-slate-950 truncate">
                       {reminder.title}
