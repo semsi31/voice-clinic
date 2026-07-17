@@ -1,6 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import {
+  getMissingSupabasePublicEnvKeys,
+  isSupabaseConfigured,
+} from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
 export type LoginActionState =
@@ -18,6 +22,13 @@ export async function login(
 
   if (!email || !password) {
     return { error: "E-posta ve şifre alanları zorunludur." };
+  }
+
+  if (!isSupabaseConfigured()) {
+    const missing = getMissingSupabasePublicEnvKeys().join(", ");
+    return {
+      error: `Giriş sistemi yapılandırılmamış (${missing}). Vercel ortam değişkenlerini kontrol edin.`,
+    };
   }
 
   const supabase = await createClient();

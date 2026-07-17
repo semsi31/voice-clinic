@@ -1,22 +1,47 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import {
+  getMissingSupabasePublicEnvKeys,
+  getSupabasePublicEnv,
+} from "@/lib/supabase/config";
 
 const PANEL_PREFIX = "/panel";
 const LOGIN_PATH = "/login";
 const DEFAULT_PANEL_PATH = "/panel/dashboard";
 
+function redirectToLogin(request: NextRequest, reason?: "config") {
+  const redirectUrl = request.nextUrl.clone();
+  redirectUrl.pathname = LOGIN_PATH;
+  redirectUrl.search = "";
+
+  if (reason) {
+    redirectUrl.searchParams.set("error", reason);
+  }
+
+  return NextResponse.redirect(redirectUrl);
+}
+
 /**
  * Her istekte Supabase oturumunu yeniler ve /panel rotalarını korur.
- * SaaS mantığı yok; tek işletmeye ait tek oturum türü kontrol edilir.
+ * Production'da env yoksa fail-closed: panel → login.
  */
 export async function updateSession(request: NextRequest) {
-  if (!isSupabaseConfigured()) {
-    // .env.local henüz oluşturulmadıysa panel koruması pasif kalır;
-    // kurumsal site ve panel mock sayfaları çökmeden çalışmaya devam eder.
+  const { pathname } = request.nextUrl;
+  const isPanelRoute =
+    pathname === PANEL_PREFIX || pathname.startsWith(`${PANEL_PREFIX}/`);
+  const isLoginRoute = pathname === LOGIN_PATH;
+  const supabaseEnv = getSupabasePublicEnv();
+
+  if (!supabaseEnv) {
+    const missing = getMissingSupabasePublicEnvKeys().join(", ");
     console.warn(
-      "@/lib/supabase/middleware: NEXT_PUBLIC_SUPABASE_URL / ANON_KEY tanımlı değil, panel koruması devre dışı.",
+      `@/lib/supabase/middleware: missing env (${missing}); panel auth fail-closed.`,
     );
+
+    if (isPanelRoute) {
+      return redirectToLogin(request, "config");
+    }
+
     return NextResponse.next({ request });
   }
 
@@ -24,44 +49,38 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
-          );
-        },
+  const supabase = createServerClient(supabaseEnv.url, supabaseEnv.anonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => {
+          request.cookies.set(name, value);
+        });
+        supabaseResponse = NextResponse.next({
+          request,
+        });
+        cookiesToSet.forEach(({ name, value, options }) => {
+          supabaseResponse.cookies.set(name, value, options);
+        });
       },
     },
-  );
+  });
 
-  const { data: { user } } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
-  const isPanelRoute = pathname.startsWith(PANEL_PREFIX);
-  const isLoginRoute = pathname === LOGIN_PATH;
+  // Validate the session with the Auth server (do not trust cookie presence alone).
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user && isPanelRoute) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = LOGIN_PATH;
-    return NextResponse.redirect(redirectUrl);
+    return redirectToLogin(request);
   }
 
   if (user && isLoginRoute) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = DEFAULT_PANEL_PATH;
+    redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 

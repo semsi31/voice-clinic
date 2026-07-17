@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import {
+  allowUnauthenticatedPanelMock,
+  isSupabaseConfigured,
+} from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -20,14 +23,17 @@ export default async function PanelLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Local mock only. Production without Supabase env must never open the panel.
   if (!isSupabaseConfigured()) {
-    // .env.local henüz oluşturulmadıysa panel mock veriyle önceki gibi
-    // çalışır; auth altyapısı gerçek Supabase bilgileri girilince devreye girer.
-    return (
-      <PanelShell userName="Admin" userEmail="">
-        {children}
-      </PanelShell>
-    );
+    if (allowUnauthenticatedPanelMock()) {
+      return (
+        <PanelShell userName="Admin" userEmail="">
+          {children}
+        </PanelShell>
+      );
+    }
+
+    redirect("/login?error=config");
   }
 
   const supabase = await createClient();
@@ -48,7 +54,14 @@ export default async function PanelLayout({
 
   // is_active = false olan kullanıcı panel erişiminden çıkarılır.
   if (profile && profile.is_active === false) {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error(
+        "Inactive user signOut failed",
+        error instanceof Error ? error.message : "unknown",
+      );
+    }
     redirect("/login");
   }
 
