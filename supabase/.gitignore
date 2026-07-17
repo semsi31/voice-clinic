@@ -2,3 +2,10 @@
 .temp
 .env.keys
 snippets
+
+# Local dumps / import artifacts (may contain PII)
+/*.sql
+/cloud-import-chunks/
+/cloud-import-remaining/
+/cloud-import-safe.sql
+/scripts/import-log.txt
