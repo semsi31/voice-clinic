@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
@@ -45,14 +46,18 @@ export function getPanelAuthErrorMessage(error: unknown) {
   return "Bu işlem için yetkiniz yok.";
 }
 
-export async function requireActivePanelUser(): Promise<ActivePanelUser> {
+type PanelAuthState =
+  | { ok: true; value: ActivePanelUser }
+  | { ok: false; code: PanelAuthErrorCode };
+
+const resolvePanelAuth = cache(async (): Promise<PanelAuthState> => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new PanelAuthError("invalid_session");
+    return { ok: false, code: "invalid_session" };
   }
 
   const { data: profile, error } = await supabase
@@ -67,18 +72,36 @@ export async function requireActivePanelUser(): Promise<ActivePanelUser> {
       error,
       hasProfile: Boolean(profile),
     });
-    throw new PanelAuthError("missing_profile");
+    return { ok: false, code: "missing_profile" };
   }
 
   if (profile.is_active !== true) {
-    throw new PanelAuthError("inactive");
+    return { ok: false, code: "inactive" };
   }
 
   return {
-    supabase,
-    user,
-    profile: profile as PanelProfile,
-    userId: user.id,
-    email: user.email ?? null,
+    ok: true,
+    value: {
+      supabase,
+      user,
+      profile: profile as PanelProfile,
+      userId: user.id,
+      email: user.email ?? null,
+    },
   };
+});
+
+export async function getActivePanelUser(): Promise<ActivePanelUser | null> {
+  const state = await resolvePanelAuth();
+  return state.ok ? state.value : null;
+}
+
+export async function requireActivePanelUser(): Promise<ActivePanelUser> {
+  const state = await resolvePanelAuth();
+
+  if (!state.ok) {
+    throw new PanelAuthError(state.code);
+  }
+
+  return state.value;
 }

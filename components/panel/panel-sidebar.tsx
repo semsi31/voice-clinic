@@ -17,6 +17,7 @@ export function PanelSidebar({ onNavigate }: PanelSidebarProps) {
       <div className="border-b border-white/10 px-6 py-6">
         <Link
           href="/panel/dashboard"
+          prefetch={false}
           className="flex items-center gap-3"
           onClick={onNavigate}
         >
@@ -52,6 +53,7 @@ export function PanelSidebar({ onNavigate }: PanelSidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className={linkClassName}
               onClick={onNavigate}
               aria-current={isActive ? "page" : undefined}

@@ -131,3 +131,7 @@ export function sanitizeStorageFileName(filename: string) {
     .replace(/^-|-$/g, "")
     .toLowerCase();
 }
+
+export function getDocumentDownloadPath(documentId: string) {
+  return `/api/panel/documents/${documentId}/download`;
+}

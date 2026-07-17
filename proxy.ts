@@ -7,5 +7,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Panel + login only; public marketing routes are untouched.
-  matcher: ["/panel", "/panel/:path*", "/login"],
+  matcher: ["/panel", "/panel/:path*", "/login", "/api/panel/:path*"],
 };

@@ -48,6 +48,16 @@ function isLocalhostUrl(url: string) {
   return LOCALHOST_PATTERN.test(url);
 }
 
+/** Accept only absolute http(s) URLs; reject env-name paste mistakes etc. */
+function isValidHttpUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Production metadata, sitemap and canonicals must never emit localhost.
  * Prefer NEXT_PUBLIC_SITE_URL; fall back to Vercel production host when needed.
@@ -55,7 +65,7 @@ function isLocalhostUrl(url: string) {
 export function getSiteUrl(): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
 
-  if (configured) {
+  if (configured && isValidHttpUrl(configured)) {
     const normalized = stripTrailingSlash(configured);
     if (!isLocalhostUrl(normalized)) {
       return normalized;
@@ -72,7 +82,10 @@ export function getSiteUrl(): string {
 
   if (vercelHost && !isLocalhostUrl(vercelHost)) {
     const host = stripTrailingSlash(vercelHost.replace(/^https?:\/\//, ""));
-    return `https://${host}`;
+    const candidate = `https://${host}`;
+    if (isValidHttpUrl(candidate)) {
+      return candidate;
+    }
   }
 
   // Local development (and local production builds without a public URL).

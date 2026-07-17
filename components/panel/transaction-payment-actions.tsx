@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { FileText, Pencil, Trash2 } from "lucide-react";
 import {
   deleteTransactionPaymentAction,
-  getPaymentReceiptUrlAction,
   regeneratePaymentReceiptAction,
   updateTransactionPaymentAction,
   type PaymentFormValues,
@@ -22,6 +21,7 @@ import {
 } from "@/components/panel/panel-styles";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
 import { getFormRestoreKey } from "@/lib/panel-form";
+import { getDocumentDownloadPath } from "@/lib/documents";
 import type { TransactionPaymentRecord } from "@/lib/transactions";
 
 type TransactionPaymentActionsProps = {
@@ -37,9 +37,7 @@ export function TransactionPaymentActions({
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [draftValues, setDraftValues] = useState<PaymentFormValues | null>(null);
-  const [receiptError, setReceiptError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [isReceiptPending, startReceiptTransition] = useTransition();
   const [isCreateReceiptPending, startCreateReceiptTransition] = useTransition();
 
   const closeEdit = () => {
@@ -95,27 +93,12 @@ export function TransactionPaymentActions({
     });
   };
 
-  const handleOpenReceipt = () => {
-    setReceiptError(null);
-    startReceiptTransition(async () => {
-      const result = await getPaymentReceiptUrlAction(payment.id);
-
-      if (!result.ok) {
-        setReceiptError(result.error);
-        return;
-      }
-
-      window.open(result.url, "_blank", "noopener,noreferrer");
-    });
-  };
-
   const handleCreateReceipt = () => {
-    setReceiptError(null);
     startCreateReceiptTransition(async () => {
       const result = await regeneratePaymentReceiptAction(payment.id);
 
       if (!result.ok) {
-        setReceiptError(result.error);
+        setError(result.error);
         return;
       }
 
@@ -136,16 +119,15 @@ export function TransactionPaymentActions({
       <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:items-end">
         <div className="flex flex-wrap items-center justify-end gap-2">
           {payment.receipt_document_id ? (
-            <button
-              type="button"
+            <a
+              href={getDocumentDownloadPath(payment.receipt_document_id)}
               className={rowActionButtonClassName}
               aria-label="Makbuzu Aç"
               title="Makbuz"
-              onClick={handleOpenReceipt}
-              disabled={isReceiptPending}
+              download
             >
               <FileText className="size-4" aria-hidden="true" />
-            </button>
+            </a>
           ) : (
             <>
               <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">
@@ -182,14 +164,6 @@ export function TransactionPaymentActions({
             <Trash2 className="size-4" aria-hidden="true" />
           </button>
         </div>
-        {receiptError ? (
-          <span
-            role="alert"
-            className="max-w-48 text-right text-[11px] font-semibold text-rose-700"
-          >
-            {receiptError}
-          </span>
-        ) : null}
         {warning ? (
           <span
             role="status"

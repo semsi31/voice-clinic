@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PanelShell } from "@/components/panel/panel-shell";
+import { getActivePanelUser } from "@/lib/panel-auth";
 import {
   allowUnauthenticatedPanelMock,
   isSupabaseConfigured,
 } from "@/lib/supabase/config";
-import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   robots: {
@@ -36,36 +36,15 @@ export default async function PanelLayout({
     redirect("/login?error=config");
   }
 
-  const supabase = await createClient();
+  const auth = await getActivePanelUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  if (!auth) {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, is_active")
-    .eq("id", user.id)
-    .maybeSingle();
+  const { user, profile } = auth;
 
-  // is_active = false olan kullanıcı panel erişiminden çıkarılır.
-  if (profile && profile.is_active === false) {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error(
-        "Inactive user signOut failed",
-        error instanceof Error ? error.message : "unknown",
-      );
-    }
-    redirect("/login");
-  }
-
-  const userName = profile?.full_name || user.email || "Admin";
+  const userName = profile.full_name || user.email || "Admin";
   const userEmail = user.email ?? "";
 
   return (

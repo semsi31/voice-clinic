@@ -9,7 +9,10 @@ import {
 } from "@/lib/transactions";
 import { TransactionsTable } from "@/components/panel/transactions-table";
 
-const TRANSACTIONS_PAGE_SIZE = 100;
+const TRANSACTIONS_PAGE_SIZE = 50;
+
+const TRANSACTION_LIST_COLUMNS =
+  "id, created_at, transaction_no, patient_name, patient_phone, branch, transaction_date, operation_description, brand, model, sale_amount, paid_amount, remaining_debt, payment_status, source_type";
 
 type TransactionSourceFilter = "all" | "manual" | "legacy_excel";
 
@@ -74,7 +77,7 @@ async function getTransactions(
   const to = from + TRANSACTIONS_PAGE_SIZE - 1;
   let query = supabase
     .from("patient_transactions")
-    .select("*", { count: "exact" })
+    .select(TRANSACTION_LIST_COLUMNS, { count: "exact" })
     .order("transaction_date", { ascending: false })
     .order("created_at", { ascending: false })
     .range(from, to);
@@ -116,32 +119,54 @@ async function getTransactions(
   };
 }
 
-function isCurrentMonth(value: string) {
-  const date = new Date(value);
-  const now = new Date();
-
-  return (
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth()
-  );
-}
-
-async function getFinancialTransactions(): Promise<PatientTransactionRecord[]> {
+async function getFinancialSummary() {
   if (!isSupabaseConfigured()) {
-    return [];
+    return {
+      monthlySaleAmount: 0,
+      totalPaidAmount: 0,
+      totalRemainingDebt: 0,
+    };
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("patient_transactions")
-    .select("id, transaction_date, sale_amount, paid_amount, remaining_debt")
-    .neq("source_type", "legacy_excel");
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    .toISOString()
+    .slice(0, 10);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    .toISOString()
+    .slice(0, 10);
 
-  if (error || !data) {
-    return [];
-  }
+  const [monthlyResult, totalsResult] = await Promise.all([
+    supabase
+      .from("patient_transactions")
+      .select("sale_amount")
+      .eq("source_type", "manual")
+      .gte("transaction_date", monthStart)
+      .lte("transaction_date", monthEnd),
+    supabase
+      .from("patient_transactions")
+      .select("paid_amount, remaining_debt")
+      .eq("source_type", "manual"),
+  ]);
 
-  return data as PatientTransactionRecord[];
+  const monthlyRows = monthlyResult.data ?? [];
+  const totalRows = totalsResult.data ?? [];
+
+  return {
+    monthlySaleAmount: monthlyRows.reduce(
+      (total, row) => total + Number(row.sale_amount ?? 0),
+      0,
+    ),
+    totalPaidAmount: totalRows.reduce(
+      (total, row) => total + Number(row.paid_amount ?? 0),
+      0,
+    ),
+    totalRemainingDebt: totalRows.reduce(
+      (total, row) => total + Number(row.remaining_debt ?? 0),
+      0,
+    ),
+  };
 }
 
 type TransactionsPageProps = {
@@ -152,21 +177,12 @@ export default async function TransactionsPage({
   searchParams,
 }: Readonly<TransactionsPageProps>) {
   const filters = normalizeFilters((await searchParams) ?? {});
-  const [{ transactions, totalCount }, financialTransactions] = await Promise.all([
+  const [{ transactions, totalCount }, financialSummary] = await Promise.all([
     getTransactions(filters),
-    getFinancialTransactions(),
+    getFinancialSummary(),
   ]);
-  const monthlySaleAmount = financialTransactions
-    .filter((transaction) => isCurrentMonth(transaction.transaction_date))
-    .reduce((total, transaction) => total + Number(transaction.sale_amount), 0);
-  const totalPaidAmount = financialTransactions.reduce(
-    (total, transaction) => total + Number(transaction.paid_amount),
-    0,
-  );
-  const totalRemainingDebt = financialTransactions.reduce(
-    (total, transaction) => total + Number(transaction.remaining_debt),
-    0,
-  );
+  const { monthlySaleAmount, totalPaidAmount, totalRemainingDebt } =
+    financialSummary;
   const summaryCards = [
     {
       label: "Toplam İşlem",

@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -123,6 +124,38 @@ export async function createR2SignedDownloadUrl(
     }),
     { expiresIn: expiresInSeconds },
   );
+}
+
+export async function headR2Object(key: string) {
+  return getR2Client().send(
+    new HeadObjectCommand({
+      Bucket: getR2BucketName(),
+      Key: key,
+    }),
+  );
+}
+
+export async function getR2Object(key: string) {
+  return getR2Client().send(
+    new GetObjectCommand({
+      Bucket: getR2BucketName(),
+      Key: key,
+    }),
+  );
+}
+
+export async function r2ObjectExists(key: string) {
+  try {
+    await headR2Object(key);
+    return true;
+  } catch (error) {
+    const status = (error as { name?: string; $metadata?: { httpStatusCode?: number } })
+      .$metadata?.httpStatusCode;
+    if ((error as { name?: string }).name === "NotFound" || status === 404) {
+      return false;
+    }
+    throw error;
+  }
 }
 
 export function buildDocumentR2Key(fileName: string, id = randomUUID()) {

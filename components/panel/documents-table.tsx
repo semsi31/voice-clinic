@@ -13,7 +13,6 @@ import {
   createDocumentAction,
   deleteDocumentAction,
   deleteDocumentRecords,
-  getDocumentDownloadUrlAction,
   updateDocumentAction,
   type DocumentActionResult,
 } from "@/app/(panel)/panel/documents/actions";
@@ -45,6 +44,7 @@ import {
   documentFileTypeBadgeClassNames,
   documentFileTypeFilterOptions,
   documentFileTypeLabels,
+  getDocumentDownloadPath,
   type DocumentFileType,
   type DocumentRecord,
 } from "@/lib/documents";
@@ -225,44 +225,30 @@ function EditDocumentForm({ document, onClose }: EditDocumentFormProps) {
 function DownloadDocumentButton({
   document,
 }: Readonly<{ document: DocumentRecord }>) {
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  const handleDownload = () => {
-    setError(null);
-    startTransition(async () => {
-      const result = await getDocumentDownloadUrlAction(document.id);
-
-      if (!result.ok) {
-        setError(result.error);
-        return;
-      }
-
-      window.open(result.url, "_blank", "noopener,noreferrer");
-    });
-  };
-
-  return (
-    <span className="relative inline-flex">
+  if (!document.file_path) {
+    return (
       <button
         type="button"
         className={rowActionButtonClassName}
         aria-label="İndir"
-        title="İndir"
-        onClick={handleDownload}
-        disabled={isPending || !document.file_path}
+        title="Dosya yolu yok"
+        disabled
       >
         <Download className="size-4" aria-hidden="true" />
       </button>
-      {error ? (
-        <span
-          role="alert"
-          className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-left text-xs font-semibold text-rose-700 shadow-sm"
-        >
-          {error}
-        </span>
-      ) : null}
-    </span>
+    );
+  }
+
+  return (
+    <a
+      href={getDocumentDownloadPath(document.id)}
+      className={rowActionButtonClassName}
+      aria-label="İndir"
+      title="İndir"
+      download
+    >
+      <Download className="size-4" aria-hidden="true" />
+    </a>
   );
 }
 
