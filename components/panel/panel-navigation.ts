@@ -28,3 +28,18 @@ export const panelNavigation: PanelNavigationItem[] = [
   { title: "Raporlar", href: "/panel/reports", icon: BarChart3 },
   { title: "Talepler", href: "/panel/requests", icon: Inbox },
 ];
+
+/** Resolves the current panel nav item from a pathname (longest href match wins). */
+export function getActivePanelNavItem(pathname: string): PanelNavigationItem | null {
+  const matches = panelNavigation.filter(
+    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
+  );
+
+  if (matches.length === 0) {
+    return null;
+  }
+
+  return matches.reduce((best, item) =>
+    item.href.length > best.href.length ? item : best,
+  );
+}

@@ -36,7 +36,7 @@ export function PanelSidebar({ onNavigate }: PanelSidebarProps) {
         </PanelLink>
       </div>
 
-      <nav className="space-y-1 px-4 py-5" aria-label="Panel menüsü">
+      <nav className="space-y-1.5 px-4 py-5" aria-label="Panel menüsü">
         {panelNavigation.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -44,7 +44,7 @@ export function PanelSidebar({ onNavigate }: PanelSidebarProps) {
           const linkClassName = [
             "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition",
             isActive
-              ? "bg-[#132743] text-white ring-1 ring-inset ring-white/10"
+              ? "bg-[#C49A3A] text-white shadow-md shadow-black/20 ring-1 ring-inset ring-white/15"
               : "text-slate-300 hover:bg-white/10 hover:text-white",
           ].join(" ");
 
@@ -56,8 +56,20 @@ export function PanelSidebar({ onNavigate }: PanelSidebarProps) {
               onClick={onNavigate}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className="size-[18px] shrink-0" aria-hidden="true" />
-              <span className="leading-5">{item.title}</span>
+              <span
+                className={[
+                  "inline-flex size-8 shrink-0 items-center justify-center rounded-xl",
+                  isActive ? "bg-white/15 text-white" : "bg-white/5 text-slate-300",
+                ].join(" ")}
+              >
+                <Icon className="size-4" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 flex-1 leading-5">{item.title}</span>
+              {isActive ? (
+                <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                  Aktif
+                </span>
+              ) : null}
             </PanelLink>
           );
         })}

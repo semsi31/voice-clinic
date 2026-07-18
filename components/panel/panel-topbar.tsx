@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { ChevronDown, LogOut, Menu, UserCircle } from "lucide-react";
+import { getActivePanelNavItem } from "@/components/panel/panel-navigation";
 import { signOut } from "@/lib/supabase/actions";
 
 type PanelTopbarProps = {
@@ -19,6 +21,9 @@ export function PanelTopbar({
   userName,
   userEmail,
 }: PanelTopbarProps) {
+  const pathname = usePathname();
+  const activeNav = getActivePanelNavItem(pathname);
+  const ActiveIcon = activeNav?.icon;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -37,33 +42,40 @@ export function PanelTopbar({
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="flex min-h-16 items-center justify-between gap-3 px-3 sm:gap-4 sm:px-6 lg:px-8">
         <button
           type="button"
-          className="inline-flex size-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 lg:hidden"
+          className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 lg:hidden"
           onClick={onMenuClick}
           aria-label="Panel menüsünü aç"
         >
           <Menu className="size-5" aria-hidden="true" />
         </button>
 
-        <div className="min-w-0">
-          <p className="truncate text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Voice Klinik
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 sm:text-xs sm:tracking-[0.2em]">
+            Voice Klinik · Yönetim
           </p>
-          <h1 className="truncate text-base font-bold text-slate-950 lg:text-lg">
-            Yönetim Paneli
-          </h1>
+          <div className="mt-0.5 flex min-w-0 items-center gap-2">
+            {ActiveIcon ? (
+              <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#071225] text-[#D4AF37] lg:hidden">
+                <ActiveIcon className="size-3.5" aria-hidden="true" />
+              </span>
+            ) : null}
+            <h1 className="truncate text-base font-bold text-slate-950 sm:text-lg">
+              {activeNav?.title ?? "Yönetim Paneli"}
+            </h1>
+          </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-3">
           <div ref={menuRef} className="relative">
             <button
               type="button"
               onClick={() => setIsMenuOpen((open) => !open)}
               aria-expanded={isMenuOpen}
               aria-haspopup="menu"
-              className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:bg-slate-50"
+              className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm transition hover:bg-slate-50 sm:px-3"
             >
               <span className="flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
                 <UserCircle className="size-5" aria-hidden="true" />
