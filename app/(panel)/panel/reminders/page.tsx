@@ -5,7 +5,10 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { RemindersTable } from "@/components/panel/reminders-table";
-import { panelPageClassName } from "@/components/panel/panel-styles";
+import {
+  panelPageClassName,
+  panelStatGridClassName,
+} from "@/components/panel/panel-styles";
 import { StatCard } from "@/components/panel/stat-card";
 import {
   summarizeReminders,
@@ -37,7 +40,7 @@ export default async function RemindersPage() {
 
   return (
     <div className={panelPageClassName}>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className={panelStatGridClassName}>
         <StatCard
           icon={BellRing}
           label="Bugünkü Hatırlatmalar"

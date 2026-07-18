@@ -1,5 +1,8 @@
 import { ReceiptText } from "lucide-react";
-import { panelPageClassName } from "@/components/panel/panel-styles";
+import {
+  panelPageClassName,
+  panelStatGridClassName,
+} from "@/components/panel/panel-styles";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -213,26 +216,26 @@ export default async function TransactionsPage({
 
   return (
     <div className={panelPageClassName}>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className={panelStatGridClassName}>
         {summaryCards.map((card) => (
           <article
             key={card.label}
-            className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-5"
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-2 sm:gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-500">
+                <p className="text-xs font-semibold text-slate-500 sm:text-sm">
                   {card.label}
                 </p>
-                <p className="mt-2 text-2xl font-bold text-slate-950">
+                <p className="mt-1.5 text-xl font-bold tabular-nums text-slate-950 sm:mt-2 sm:text-2xl">
                   {card.value}
                 </p>
               </div>
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
-                <ReceiptText className="size-5" aria-hidden="true" />
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-700 sm:size-10 sm:rounded-2xl">
+                <ReceiptText className="size-4 sm:size-5" aria-hidden="true" />
               </span>
             </div>
-            <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">
+            <p className="mt-2 hidden line-clamp-2 text-sm leading-6 text-slate-600 sm:mt-3 sm:block">
               {card.description}
             </p>
           </article>

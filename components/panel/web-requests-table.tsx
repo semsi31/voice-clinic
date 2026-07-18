@@ -25,7 +25,10 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableRowClassName,
   panelTableActionsHeadClassName,
+  panelTableHeadClassName,
+  panelTableHeadRowClassName,
   panelTableDesktopClassName,
   panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
@@ -186,25 +189,27 @@ function WebRequestActions({ request, onDeleted }: WebRequestActionsProps) {
 
       {activeModal === "view" ? (
         <ActionModal title="Talep Detayı" onClose={closeModal} showPrimary={false}>
-          <DetailRow label="Ad Soyad" value={request.name} />
-          <DetailRow label="Telefon" value={request.phone} />
-          <DetailRow label="E-posta" value={request.email || "-"} />
-          <DetailRow
-            label="Talep Türü"
-            value={requestTypeLabels[request.request_type]}
-          />
-          <DetailRow label="Konu" value={request.subject || "-"} />
-          <DetailRow
-            label="Tercih Edilen Şube"
-            value={request.preferred_branch || "-"}
-          />
-          <DetailRow
-            label="Durum"
-            value={requestStatusLabels[request.status]}
-          />
-          <DetailRow label="Durum Notu" value={request.status_note || "-"} />
-          <DetailRow label="Kaynak" value={request.source} />
-          <DetailRow label="Mesaj" value={request.message || "-"} />
+          <div className="overflow-hidden rounded-2xl border border-slate-200">
+            <DetailRow label="Ad Soyad" value={request.name} />
+            <DetailRow label="Telefon" value={request.phone} />
+            <DetailRow label="E-posta" value={request.email || "-"} />
+            <DetailRow
+              label="Talep Türü"
+              value={requestTypeLabels[request.request_type]}
+            />
+            <DetailRow label="Konu" value={request.subject || "-"} />
+            <DetailRow
+              label="Tercih Edilen Şube"
+              value={request.preferred_branch || "-"}
+            />
+            <DetailRow
+              label="Durum"
+              value={requestStatusLabels[request.status]}
+            />
+            <DetailRow label="Durum Notu" value={request.status_note || "-"} />
+            <DetailRow label="Kaynak" value={request.source} />
+            <DetailRow label="Mesaj" value={request.message || "-"} />
+          </div>
         </ActionModal>
       ) : null}
 
@@ -509,39 +514,39 @@ export function WebRequestsTable({
           <div className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}>
           <table className="w-full min-w-[1120px] border-separate border-spacing-0 text-left text-sm">
             <thead>
-              <tr className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                <th className="border-b border-slate-200 bg-slate-50/80 px-3 py-3">
+              <tr className={panelTableHeadRowClassName}>
+                <th className={panelTableHeadClassName}>
                   <TableSelectAllCheckbox
                     allSelected={allFilteredSelected}
                     someSelected={someFilteredSelected}
                     onToggle={toggleFilteredSelection}
                   />
                 </th>
-                <th className="border-b border-slate-200 bg-slate-50/80 px-3 py-3 whitespace-nowrap">
+                <th className={panelTableHeadClassName}>
                   Tarih
                 </th>
-                <th className="border-b border-slate-200 bg-slate-50/80 px-3 py-3 whitespace-nowrap">
+                <th className={panelTableHeadClassName}>
                   Ad Soyad
                 </th>
-                <th className="border-b border-slate-200 bg-slate-50/80 px-3 py-3 whitespace-nowrap">
+                <th className={panelTableHeadClassName}>
                   Telefon
                 </th>
-                <th className="border-b border-slate-200 bg-slate-50/80 px-3 py-3">
+                <th className={panelTableHeadClassName}>
                   E-posta
                 </th>
-                <th className="border-b border-slate-200 bg-slate-50/80 px-3 py-3 whitespace-nowrap">
+                <th className={panelTableHeadClassName}>
                   Talep Türü
                 </th>
-                <th className="border-b border-slate-200 bg-slate-50/80 px-3 py-3">
+                <th className={panelTableHeadClassName}>
                   Konu
                 </th>
-                <th className="border-b border-slate-200 bg-slate-50/80 px-3 py-3 whitespace-nowrap">
+                <th className={panelTableHeadClassName}>
                   Tercih Edilen Şube
                 </th>
-                <th className="border-b border-slate-200 bg-slate-50/80 px-3 py-3 whitespace-nowrap">
+                <th className={panelTableHeadClassName}>
                   Durum
                 </th>
-                <th className="border-b border-slate-200 bg-slate-50/80 px-3 py-3">
+                <th className={panelTableHeadClassName}>
                   Mesaj
                 </th>
                 <th className={panelTableActionsHeadClassName}>İşlemler</th>
@@ -551,7 +556,7 @@ export function WebRequestsTable({
               {filteredRequests.map((request) => (
                 <tr
                   key={request.id}
-                    className="group text-slate-700 transition hover:bg-slate-50"
+                    className={panelTableRowClassName}
                   >
                     <td className="border-b border-slate-100 px-3 py-4">
                       <TableRowCheckbox

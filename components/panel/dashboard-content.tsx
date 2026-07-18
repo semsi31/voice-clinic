@@ -15,7 +15,16 @@ import { StatusBadge } from "@/components/panel/status-badge";
 import type { DashboardData } from "@/lib/dashboard";
 import { formatReminderTime } from "@/lib/reminders";
 import { formatCurrency, formatDate } from "@/lib/transactions";
-import { panelSecondaryButtonClassName } from "@/components/panel/panel-styles";
+import {
+  panelSecondaryButtonClassName,
+  panelStatGridClassName,
+} from "@/components/panel/panel-styles";
+
+const dashboardListItemClassName =
+  "flex flex-col gap-3 rounded-2xl border border-slate-200/80 p-3.5 odd:bg-white even:bg-slate-50/90 sm:flex-row sm:items-center sm:justify-between sm:p-4";
+
+const dashboardStackItemClassName =
+  "rounded-2xl border border-slate-200/80 p-3.5 odd:bg-white even:bg-slate-50/90 sm:p-4";
 
 type DashboardContentProps = {
   data: DashboardData;
@@ -42,7 +51,7 @@ export function DashboardContent({ data }: DashboardContentProps) {
 
   return (
     <>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className={panelStatGridClassName}>
         <StatCard
           icon={CreditCard}
           label="Bugünkü Tahsilat"
@@ -111,7 +120,7 @@ export function DashboardContent({ data }: DashboardContentProps) {
               {data.recentTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className={dashboardListItemClassName}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -158,11 +167,11 @@ export function DashboardContent({ data }: DashboardContentProps) {
               {data.reminders.map((reminder) => (
                 <div
                   key={reminder.id}
-                  className={`rounded-2xl border p-4 ${
+                  className={
                     reminder.isOverdue
-                      ? "border-rose-100 bg-rose-50/60"
-                      : "border-slate-100 bg-slate-50/70"
-                  }`}
+                      ? "rounded-2xl border border-rose-100 bg-rose-50/70 p-4"
+                      : dashboardStackItemClassName
+                  }
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -199,7 +208,7 @@ export function DashboardContent({ data }: DashboardContentProps) {
               {data.criticalStock.map((product) => (
                 <div
                   key={product.id}
-                  className="flex items-center gap-3 rounded-2xl border border-amber-100 bg-amber-50/60 px-4 py-3"
+                  className="flex items-center gap-3 rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3 odd:bg-amber-50/50 even:bg-amber-50/90"
                 >
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
                     <AlertTriangle className="size-5" aria-hidden="true" />
@@ -229,7 +238,7 @@ export function DashboardContent({ data }: DashboardContentProps) {
               {data.pendingCargo.map((cargo) => (
                 <div
                   key={cargo.id}
-                  className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4"
+                  className={dashboardStackItemClassName}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">

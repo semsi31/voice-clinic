@@ -397,7 +397,10 @@ export function LegacyActivityImporter() {
                     {preview.invalidDateReviewRows.map((row) => {
                       const key = reviewRowKey(row.sheetName, row.rowNumber);
                       return (
-                        <tr key={key} className="text-slate-700">
+                        <tr
+                          key={key}
+                          className="text-slate-700 odd:bg-white even:bg-[#EEF2F7]"
+                        >
                           <td className="border-b border-slate-100 px-3 py-3">
                             {row.sheetName}
                           </td>
@@ -470,7 +473,10 @@ export function LegacyActivityImporter() {
               </thead>
               <tbody>
                 {preview.sheets.map((sheet) => (
-                  <tr key={sheet.sheetName} className="text-slate-700">
+                  <tr
+                    key={sheet.sheetName}
+                    className="text-slate-700 odd:bg-white even:bg-[#EEF2F7]"
+                  >
                     <td className="border-b border-slate-100 px-3 py-3 font-semibold text-slate-950">
                       {sheet.sheetName}
                     </td>
@@ -526,7 +532,7 @@ export function LegacyActivityImporter() {
                     {preview.examples.map((row) => (
                       <tr
                         key={`${row.sheetName}-${row.rowNumber}`}
-                        className="text-slate-700"
+                        className="text-slate-700 odd:bg-white even:bg-[#EEF2F7]"
                       >
                         <td className="border-b border-slate-100 px-3 py-3">
                           {row.sheetName}

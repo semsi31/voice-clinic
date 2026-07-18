@@ -35,8 +35,8 @@ export function SiteHeader() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4 lg:top-3 lg:px-4 lg:py-2 lg:px-8">
-      <div className="mx-auto flex min-h-[3.25rem] w-full items-center justify-between gap-2 rounded-2xl border border-[#eadfca]/80 bg-white px-3 py-2 shadow-[0_10px_36px_rgba(15,23,42,0.1)] backdrop-blur-xl sm:min-h-14 sm:gap-3 sm:rounded-[1.75rem] sm:px-4 lg:max-w-7xl lg:justify-start lg:gap-4 lg:rounded-full lg:border-white/50 lg:px-5 lg:shadow-[0_18px_50px_rgba(15,23,42,0.12)]">
-        <div className="flex min-w-0 items-center gap-2.5 sm:gap-3 lg:shrink-0">
+      <div className="mx-auto flex min-h-[3.25rem] w-full items-center justify-between gap-3 rounded-2xl border border-[#eadfca]/80 bg-white px-3 py-2 shadow-[0_10px_36px_rgba(15,23,42,0.1)] backdrop-blur-xl sm:min-h-14 sm:gap-4 sm:rounded-[1.75rem] sm:px-4 lg:max-w-7xl lg:gap-6 lg:rounded-full lg:border-white/50 lg:px-6 lg:shadow-[0_18px_50px_rgba(15,23,42,0.12)]">
+        <div className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3">
           <Link
             href="/"
             className="site-logo-motion relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-white shadow-sm shadow-[#D4AF37]/10 sm:size-11 lg:rounded-2xl lg:size-12"
@@ -63,7 +63,7 @@ export function SiteHeader() {
         </div>
 
         <nav
-          className="relative z-10 hidden min-w-0 items-center justify-center gap-1 lg:ml-2 lg:flex xl:ml-3"
+          className="relative z-10 hidden min-w-0 flex-1 items-center justify-evenly lg:flex"
           aria-label="Site menüsü"
         >
           {sitePrimaryNavigation.map((item) => {
@@ -78,9 +78,9 @@ export function SiteHeader() {
                 key={`${item.title}-${item.href}`}
                 href={item.href}
                 className={cn(
-                  "site-nav-link-motion inline-flex whitespace-nowrap rounded-full px-2.5 py-1.5 text-[12px] font-semibold leading-none text-[#071225] hover:bg-white/70 hover:text-[#B88A28] xl:px-3 xl:text-[13px]",
+                  "site-nav-link-motion inline-flex whitespace-nowrap rounded-full px-2.5 py-1.5 text-[12px] font-semibold leading-none text-[#071225] transition-colors hover:bg-[#fff8e8] hover:text-[#B88A28] xl:px-3.5 xl:text-[13px]",
                   isActive &&
-                    "bg-white/78 text-[#B88A28] shadow-sm shadow-[#D4AF37]/10 ring-1 ring-[#D4AF37]/25",
+                    "bg-[#C49A3A] text-white shadow-md shadow-[#C49A3A]/30 hover:bg-[#B88A28] hover:text-white",
                 )}
               >
                 {item.title}

@@ -36,7 +36,10 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableRowClassName,
   panelTableActionsHeadClassName,
+  panelTableHeadClassName,
+  panelTableHeadRowClassName,
   panelTableDesktopClassName,
   panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
@@ -509,27 +512,27 @@ export function DocumentsTable({
                 <col className="w-[8%]" />
               </colgroup>
               <thead>
-                <tr className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  <th className="border-b border-slate-200 px-4 py-3">
+                <tr className={panelTableHeadRowClassName}>
+                  <th className={panelTableHeadClassName}>
                     <TableSelectAllCheckbox
                       allSelected={allFilteredSelected}
                       someSelected={someFilteredSelected}
                       onToggle={toggleFilteredSelection}
                     />
                   </th>
-                  <th className="border-b border-slate-200 px-4 py-3">
+                  <th className={panelTableHeadClassName}>
                     Belge Adı
                   </th>
-                  <th className="border-b border-slate-200 px-4 py-3">
+                  <th className={panelTableHeadClassName}>
                     Dosya Türü
                   </th>
-                  <th className="border-b border-slate-200 px-4 py-3">
+                  <th className={panelTableHeadClassName}>
                     Dosya Boyutu
                   </th>
-                  <th className="border-b border-slate-200 px-4 py-3">
+                  <th className={panelTableHeadClassName}>
                     Yüklenme Tarihi
                   </th>
-                  <th className="border-b border-slate-200 px-4 py-3">
+                  <th className={panelTableHeadClassName}>
                     Açıklama
                   </th>
                   <th className={panelTableActionsHeadClassName}>İşlemler</th>
@@ -539,7 +542,7 @@ export function DocumentsTable({
                 {filteredDocuments.map((document) => (
                   <tr
                     key={document.id}
-                    className="group text-slate-700 transition hover:bg-slate-50"
+                    className={panelTableRowClassName}
                   >
                     <td className="border-b border-slate-100 px-4 py-4">
                       <TableRowCheckbox

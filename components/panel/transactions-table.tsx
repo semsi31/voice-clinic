@@ -22,6 +22,8 @@ import {
   panelTableActionsCellClassName,
   panelTableActionsHeadClassName,
   panelTableDesktopClassName,
+  panelTableHeadClassName,
+  panelTableRowClassName,
   panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
@@ -39,9 +41,6 @@ import {
   TableSelectAllCheckbox,
   useTableBulkSelection,
 } from "@/components/panel/table-bulk-selection";
-
-const tableHeadClassName =
-  "border-b border-slate-200 bg-slate-50/80 px-3 py-2.5 text-xs font-bold uppercase tracking-wide text-slate-500 whitespace-nowrap";
 
 const tableCellClassName =
   "border-b border-slate-100 px-3 py-3 align-middle text-slate-700";
@@ -469,29 +468,29 @@ export function TransactionsTable({
           <table className="w-full min-w-[1240px] border-separate border-spacing-0 text-left text-sm">
             <thead>
               <tr>
-                <th className={tableHeadClassName}>
+                <th className={panelTableHeadClassName}>
                   <TableSelectAllCheckbox
                     allSelected={allFilteredSelected}
                     someSelected={someFilteredSelected}
                     onToggle={toggleFilteredSelection}
                   />
                 </th>
-                <th className={tableHeadClassName}>İşlem No</th>
-                <th className={tableHeadClassName}>Tarih</th>
-                <th className={tableHeadClassName}>Şube / Birim</th>
-                <th className={tableHeadClassName}>Hasta Adı Soyadı</th>
-                <th className={tableHeadClassName}>Kaynak</th>
-                <th className={tableHeadClassName}>Telefon</th>
-                <th className={tableHeadClassName}>Yapılan İşlem</th>
-                <th className={tableHeadClassName}>Marka / Model</th>
-                <th className={`${tableHeadClassName} text-right`}>
+                <th className={panelTableHeadClassName}>İşlem No</th>
+                <th className={panelTableHeadClassName}>Tarih</th>
+                <th className={panelTableHeadClassName}>Şube / Birim</th>
+                <th className={panelTableHeadClassName}>Hasta Adı Soyadı</th>
+                <th className={panelTableHeadClassName}>Kaynak</th>
+                <th className={panelTableHeadClassName}>Telefon</th>
+                <th className={panelTableHeadClassName}>Yapılan İşlem</th>
+                <th className={panelTableHeadClassName}>Marka / Model</th>
+                <th className={`${panelTableHeadClassName} text-right`}>
                   Satış Tutarı
                 </th>
-                <th className={`${tableHeadClassName} text-right`}>Ödenen</th>
-                <th className={`${tableHeadClassName} text-right`}>
+                <th className={`${panelTableHeadClassName} text-right`}>Ödenen</th>
+                <th className={`${panelTableHeadClassName} text-right`}>
                   Kalan Borç
                 </th>
-                <th className={tableHeadClassName}>Durum</th>
+                <th className={panelTableHeadClassName}>Durum</th>
                 <th className={panelTableActionsHeadClassName}>İşlemler</th>
               </tr>
             </thead>
@@ -499,7 +498,7 @@ export function TransactionsTable({
               {filteredTransactions.map((transaction) => (
                 <tr
                   key={transaction.id}
-                    className="group text-slate-700 transition hover:bg-slate-50"
+                    className={panelTableRowClassName}
                   >
                     <td className={tableCellClassName}>
                       <TableRowCheckbox

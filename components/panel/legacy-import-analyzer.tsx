@@ -513,7 +513,7 @@ export function LegacyImportAnalyzer() {
                 {visibleRows.map((row) => (
                   <tr
                     key={row.rowNumber}
-                    className={`text-slate-700 ${CATEGORY_ROW_CLASSES[row.category] ?? ""}`}
+                    className={`text-slate-700 odd:bg-white even:bg-[#EEF2F7] ${CATEGORY_ROW_CLASSES[row.category] ?? ""}`}
                   >
                     <td className="border-b border-slate-100 px-3 py-3 tabular-nums">
                       {row.rowNumber}

@@ -2,6 +2,7 @@
 
 import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { PanelDetailGrid } from "@/components/panel/panel-detail-fields";
 import { PanelLink } from "@/components/panel/panel-link";
 import {
   ArrowLeft,
@@ -30,7 +31,10 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableRowClassName,
   panelTableActionsHeadClassName,
+  panelTableHeadClassName,
+  panelTableHeadRowClassName,
   panelTableDesktopClassName,
   panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
@@ -66,10 +70,6 @@ type InfoItem = {
   wide?: boolean;
 };
 
-function hasDisplayValue(value: ReactNode) {
-  return value !== null && value !== undefined && value !== "";
-}
-
 function LegacyExcelBadge() {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-bold text-violet-800">
@@ -95,33 +95,12 @@ function EmptyState({
 }
 
 function InfoGrid({ items }: Readonly<{ items: InfoItem[] }>) {
-  const visibleItems = items.filter((item) => hasDisplayValue(item.value));
-
-  if (visibleItems.length === 0) {
-    return (
-      <EmptyState
-        title="Ek bilgi yok"
-        description="Bu bölüm için gösterilecek ek alan bulunmuyor."
-      />
-    );
-  }
-
   return (
-    <dl className="grid gap-x-8 gap-y-5 md:grid-cols-2">
-      {visibleItems.map((item) => (
-        <div
-          key={item.label}
-          className={item.wide ? "md:col-span-2" : undefined}
-        >
-          <dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
-            {item.label}
-          </dt>
-          <dd className="mt-1.5 text-sm font-semibold leading-6 break-words text-slate-950">
-            {item.value}
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <PanelDetailGrid
+      items={items}
+      emptyTitle="Ek bilgi yok"
+      emptyDescription="Bu bölüm için gösterilecek ek alan bulunmuyor."
+    />
   );
 }
 
@@ -142,11 +121,13 @@ function SummaryValue({
         : "text-slate-950";
 
   return (
-    <div>
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
-        {label}
-      </p>
-      <div className={`mt-1 text-lg font-black ${toneClassName}`}>{value}</div>
+    <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-3">
+      <p className="text-[11px] font-semibold text-slate-500 sm:text-xs">{label}</p>
+      <div
+        className={`mt-1 text-sm font-bold break-words sm:text-base lg:text-lg ${toneClassName}`}
+      >
+        {value}
+      </div>
     </div>
   );
 }
@@ -154,12 +135,14 @@ function SummaryValue({
 function TabButton({
   id,
   label,
+  shortLabel,
   icon,
   activeTab,
   onSelect,
 }: Readonly<{
   id: TabId;
   label: string;
+  shortLabel: string;
   icon: ReactNode;
   activeTab: TabId;
   onSelect: (id: TabId) => void;
@@ -170,14 +153,15 @@ function TabButton({
     <button
       type="button"
       onClick={() => onSelect(id)}
-      className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
+      className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-2.5 py-2 text-xs font-bold transition sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5 sm:text-sm ${
         isActive
           ? "bg-slate-950 text-white shadow-sm"
-          : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+          : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-950"
       }`}
     >
       {icon}
-      {label}
+      <span className="sm:hidden">{shortLabel}</span>
+      <span className="hidden sm:inline">{label}</span>
     </button>
   );
 }
@@ -206,10 +190,16 @@ export function TransactionDetailWorkspace({
       transaction.stock_deduct_enabled,
   );
 
-  const tabs: Array<{ id: TabId; label: string; icon: ReactNode }> = [
+  const tabs: Array<{
+    id: TabId;
+    label: string;
+    shortLabel: string;
+    icon: ReactNode;
+  }> = [
     {
       id: "general",
       label: "Genel Bilgiler",
+      shortLabel: "Genel",
       icon: <UserRound className="size-4" aria-hidden="true" />,
     },
     ...(!isLegacyExcelRecord
@@ -217,11 +207,13 @@ export function TransactionDetailWorkspace({
           {
             id: "payments" as const,
             label: "Ödemeler",
+            shortLabel: "Ödeme",
             icon: <CreditCard className="size-4" aria-hidden="true" />,
           },
           {
             id: "device" as const,
             label: "Cihaz / Stok",
+            shortLabel: "Cihaz",
             icon: <Package className="size-4" aria-hidden="true" />,
           },
         ]
@@ -229,6 +221,7 @@ export function TransactionDetailWorkspace({
     {
       id: "reminders",
       label: "Hatırlatıcılar",
+      shortLabel: "Hatırlatma",
       icon: <CalendarDays className="size-4" aria-hidden="true" />,
     },
   ];
@@ -311,8 +304,8 @@ export function TransactionDetailWorkspace({
 
   return (
     <div className="space-y-5">
-      <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-5 py-5 sm:px-6 lg:px-8">
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:rounded-3xl">
+        <div className="border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
               <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -322,10 +315,10 @@ export function TransactionDetailWorkspace({
                 </span>
                 <StatusBadge status={transaction.payment_status} />
               </div>
-              <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+              <h1 className="text-xl font-black tracking-tight break-words text-slate-950 sm:text-3xl">
                 {transaction.patient_name}
               </h1>
-              <p className="mt-2 text-sm font-medium text-slate-600">
+              <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
                 {formatDate(transaction.transaction_date)}
                 {transaction.operation_description
                   ? ` · ${transaction.operation_description}`
@@ -333,10 +326,10 @@ export function TransactionDetailWorkspace({
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:justify-end">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:justify-end">
               <PanelLink
                 href="/panel/transactions"
-                className={`${panelSecondaryButtonClassName} w-full sm:w-auto`}
+                className={`${panelSecondaryButtonClassName} col-span-2 w-full sm:col-auto sm:w-auto`}
               >
                 <ArrowLeft className="size-4" aria-hidden="true" />
                 Listeye Dön
@@ -366,17 +359,22 @@ export function TransactionDetailWorkspace({
                   setActiveTab("reminders");
                   setIsReminderOpen(true);
                 }}
-                className={`${panelSecondaryButtonClassName} w-full sm:w-auto`}
+                className={`${panelSecondaryButtonClassName} col-span-2 w-full sm:col-auto sm:w-auto`}
               >
                 <BellPlus className="size-4" aria-hidden="true" />
-                {reminder ? "Hatırlatıcıyı Düzenle" : "Hatırlatıcı Ekle"}
+                <span className="sm:hidden">
+                  {reminder ? "Hatırlatıcı" : "Hatırlatıcı Ekle"}
+                </span>
+                <span className="hidden sm:inline">
+                  {reminder ? "Hatırlatıcıyı Düzenle" : "Hatırlatıcı Ekle"}
+                </span>
               </button>
             </div>
           </div>
         </div>
 
         {!isLegacyExcelRecord ? (
-          <div className="grid gap-5 px-5 py-5 sm:grid-cols-2 lg:grid-cols-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-2 px-3 py-3 sm:gap-3 sm:px-6 sm:py-5 lg:grid-cols-4 lg:px-8">
             <SummaryValue
               label="Satış tutarı"
               value={formatCurrency(transaction.sale_amount)}
@@ -397,7 +395,7 @@ export function TransactionDetailWorkspace({
             />
           </div>
         ) : (
-          <div className="px-5 py-5 sm:px-6 lg:px-8">
+          <div className="px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
             <p className="max-w-3xl text-sm font-medium leading-6 text-slate-600">
               Bu kayıt eski Excel faaliyet aktarımıyla oluşturuldu. Ödeme, makbuz
               ve stok aksiyonları finansal akışı etkilememesi için gizlendi.
@@ -406,13 +404,14 @@ export function TransactionDetailWorkspace({
         )}
       </section>
 
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <div className="flex gap-2 overflow-x-auto border-b border-slate-100 pb-4">
+      <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-5">
+        <div className="-mx-0.5 flex gap-1.5 overflow-x-auto px-0.5 pb-3 [scrollbar-width:thin] sm:gap-2 sm:pb-4">
           {tabs.map((tab) => (
             <TabButton
               key={tab.id}
               id={tab.id}
               label={tab.label}
+              shortLabel={tab.shortLabel}
               icon={tab.icon}
               activeTab={activeTab}
               onSelect={setActiveTab}
@@ -420,7 +419,7 @@ export function TransactionDetailWorkspace({
           ))}
         </div>
 
-        <div className="pt-6">
+        <div className="pt-2 sm:pt-4">
           {activeTab === "general" ? (
             <div className="space-y-6">
               <InfoGrid items={generalItems} />
@@ -444,8 +443,8 @@ export function TransactionDetailWorkspace({
 
           {activeTab === "payments" && !isLegacyExcelRecord ? (
             <div className="space-y-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap gap-x-8 gap-y-3">
+              <div className="flex flex-col gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
                   <SummaryValue
                     label="Son ödeme tarihi"
                     value={lastPayment ? formatDate(lastPayment.payment_date) : "Yok"}
@@ -462,7 +461,7 @@ export function TransactionDetailWorkspace({
                 <button
                   type="button"
                   onClick={() => setIsPaymentOpen(true)}
-                  className={`${panelPrimaryButtonClassName} w-full sm:w-auto`}
+                  className={`${panelPrimaryButtonClassName} w-full sm:w-auto sm:self-end`}
                 >
                   <Plus className="size-4" aria-hidden="true" />
                   Yeni Ödeme Ekle
@@ -505,20 +504,20 @@ export function TransactionDetailWorkspace({
                   <div className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}>
                   <table className="min-w-[860px] w-full border-separate border-spacing-0 text-left text-sm">
                     <thead>
-                      <tr className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                        <th className="border-b border-slate-200 px-3 py-2">
+                      <tr className={panelTableHeadRowClassName}>
+                        <th className={panelTableHeadClassName}>
                           Ödeme Tarihi
                         </th>
-                        <th className="border-b border-slate-200 px-3 py-2">
+                        <th className={panelTableHeadClassName}>
                           Ödeme Yöntemi
                         </th>
-                        <th className="border-b border-slate-200 px-3 py-2 text-right">
+                        <th className={`${panelTableHeadClassName} text-right`}>
                           Tutar
                         </th>
-                        <th className="border-b border-slate-200 px-3 py-2">
+                        <th className={panelTableHeadClassName}>
                           Açıklama
                         </th>
-                        <th className="border-b border-slate-200 px-3 py-2">
+                        <th className={panelTableHeadClassName}>
                           Alan Personel
                         </th>
                         <th className={panelTableActionsHeadClassName}>
@@ -530,7 +529,7 @@ export function TransactionDetailWorkspace({
                       {payments.map((payment) => (
                         <tr
                           key={payment.id}
-                          className="group text-slate-700 transition hover:bg-slate-50"
+                          className={panelTableRowClassName}
                         >
                           <td className="border-b border-slate-100 px-3 py-2.5">
                             {formatDate(payment.payment_date)}
@@ -598,33 +597,31 @@ export function TransactionDetailWorkspace({
               </div>
 
               {reminder ? (
-                <div className="rounded-3xl bg-slate-50 px-4 py-4">
-                  <InfoGrid
-                    items={[
-                      {
-                        label: "Tarih",
-                        value: formatDate(reminder.reminder_date),
-                      },
-                      {
-                        label: "Saat",
-                        value: formatReminderTime(reminder.reminder_time),
-                      },
-                      {
-                        label: "Durum",
-                        value: <StatusBadge status={reminder.status} />,
-                      },
-                      {
-                        label: "Sorumlu",
-                        value: reminder.responsible_person,
-                      },
-                      {
-                        label: "Açıklama",
-                        value: reminder.description,
-                        wide: true,
-                      },
-                    ]}
-                  />
-                </div>
+                <InfoGrid
+                  items={[
+                    {
+                      label: "Tarih",
+                      value: formatDate(reminder.reminder_date),
+                    },
+                    {
+                      label: "Saat",
+                      value: formatReminderTime(reminder.reminder_time),
+                    },
+                    {
+                      label: "Durum",
+                      value: <StatusBadge status={reminder.status} />,
+                    },
+                    {
+                      label: "Sorumlu",
+                      value: reminder.responsible_person,
+                    },
+                    {
+                      label: "Açıklama",
+                      value: reminder.description,
+                      wide: true,
+                    },
+                  ]}
+                />
               ) : (
                 <EmptyState
                   title="Hatırlatıcı yok"

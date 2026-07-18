@@ -5,7 +5,10 @@ import {
   Truck,
 } from "lucide-react";
 import { CargoRecordsTable } from "@/components/panel/cargo-records-table";
-import { panelPageClassName } from "@/components/panel/panel-styles";
+import {
+  panelPageClassName,
+  panelStatGridClassName,
+} from "@/components/panel/panel-styles";
 import { StatCard } from "@/components/panel/stat-card";
 import { summarizeCargoRecords, type CargoRecord } from "@/lib/cargo";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -34,7 +37,7 @@ export default async function CargoPage() {
 
   return (
     <div className={panelPageClassName}>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className={panelStatGridClassName}>
         <StatCard
           icon={Package}
           label="Hazırlanan"

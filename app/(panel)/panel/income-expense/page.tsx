@@ -11,7 +11,10 @@ import {
 } from "lucide-react";
 
 import { FinanceRecordsTable } from "@/components/panel/finance-records-table";
-import { panelPageClassName } from "@/components/panel/panel-styles";
+import {
+  panelPageClassName,
+  panelStatGridClassName,
+} from "@/components/panel/panel-styles";
 import { StatCard } from "@/components/panel/stat-card";
 import {
   fetchPatientPaymentFinanceEntries,
@@ -82,7 +85,7 @@ export default async function IncomeExpensePage() {
 
     <div className={panelPageClassName}>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className={panelStatGridClassName}>
 
         <StatCard
 

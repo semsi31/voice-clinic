@@ -10,7 +10,7 @@ const heroBackgroundImage =
 
 export function HomeHeroSlider() {
   return (
-    <section className="relative min-h-[560px] overflow-x-clip bg-[#071225] px-4 pb-16 pt-0 text-white sm:px-6 sm:pb-20 md:min-h-[620px] lg:min-h-[680px] lg:overflow-hidden lg:px-8 lg:py-20 lg:pt-24">
+    <section className="relative flex min-h-[560px] flex-col overflow-x-clip bg-[#071225] px-4 text-white sm:px-6 md:min-h-[620px] lg:min-h-[680px] lg:overflow-hidden lg:px-8">
       <Reveal
         variant="fade-image"
         delay={heroDelays.image}
@@ -27,7 +27,7 @@ export function HomeHeroSlider() {
         />
       </Reveal>
 
-      <div className="relative mx-auto flex min-h-[430px] max-w-7xl items-center pt-24 sm:pt-28 md:min-h-[500px] lg:min-h-[540px] lg:pt-0">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-1 items-center py-28 sm:py-32 lg:py-24">
         <div className="w-full max-w-[760px]">
           <Reveal variant="fade-up-compact" delay={heroDelays.eyebrow} animateOnLoad>
             <p className="text-xs font-semibold uppercase tracking-[0.26em] text-[#D4AF37]">

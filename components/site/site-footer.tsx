@@ -120,12 +120,12 @@ export function SiteFooter() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_10%,rgba(184,138,40,0.11),transparent_28%),linear-gradient(135deg,#071225_0%,#0b1d36_52%,#071225_100%)]" />
       <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(120deg,rgba(255,255,255,0.5)_0_1px,transparent_1px)] [background-size:34px_34px]" />
       <div className="relative h-px bg-gradient-to-r from-transparent via-[color:var(--site-gold-dark)]/55 to-transparent" />
-      <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.2fr_0.9fr_0.9fr_1.2fr] lg:px-8">
+      <div className="relative mx-auto grid max-w-7xl gap-6 px-4 py-7 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.2fr_0.9fr_0.9fr_1.2fr] lg:gap-7 lg:px-8 lg:py-8">
         <FooterReveal column="brand">
-          <div className="space-y-5">
+          <div className="space-y-4">
             <Link
               href="/"
-              className="inline-flex size-16 items-center justify-center rounded-2xl border border-[color:var(--site-gold-dark)]/35 bg-white/7 shadow-lg shadow-black/10 backdrop-blur"
+              className="inline-flex size-14 items-center justify-center rounded-2xl border border-[color:var(--site-gold-dark)]/35 bg-white/7 shadow-lg shadow-black/10 backdrop-blur"
               aria-label="Ana sayfa"
             >
               <Image
@@ -133,10 +133,10 @@ export function SiteFooter() {
                 alt="Voice Klinik İşitme Merkezi"
                 width={645}
                 height={823}
-                className="h-14 w-auto object-contain"
+                className="h-12 w-auto object-contain"
               />
             </Link>
-            <p className="max-w-sm text-sm leading-7 text-white/74">
+            <p className="max-w-sm text-sm leading-6 text-white/74">
               Voice Klinik, işitme cihazı danışmanlığı, uygulama, teknik servis ve
               satış sonrası destek süreçlerinde güvenilir çözümler sunar.
             </p>
@@ -151,7 +151,7 @@ export function SiteFooter() {
                     target={item.href.startsWith("http") ? "_blank" : undefined}
                     rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
                     aria-label={item.title}
-                    className="site-footer-social inline-flex size-11 items-center justify-center rounded-xl border border-white/12 bg-white/6 text-base text-white/78 shadow-sm shadow-black/10 backdrop-blur"
+                    className="site-footer-social inline-flex size-10 items-center justify-center rounded-xl border border-white/12 bg-white/6 text-base text-white/78 shadow-sm shadow-black/10 backdrop-blur"
                   >
                     <Icon aria-hidden="true" />
                   </Link>
@@ -166,7 +166,7 @@ export function SiteFooter() {
             <h2 className="site-footer-heading text-xs font-bold uppercase tracking-[0.22em]">
               Hizmetlerimiz
             </h2>
-            <nav className="mt-5 grid gap-2.5 sm:gap-3" aria-label="Footer hizmetler menüsü">
+            <nav className="mt-4 grid gap-2 sm:gap-2.5" aria-label="Footer hizmetler menüsü">
               {siteServiceLinks.map((item) => (
                 <Link
                   key={item.title}
@@ -185,7 +185,7 @@ export function SiteFooter() {
             <h2 className="site-footer-heading text-xs font-bold uppercase tracking-[0.22em]">
               Hızlı Linkler
             </h2>
-            <nav className="mt-5 grid gap-2.5 sm:gap-3" aria-label="Footer kurumsal menüsü">
+            <nav className="mt-4 grid gap-2 sm:gap-2.5" aria-label="Footer kurumsal menüsü">
               {corporateLinks.map((item) => (
                 <Link
                   key={`${item.title}-${item.href}`}
@@ -204,11 +204,11 @@ export function SiteFooter() {
             <h2 className="site-footer-heading text-xs font-bold uppercase tracking-[0.22em]">
               İletişim
             </h2>
-            <div className="mt-5 space-y-4 text-sm leading-6 text-white/78">
+            <div className="mt-4 space-y-3 text-sm leading-6 text-white/78">
               {contactItems.map((item) => (
                 <div key={item.label} className="flex items-start gap-3">
-                  <span className="site-footer-icon mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl border bg-white/6 shadow-sm shadow-black/10 backdrop-blur">
-                    <SiteIcon name={item.icon} className="size-4" />
+                  <span className="site-footer-icon mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-xl border bg-white/6 shadow-sm shadow-black/10 backdrop-blur">
+                    <SiteIcon name={item.icon} className="size-3.5" />
                   </span>
                   <div>
                     <span className="block text-xs font-bold uppercase tracking-[0.12em] text-white/54">
@@ -235,8 +235,8 @@ export function SiteFooter() {
       </div>
 
       <FooterReveal column="legal" variant="fade">
-        <div className="relative border-t border-white/10 px-4 py-4">
-          <div className="mx-auto flex max-w-7xl flex-col gap-3 text-xs font-medium text-white/58 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative border-t border-white/10 px-4 py-3">
+          <div className="mx-auto flex max-w-7xl flex-col gap-2.5 text-xs font-medium text-white/58 sm:flex-row sm:items-center sm:justify-between">
             <p>© 2026 Voice İşitme Merkezi. Tüm hakları saklıdır.</p>
             <nav className="flex flex-wrap gap-4" aria-label="Yasal bağlantılar">
               {legalLinks.map((item) => (

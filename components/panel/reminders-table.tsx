@@ -38,7 +38,10 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableRowClassName,
   panelTableActionsHeadClassName,
+  panelTableHeadClassName,
+  panelTableHeadRowClassName,
   panelTableDesktopClassName,
   panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
@@ -539,29 +542,29 @@ export function RemindersTable({
                 <col className="w-[8%]" />
               </colgroup>
               <thead>
-                <tr className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                <tr className={panelTableHeadRowClassName}>
+                  <th className={panelTableHeadClassName}>
                     <TableSelectAllCheckbox
                       allSelected={allFilteredSelected}
                       someSelected={someFilteredSelected}
                       onToggle={toggleFilteredSelection}
                     />
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     Hatırlatma Tarihi
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">Başlık</th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>Başlık</th>
+                  <th className={panelTableHeadClassName}>
                     İlgili Hasta
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     İlgili İşlem
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     Sorumlu Personel
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">Durum</th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>Durum</th>
+                  <th className={panelTableHeadClassName}>
                     Açıklama
                   </th>
                   <th className={panelTableActionsHeadClassName}>İşlemler</th>
@@ -571,7 +574,7 @@ export function RemindersTable({
                 {filteredReminders.map((reminder) => (
                   <tr
                     key={reminder.id}
-                    className="group text-slate-700 transition hover:bg-slate-50"
+                    className={panelTableRowClassName}
                   >
                     <td className="border-b border-slate-100 px-3 py-3">
                       <TableRowCheckbox

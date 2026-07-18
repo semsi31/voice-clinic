@@ -189,7 +189,7 @@ export function MobileSiteMenu() {
                           className={cn(
                             "site-menu-item block min-h-11 rounded-xl px-3 py-2.5 text-[15px] font-bold text-[#071225] transition-colors hover:bg-[#f7f2e7] hover:text-[#B88A28]",
                             isActive &&
-                              "bg-[#fff8e8] text-[#B88A28] ring-1 ring-[#D4AF37]/25",
+                              "bg-[#C49A3A] text-white shadow-md shadow-[#C49A3A]/25 hover:bg-[#B88A28] hover:text-white",
                           )}
                           onClick={closeMenu}
                         >

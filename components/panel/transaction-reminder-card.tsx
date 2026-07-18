@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, type ReactNode } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Plus } from "lucide-react";
 import {
@@ -14,6 +14,7 @@ import {
   formTextareaClassName,
 } from "@/components/panel/action-modal";
 import { PanelCard } from "@/components/panel/panel-card";
+import { PanelDetailGrid } from "@/components/panel/panel-detail-fields";
 import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
@@ -36,31 +37,6 @@ type TransactionReminderCardProps = {
   };
   reminder: ReminderRecord | null;
 };
-
-function ReminderDetailField({
-  label,
-  value,
-  fullWidth = false,
-}: Readonly<{
-  label: string;
-  value: ReactNode;
-  fullWidth?: boolean;
-}>) {
-  return (
-    <div
-      className={`rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 ${
-        fullWidth ? "col-span-2" : ""
-      }`}
-    >
-      <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-        {label}
-      </dt>
-      <dd className="mt-0.5 text-sm font-semibold leading-5 break-words text-slate-900">
-        {value}
-      </dd>
-    </div>
-  );
-}
 
 export function TransactionReminderCard({
   transaction,
@@ -123,28 +99,30 @@ export function TransactionReminderCard({
       <PanelCard title="İlgili Hatırlatıcı">
         {reminder ? (
           <div className="flex flex-col gap-3">
-            <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <ReminderDetailField
-                label="Tarih"
-                value={formatDate(reminder.reminder_date)}
-              />
-              {reminder.reminder_time ? (
-                <ReminderDetailField
-                  label="Saat"
-                  value={formatReminderTime(reminder.reminder_time)}
-                />
-              ) : null}
-              <ReminderDetailField
-                label="Durum"
-                value={<StatusBadge status={reminder.status} />}
-                fullWidth={Boolean(reminder.reminder_time)}
-              />
-              <ReminderDetailField
-                label="Açıklama"
-                value={reminder.description ?? "-"}
-                fullWidth
-              />
-            </dl>
+            <PanelDetailGrid
+              items={[
+                {
+                  label: "Tarih",
+                  value: formatDate(reminder.reminder_date),
+                },
+                ...(reminder.reminder_time
+                  ? [
+                      {
+                        label: "Saat",
+                        value: formatReminderTime(reminder.reminder_time),
+                      },
+                    ]
+                  : []),
+                {
+                  label: "Durum",
+                  value: <StatusBadge status={reminder.status} />,
+                },
+                {
+                  label: "Açıklama",
+                  value: reminder.description ?? "-",
+                },
+              ]}
+            />
             <button
               type="button"
               onClick={() => setIsFormOpen(true)}

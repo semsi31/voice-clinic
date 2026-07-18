@@ -49,7 +49,10 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableRowClassName,
   panelTableActionsHeadClassName,
+  panelTableHeadClassName,
+  panelTableHeadRowClassName,
   panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
@@ -505,8 +508,8 @@ export function FinanceRecordsTable({
                 <col className="w-[8%]" />
               </colgroup>
               <thead>
-                <tr className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                <tr className={panelTableHeadRowClassName}>
+                  <th className={panelTableHeadClassName}>
                     <TableSelectAllCheckbox
                       allSelected={allFilteredSelected}
                       someSelected={someFilteredSelected}
@@ -514,22 +517,22 @@ export function FinanceRecordsTable({
                       label="Filtrelenen manuel kayıtları seç"
                     />
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5 whitespace-nowrap">
+                  <th className={panelTableHeadClassName}>
                     Tarih
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5 whitespace-nowrap">
+                  <th className={panelTableHeadClassName}>
                     Kaynak / Tip
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     Ödeme Yöntemi
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5 text-right whitespace-nowrap">
+                  <th className={`${panelTableHeadClassName} text-right`}>
                     Tutar
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     İlgilenen Personel
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     Açıklama
                   </th>
                   <th className={panelTableActionsHeadClassName}>İşlemler</th>
@@ -539,7 +542,7 @@ export function FinanceRecordsTable({
                 {filteredEntries.map((entry) => (
                   <tr
                     key={`${entry.source}-${entry.id}`}
-                    className="group text-slate-700 transition hover:bg-slate-50"
+                    className={panelTableRowClassName}
                   >
                     <td className="border-b border-slate-100 px-3 py-3">
                       {entry.financeRecord ? (

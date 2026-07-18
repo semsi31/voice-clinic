@@ -4,7 +4,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/site/json-ld";
 import { PageImageHero } from "@/components/site/page-image-hero";
 import { Reveal } from "@/components/site/motion/reveal";
-import { SiteIcon } from "@/components/site/site-icon";
+import { IconBadge, SiteIcon, type SiteIconName } from "@/components/site/site-icon";
 import {
   buildBreadcrumbJsonLd,
   createPageMetadata,
@@ -13,7 +13,6 @@ import {
   getTrustStaggerDelay,
   SPLIT_TEXT_DELAY_MS,
 } from "@/lib/site-motion";
-import { cn } from "@/lib/utils";
 
 export const metadata = createPageMetadata({
   title: "Kurumsal",
@@ -24,11 +23,31 @@ export const metadata = createPageMetadata({
 });
 
 const serviceValues = [
-  "Kişiye özel değerlendirme",
-  "Şeffaf bilgilendirme",
-  "Profesyonel cihaz uygulaması",
-  "Satış sonrası takip",
-] as const;
+  {
+    title: "Kişiye özel değerlendirme",
+    description: "İşitme ihtiyacınıza ve yaşam tarzınıza göre planlanan süreç.",
+    icon: "clipboard-check",
+  },
+  {
+    title: "Şeffaf bilgilendirme",
+    description: "Her adımda açık, anlaşılır ve yönlendirici iletişim.",
+    icon: "shield-check",
+  },
+  {
+    title: "Profesyonel cihaz uygulaması",
+    description: "Uzman eşliğinde doğru seçim, ayar ve uygulama.",
+    icon: "settings",
+  },
+  {
+    title: "Satış sonrası takip",
+    description: "Kullanım sürecinde sürdürülebilir destek ve kontrol.",
+    icon: "headset",
+  },
+] satisfies {
+  title: string;
+  description: string;
+  icon: SiteIconName;
+}[];
 
 const hasAboutImage = existsSync(join(process.cwd(), "public/images/about-clinic.jpg"));
 
@@ -86,31 +105,34 @@ export default function CorporatePage() {
                 </div>
               </Reveal>
 
-          <ul className="mt-10 grid grid-cols-1 gap-y-5 border-t border-[#eadfca] pt-9 sm:grid-cols-2 sm:gap-x-6 lg:mt-12 lg:grid-cols-4 lg:gap-0 lg:pt-10">
-              {serviceValues.map((title, index) => (
-                <Reveal
-                  key={title}
-                  asChild
-                  variant="fade-up-compact"
-                  delay={getTrustStaggerDelay(index, { mobile: true })}
-                >
-                  <li
-                    className={cn(
-                      "flex items-start gap-2.5 lg:px-6",
-                      index === 0 && "lg:pl-0",
-                      index > 0 && "lg:border-l lg:border-[#eadfca]/65",
-                    )}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="mt-[0.5rem] h-px w-3 shrink-0 bg-[#B88A28]"
-                    />
-                    <span className="text-sm font-semibold leading-snug text-[#071225]">
-                      {title}
-                    </span>
-                  </li>
-                </Reveal>
-              ))}
+          <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:mt-12 lg:grid-cols-4 lg:gap-5">
+            {serviceValues.map((item, index) => (
+              <Reveal
+                key={item.title}
+                asChild
+                variant="fade-up-compact"
+                delay={getTrustStaggerDelay(index, { mobile: true })}
+              >
+                <li className="group relative overflow-hidden rounded-2xl border border-[#eadfca]/80 bg-[#fffdf8] p-4 transition duration-300 hover:-translate-y-0.5 hover:border-[#D4AF37]/45 hover:bg-white sm:p-5">
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-[#D4AF37] via-[#C49A3A] to-transparent opacity-80"
+                  />
+                  <IconBadge
+                    name={item.icon}
+                    variant="gold"
+                    size="sm"
+                    className="mb-3 size-10 rounded-xl bg-[#071225] text-[#D4AF37] sm:mb-4 sm:size-11"
+                  />
+                  <h3 className="font-serif text-sm font-bold leading-snug text-[#071225] sm:text-base">
+                    {item.title}
+                  </h3>
+                  <p className="mt-1.5 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6">
+                    {item.description}
+                  </p>
+                </li>
+              </Reveal>
+            ))}
           </ul>
 
           <Reveal variant="fade-up-compact" delay={120}>

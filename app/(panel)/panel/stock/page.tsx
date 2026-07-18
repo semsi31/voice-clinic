@@ -4,7 +4,10 @@ import {
   PackageX,
   TrendingUp,
 } from "lucide-react";
-import { panelPageClassName } from "@/components/panel/panel-styles";
+import {
+  panelPageClassName,
+  panelStatGridClassName,
+} from "@/components/panel/panel-styles";
 import { StatCard } from "@/components/panel/stat-card";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
@@ -52,7 +55,7 @@ export default async function StockPage() {
 
   return (
     <div className={panelPageClassName}>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className={panelStatGridClassName}>
         <StatCard
           icon={Boxes}
           label="Toplam Ürün"

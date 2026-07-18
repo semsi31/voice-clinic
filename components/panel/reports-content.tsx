@@ -9,7 +9,9 @@ import {
   WalletCards,
 } from "lucide-react";
 import { PanelCard } from "@/components/panel/panel-card";
+import { PanelRankedListHeader } from "@/components/panel/panel-detail-fields";
 import { ReportsPaymentChart } from "@/components/panel/reports-payment-chart";
+import { panelStatGridClassName } from "@/components/panel/panel-styles";
 import { StatCard } from "@/components/panel/stat-card";
 import type { MonthlyReportData } from "@/lib/reports";
 import { formatCurrency } from "@/lib/transactions";
@@ -23,7 +25,7 @@ export function ReportsContent({ report }: ReportsContentProps) {
 
   return (
     <>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className={panelStatGridClassName}>
         <StatCard
           icon={TrendingUp}
           label="Toplam Satış"
@@ -92,25 +94,31 @@ export function ReportsContent({ report }: ReportsContentProps) {
           description="Seçili dönemde en sık kayıt edilen işlemler."
         >
           {report.topOperations.length > 0 ? (
-            <div className="space-y-3">
-              {report.topOperations.map((operation) => (
-                <div
-                  key={operation.name}
-                  className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-slate-950">
+            <div>
+              <PanelRankedListHeader columns={["İşlem", "Adet", "Tutar"]} />
+              <div className="overflow-hidden rounded-2xl border border-slate-200">
+                {report.topOperations.map((operation, index) => (
+                  <div
+                    key={operation.name}
+                    className={`border-b border-slate-200/80 px-3 py-3 last:border-b-0 sm:grid sm:grid-cols-[minmax(0,1fr)_4.5rem_7rem] sm:items-center sm:gap-3 sm:px-4 ${
+                      index % 2 === 0 ? "bg-white" : "bg-slate-50/90"
+                    }`}
+                  >
+                    <p className="min-w-0 truncate font-semibold text-slate-950">
                       {operation.name}
                     </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      {operation.count} işlem
-                    </p>
+                    <div className="mt-1 flex items-center justify-between gap-3 sm:mt-0 sm:contents">
+                      <p className="text-sm text-slate-600 sm:text-right sm:font-semibold sm:tabular-nums">
+                        <span className="sm:hidden">{operation.count} işlem</span>
+                        <span className="hidden sm:inline">{operation.count}</span>
+                      </p>
+                      <p className="font-bold tabular-nums text-slate-950 sm:text-right">
+                        {formatCurrency(operation.totalSales)}
+                      </p>
+                    </div>
                   </div>
-                  <p className="shrink-0 font-bold text-slate-950">
-                    {formatCurrency(operation.totalSales)}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           ) : (
             <EmptySection message="Seçili dönemde işlem kaydı bulunamadı." />
@@ -123,11 +131,13 @@ export function ReportsContent({ report }: ReportsContentProps) {
         description="Minimum stok seviyesinin altında veya eşit ürünler."
       >
         {report.criticalStock.length > 0 ? (
-          <div className="space-y-3">
-            {report.criticalStock.map((product) => (
+          <div className="overflow-hidden rounded-2xl border border-amber-200">
+            {report.criticalStock.map((product, index) => (
               <div
                 key={product.id}
-                className="flex items-center gap-3 rounded-2xl border border-amber-100 bg-amber-50/60 px-4 py-3"
+                className={`flex items-center gap-3 border-b border-amber-100 px-4 py-3 last:border-b-0 ${
+                  index % 2 === 0 ? "bg-amber-50/50" : "bg-amber-50/90"
+                }`}
               >
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
                   <AlertTriangle className="size-5" aria-hidden="true" />

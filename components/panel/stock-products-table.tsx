@@ -28,7 +28,10 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableRowClassName,
   panelTableActionsHeadClassName,
+  panelTableHeadClassName,
+  panelTableHeadRowClassName,
   panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
@@ -465,30 +468,30 @@ export function StockProductsTable({
                 <col className="w-[8%]" />
               </colgroup>
               <thead>
-                <tr className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  <th className="border-b border-slate-200 px-4 py-3">
+                <tr className={panelTableHeadRowClassName}>
+                  <th className={panelTableHeadClassName}>
                     <TableSelectAllCheckbox
                       allSelected={allFilteredSelected}
                       someSelected={someFilteredSelected}
                       onToggle={toggleFilteredSelection}
                     />
                   </th>
-                  <th className="border-b border-slate-200 px-4 py-3">Ürün Adı</th>
-                  <th className="border-b border-slate-200 px-4 py-3">Ürün Tipi</th>
-                  <th className="border-b border-slate-200 px-4 py-3">
+                  <th className={panelTableHeadClassName}>Ürün Adı</th>
+                  <th className={panelTableHeadClassName}>Ürün Tipi</th>
+                  <th className={panelTableHeadClassName}>
                     Marka / Model
                   </th>
-                  <th className="border-b border-slate-200 px-4 py-3">Seri No</th>
-                  <th className="border-b border-slate-200 px-4 py-3">
+                  <th className={panelTableHeadClassName}>Seri No</th>
+                  <th className={panelTableHeadClassName}>
                     Şube / Birim
                   </th>
-                  <th className="border-b border-slate-200 px-4 py-3 text-right">
+                  <th className={`${panelTableHeadClassName} text-right`}>
                     Mevcut Adet
                   </th>
-                  <th className="border-b border-slate-200 px-4 py-3 text-right">
+                  <th className={`${panelTableHeadClassName} text-right`}>
                     Min. Stok
                   </th>
-                  <th className="border-b border-slate-200 px-4 py-3">Durum</th>
+                  <th className={panelTableHeadClassName}>Durum</th>
                   <th className={panelTableActionsHeadClassName}>İşlemler</th>
                 </tr>
               </thead>
@@ -496,7 +499,7 @@ export function StockProductsTable({
                 {filteredProducts.map((product) => (
                   <tr
                     key={product.id}
-                    className="group text-slate-700 transition hover:bg-slate-50"
+                    className={panelTableRowClassName}
                   >
                     <td className="border-b border-slate-100 px-4 py-4">
                       <TableRowCheckbox

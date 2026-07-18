@@ -26,19 +26,25 @@ export function StatCard({
   variant = "blue",
 }: Readonly<StatCardProps>) {
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-slate-500">{label}</p>
-          <p className="mt-3 text-2xl font-bold text-slate-950">{value}</p>
+    <article className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-5">
+      <div className="flex items-start justify-between gap-2 sm:gap-4">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-slate-500 sm:text-sm">
+            {label}
+          </p>
+          <p className="mt-1.5 text-xl font-bold tabular-nums text-slate-950 sm:mt-3 sm:text-2xl">
+            {value}
+          </p>
         </div>
         <span
-          className={`flex size-10 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ${variantClassNames[variant]}`}
+          className={`flex size-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset sm:size-10 ${variantClassNames[variant]}`}
         >
-          <Icon className="size-5" aria-hidden="true" />
+          <Icon className="size-4 sm:size-5" aria-hidden="true" />
         </span>
       </div>
-      <p className="mt-4 text-sm leading-6 text-slate-600">{description}</p>
+      <p className="mt-2 hidden text-sm leading-6 text-slate-600 sm:mt-4 sm:block">
+        {description}
+      </p>
     </article>
   );
 }

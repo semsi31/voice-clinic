@@ -1,6 +1,9 @@
 import { File, FileText, FolderOpen, Upload } from "lucide-react";
 import { DocumentsTable } from "@/components/panel/documents-table";
-import { panelPageClassName } from "@/components/panel/panel-styles";
+import {
+  panelPageClassName,
+  panelStatGridClassName,
+} from "@/components/panel/panel-styles";
 import { StatCard } from "@/components/panel/stat-card";
 import {
   summarizeDocuments,
@@ -31,7 +34,7 @@ export default async function DocumentsPage() {
 
   return (
     <div className={panelPageClassName}>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className={panelStatGridClassName}>
         <StatCard
           icon={FolderOpen}
           label="Toplam Belge"

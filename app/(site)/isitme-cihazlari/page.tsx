@@ -1,17 +1,19 @@
-import { existsSync, statSync } from "node:fs";
-import { join } from "node:path";
-import Image from "next/image";
 import { ContactCta } from "@/components/site/contact-cta";
+import {
+  DeviceCardsCarousel,
+  type DeviceCarouselItem,
+} from "@/components/site/device-cards-carousel";
 import { JsonLd } from "@/components/site/json-ld";
-import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-card";
-import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { PageImageHero } from "@/components/site/page-image-hero";
 import { Reveal } from "@/components/site/motion/reveal";
+import { getVersionedPublicImageSrc } from "@/lib/public-image";
 import {
   buildBreadcrumbJsonLd,
   createPageMetadata,
 } from "@/lib/site-seo";
 import { sectionHeadingDelays } from "@/lib/site-motion";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 
 export const metadata = createPageMetadata({
   title: "İşitme Cihazları",
@@ -60,17 +62,21 @@ const deviceTypes = [
   },
 ];
 
-function getPublicImageVersion(src: string): string | null {
+function resolveDeviceImage(src: string): string | null {
   const filePath = join(process.cwd(), "public", src.replace(/^\//, ""));
-
   if (!existsSync(filePath)) {
     return null;
   }
 
-  return String(statSync(filePath).mtimeMs);
+  return getVersionedPublicImageSrc(src);
 }
 
 export default function HearingDevicesPage() {
+  const carouselItems: DeviceCarouselItem[] = deviceTypes.map((device) => ({
+    ...device,
+    imageSrc: resolveDeviceImage(device.image),
+  }));
+
   return (
     <main className="bg-[#faf8f3] text-foreground">
       <JsonLd
@@ -91,9 +97,9 @@ export default function HearingDevicesPage() {
         imageAlt="Voice Klinik işitme cihazı seçenekleri"
       />
 
-      <section className="px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-8 max-w-3xl">
+      <section className="py-12 md:py-16 lg:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 flex max-w-3xl flex-col gap-0 sm:mb-6">
             <Reveal variant="fade-up-compact" delay={sectionHeadingDelays.eyebrow}>
               <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#B88A28]">
                 Cihaz Türleri
@@ -105,44 +111,10 @@ export default function HearingDevicesPage() {
               </h2>
             </Reveal>
           </div>
+        </div>
 
-          <MotionGrid className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {deviceTypes.map((device, index) => {
-              const imageVersion = getPublicImageVersion(device.image);
-
-              return (
-                <MotionCard
-                  key={device.title}
-                  index={index}
-                  className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-[#eadfca] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.07)] hover:border-[#D4AF37]/45 hover:shadow-[0_18px_44px_rgba(15,23,42,0.09)]"
-                >
-                  <div className="relative h-52 overflow-hidden bg-[radial-gradient(circle_at_24%_24%,rgba(212,175,55,0.24),transparent_30%),linear-gradient(135deg,#fff8e8_0%,#ead8b8_45%,#102A43_120%)]">
-                    {imageVersion ? (
-                      <MotionCardImage className="absolute inset-0">
-                        <Image
-                          key={imageVersion}
-                          src={device.image}
-                          alt={device.title}
-                          fill
-                          unoptimized
-                          sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-                          className="object-cover"
-                        />
-                      </MotionCardImage>
-                    ) : null}
-                  </div>
-                  <div className="flex flex-1 flex-col p-6">
-                    <h3 className="font-serif text-2xl font-bold leading-tight text-[#071225] transition-colors group-hover:text-[#B88A28]">
-                      {device.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-7 text-slate-600">
-                      {device.description}
-                    </p>
-                  </div>
-                </MotionCard>
-              );
-            })}
-          </MotionGrid>
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <DeviceCardsCarousel items={carouselItems} />
         </div>
       </section>
 

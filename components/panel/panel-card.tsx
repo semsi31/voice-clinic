@@ -14,12 +14,12 @@ export function PanelCard({
   action,
 }: Readonly<PanelCardProps>) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <section className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm sm:rounded-3xl sm:p-6">
       {title || description || action ? (
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+        <div className="mb-3 flex flex-col gap-3 sm:mb-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             {title ? (
-              <h2 className="text-lg font-bold text-slate-950">{title}</h2>
+              <h2 className="text-base font-bold text-slate-950 sm:text-lg">{title}</h2>
             ) : null}
             {description ? (
               <p className="mt-1 text-sm leading-6 text-slate-600">

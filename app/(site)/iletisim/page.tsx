@@ -5,6 +5,7 @@ import { PageImageHero } from "@/components/site/page-image-hero";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 import type { IconType } from "react-icons";
+import { AppointmentFormSection } from "@/components/site/appointment-form-section";
 import { ContactRequestForm } from "@/components/site/contact-request-form";
 import { JsonLd } from "@/components/site/json-ld";
 import {
@@ -86,12 +87,15 @@ const locationCard = {
     "Akıllı Plaza, Adliye yanı Kuponpark üzeri",
     "Antakya / HATAY",
   ],
+  mapsHref:
+    "https://www.google.com/maps/search/?api=1&query=Akasya+Mh.+186.+Sk.+A+Blok+No:4+%C4%B0%C3%A7+Kap%C4%B1+6+Ak%C4%B1ll%C4%B1+Plaza+Antakya+Hatay",
   icon: FiMapPin,
   iconClassName: "bg-amber-50 text-amber-600",
 } satisfies {
   title: string;
   value: string;
   addressLines: string[];
+  mapsHref: string;
   icon: IconType;
   iconClassName: string;
 };
@@ -118,10 +122,10 @@ export default function ContactPage() {
         imageAlt="Voice Klinik İşitme Merkezi iletişim"
       />
 
-      <section className="px-4 py-12 sm:px-6 md:py-16 lg:px-8 lg:py-20">
+      <section className="px-4 py-10 sm:px-6 md:py-14 lg:px-8 lg:py-16">
         <div className="mx-auto max-w-6xl">
           <h2 className="sr-only">İletişim bilgileri</h2>
-          <MotionGrid className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <MotionGrid className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
             {contactCards.map((card, index) => {
               const Icon = card.icon;
 
@@ -129,79 +133,83 @@ export default function ContactPage() {
                 <MotionCard
                   key={card.title}
                   index={index}
-                  className="flex h-full flex-col rounded-[1.5rem] border border-[#eadfca] bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.07)] sm:p-6"
+                  className="flex h-full flex-col rounded-2xl border border-[#eadfca]/90 bg-white/90 p-3.5 sm:rounded-[1.5rem] sm:p-5 lg:p-5 xl:p-6"
                 >
                   <span
-                    className={`inline-flex size-12 items-center justify-center rounded-2xl text-[22px] shadow-sm ${card.iconClassName}`}
+                    className={`inline-flex size-9 items-center justify-center rounded-xl text-lg sm:size-11 sm:rounded-2xl sm:text-[22px] ${card.iconClassName}`}
                   >
                     <Icon aria-hidden="true" />
                   </span>
-                  <h3 className="mt-5 font-serif text-2xl font-bold text-[#071225]">
+                  <h3 className="mt-3 font-serif text-base font-bold text-[#071225] sm:mt-4 sm:text-xl lg:text-xl xl:text-2xl">
                     {card.title}
                   </h3>
-                  <p className="mt-2 break-words text-sm font-bold leading-7 text-[#071225] sm:text-base">
+                  <p className="mt-1 break-words text-xs font-semibold leading-5 text-[#071225] sm:mt-2 sm:text-sm sm:leading-7">
                     {card.value}
                   </p>
-                  <p className="mt-3 flex-1 text-sm leading-7 text-slate-600">
+                  <p className="mt-2 hidden flex-1 text-sm leading-7 text-slate-600 sm:mt-3 sm:block">
                     {card.description}
                   </p>
                   <Link
                     href={card.href}
                     target={card.isExternal ? "_blank" : undefined}
                     rel={card.isExternal ? "noopener noreferrer" : undefined}
-                    className={`site-btn-motion mt-5 inline-flex h-11 w-full items-center justify-center rounded-xl px-4 text-sm font-bold shadow-md ${card.buttonClassName}`}
+                    className={`site-btn-motion mt-3 inline-flex h-9 w-full items-center justify-center rounded-lg px-2 text-center text-[11px] font-bold sm:mt-5 sm:h-11 sm:rounded-xl sm:px-4 sm:text-sm sm:shadow-md ${card.buttonClassName}`}
                   >
                     {card.actionLabel}
                   </Link>
                 </MotionCard>
               );
             })}
+
             <MotionCard
               index={contactCards.length}
-              className="flex h-full flex-col rounded-[1.5rem] border border-[#eadfca] bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.07)] sm:p-6"
+              className="flex h-full flex-col rounded-2xl border border-[#eadfca]/90 bg-white/90 p-3.5 sm:rounded-[1.5rem] sm:p-5 lg:p-5 xl:p-6"
             >
               <span
-                className={`inline-flex size-12 items-center justify-center rounded-2xl text-[22px] shadow-sm ${locationCard.iconClassName}`}
+                className={`inline-flex size-9 items-center justify-center rounded-xl text-lg sm:size-11 sm:rounded-2xl sm:text-[22px] ${locationCard.iconClassName}`}
               >
                 <LocationIcon aria-hidden="true" />
               </span>
-              <h3 className="mt-5 font-serif text-2xl font-bold text-[#071225]">
+              <h3 className="mt-3 font-serif text-base font-bold text-[#071225] sm:mt-4 sm:text-xl lg:text-xl xl:text-2xl">
                 {locationCard.title}
               </h3>
-              <p className="mt-2 text-sm font-bold leading-7 text-[#071225] sm:text-base">
+              <p className="mt-1 text-xs font-semibold leading-5 text-[#071225] sm:mt-2 sm:text-sm sm:leading-7">
                 {locationCard.value}
               </p>
-              <p className="mt-3 text-sm leading-7 text-slate-600">
+              <p className="mt-2 flex-1 text-xs leading-5 text-slate-600 sm:mt-3 sm:text-sm sm:leading-7">
                 {locationCard.addressLines.map((line) => (
                   <span key={line} className="block">
                     {line}
                   </span>
                 ))}
               </p>
+              <Link
+                href={locationCard.mapsHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="site-btn-motion mt-3 inline-flex h-9 w-full items-center justify-center rounded-lg bg-amber-600 px-2 text-center text-[11px] font-bold !text-white hover:bg-amber-700 sm:mt-5 sm:h-11 sm:rounded-xl sm:px-4 sm:text-sm sm:shadow-md"
+              >
+                Haritada aç
+              </Link>
             </MotionCard>
           </MotionGrid>
         </div>
       </section>
 
-      <section
-        id="randevu-talebi"
-        className="scroll-mt-28 px-4 py-6 pb-12 sm:scroll-mt-32 sm:px-6 lg:px-8 lg:pb-14"
-      >
-        <div className="mx-auto max-w-4xl rounded-[1.75rem] border border-[#eadfca] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.08)] sm:p-7 lg:p-8">
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#B88A28]">
-            Randevu Talebi
-          </p>
-          <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#071225]">
-            Size dönüş yapalım
-          </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-            Bilgilerinizi bırakın, ekibimiz en kısa sürede sizinle iletişime
-            geçsin.
-          </p>
+      <AppointmentFormSection>
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#B88A28]">
+          Randevu Talebi
+        </p>
+        <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#071225]">
+          Size dönüş yapalım
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+          Bilgilerinizi bırakın, ekibimiz en kısa sürede sizinle iletişime
+          geçsin.
+        </p>
 
-          <ContactRequestForm />
-        </div>
-      </section>
+        <ContactRequestForm />
+      </AppointmentFormSection>
     </main>
   );
 }

@@ -73,7 +73,13 @@ function BlogImage({
 
   return (
     // eslint-disable-next-line @next/next/no-img-element -- Cover thumbnails use direct img with object-cover crop.
-    <img src={image.src} alt={alt} className={className} />
+    <img
+      src={image.src}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      className={className}
+    />
   );
 }
 

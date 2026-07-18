@@ -220,7 +220,10 @@ export function LegacyTransformPreview({
           </thead>
           <tbody>
             {visibleRows.map((row) => (
-              <tr key={`${row.sheetName}-${row.rowNumber}`} className="text-slate-700">
+              <tr
+                key={`${row.sheetName}-${row.rowNumber}`}
+                className="text-slate-700 odd:bg-white even:bg-[#EEF2F7]"
+              >
                 <td className="border-b border-slate-100 px-3 py-3 tabular-nums">
                   {row.rowNumber}
                 </td>

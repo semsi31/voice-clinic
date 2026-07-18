@@ -81,9 +81,9 @@ export function StatsSection({ stats }: StatsSectionProps) {
     <section
       id="site-stats"
       ref={sectionRef}
-      className="bg-white px-4 pb-8 pt-4 sm:px-6 lg:px-8 lg:pb-10"
+      className="bg-[#faf8f3] px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20"
     >
-      <div className="mx-auto grid max-w-6xl gap-3 rounded-[1.5rem] border border-[#eadfca] bg-white p-3 shadow-xl shadow-slate-950/5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-0">
         {stats.map((stat, index) => (
           <Reveal
             key={stat.label}
@@ -91,25 +91,27 @@ export function StatsSection({ stats }: StatsSectionProps) {
             variant="fade-up-card"
             delay={getGridCardDelay(index)}
           >
-              <div className="flex items-center justify-center gap-3 rounded-2xl p-2.5 sm:justify-start">
-                <IconBadge
-                  name={stat.icon}
-                  variant="light"
-                  size="sm"
-                  className="size-10 rounded-xl border-[#D4AF37]/45 bg-[#071225] text-[#D4AF37] shadow-md shadow-[#071225]/15"
-                />
-                <div>
-                  <p className="min-w-[5rem] text-xl font-bold tabular-nums text-primary">
-                    <CountUpValue
-                      active={started}
-                      end={stat.end}
-                      suffix={stat.suffix}
-                      delayMs={index * COUNT_UP_STAGGER_MS}
-                    />
-                  </p>
-                  <p className="text-xs font-semibold text-slate-600">{stat.label}</p>
-                </div>
+            <div className="flex flex-col items-center gap-2.5 text-center">
+              <IconBadge
+                name={stat.icon}
+                variant="light"
+                size="sm"
+                className="size-11 rounded-xl border-[#D4AF37]/45 bg-[#071225] text-[#D4AF37] shadow-md shadow-[#071225]/15 sm:size-12"
+              />
+              <div>
+                <p className="font-serif text-2xl font-bold tabular-nums tracking-tight text-primary sm:text-3xl lg:text-4xl">
+                  <CountUpValue
+                    active={started}
+                    end={stat.end}
+                    suffix={stat.suffix}
+                    delayMs={index * COUNT_UP_STAGGER_MS}
+                  />
+                </p>
+                <p className="mt-1 text-xs font-semibold text-slate-600 sm:text-sm">
+                  {stat.label}
+                </p>
               </div>
+            </div>
           </Reveal>
         ))}
       </div>

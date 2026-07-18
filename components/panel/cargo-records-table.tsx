@@ -34,7 +34,10 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableRowClassName,
   panelTableActionsHeadClassName,
+  panelTableHeadClassName,
+  panelTableHeadRowClassName,
   panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
@@ -600,8 +603,8 @@ export function CargoRecordsTable({
                 <col className="w-[8%]" />
               </colgroup>
               <thead>
-                <tr className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                <tr className={panelTableHeadRowClassName}>
+                  <th className={panelTableHeadClassName}>
                     <input
                       type="checkbox"
                       aria-label="Filtrelenen kayıtları seç"
@@ -616,26 +619,26 @@ export function CargoRecordsTable({
                       className="size-5 min-h-5 min-w-5 rounded border-slate-300 text-sky-700 focus:ring-sky-200"
                     />
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5 whitespace-nowrap">
+                  <th className={panelTableHeadClassName}>
                     Tarih
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     Gönderen
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     Yapılan İşlem
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     Kargo Firması
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     Kargo Şubesi
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">
+                  <th className={panelTableHeadClassName}>
                     Takip Numarası
                   </th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">Durum</th>
-                  <th className="border-b border-slate-200 px-3 py-2.5">Not</th>
+                  <th className={panelTableHeadClassName}>Durum</th>
+                  <th className={panelTableHeadClassName}>Not</th>
                   <th className={panelTableActionsHeadClassName}>İşlemler</th>
                 </tr>
               </thead>
@@ -643,7 +646,7 @@ export function CargoRecordsTable({
                 {filteredRecords.map((record) => (
                   <tr
                     key={record.id}
-                    className="group text-slate-700 transition hover:bg-slate-50"
+                    className={panelTableRowClassName}
                   >
                     <td className="border-b border-slate-100 px-3 py-3">
                       <input

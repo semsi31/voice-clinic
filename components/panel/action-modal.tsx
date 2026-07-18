@@ -37,11 +37,13 @@ export function DetailRow({
   value: ReactNode;
 }>) {
   return (
-    <div className="grid gap-1 border-b border-slate-100 py-3 last:border-b-0">
-      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+    <div className="detail-row grid grid-cols-1 border-b border-slate-200/90 last:border-b-0 sm:grid-cols-[10.5rem_minmax(0,1fr)]">
+      <p className="bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-500 sm:border-r sm:border-slate-200/90 sm:px-4 sm:py-3.5 sm:text-[13px] sm:leading-6">
         {label}
       </p>
-      <p className="text-sm font-medium text-slate-900">{value}</p>
+      <p className="min-w-0 px-3 py-2.5 text-sm font-semibold leading-6 break-words text-slate-900 sm:px-4 sm:py-3.5">
+        {value}
+      </p>
     </div>
   );
 }
@@ -95,7 +97,7 @@ export function ActionModal({
 
   const modal = (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex items-end justify-center p-0 sm:items-center sm:p-4"
       role="presentation"
     >
       <button
@@ -110,11 +112,11 @@ export function ActionModal({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
-        className="relative z-[110] flex max-h-[min(90dvh,720px)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl"
+        className="relative z-[110] flex max-h-[min(92dvh,720px)] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-slate-200 bg-white shadow-xl sm:rounded-3xl"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5">
-          <div>
-            <h2 id={titleId} className="text-lg font-bold text-slate-950">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5">
+          <div className="min-w-0">
+            <h2 id={titleId} className="text-base font-bold text-slate-950 sm:text-lg">
               {title}
             </h2>
             {description ? (

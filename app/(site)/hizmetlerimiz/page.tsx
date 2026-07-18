@@ -4,18 +4,21 @@ import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-car
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { Reveal } from "@/components/site/motion/reveal";
 import { PageImageHero } from "@/components/site/page-image-hero";
+import { getVersionedPublicImageSrc } from "@/lib/public-image";
 import {
   buildBreadcrumbJsonLd,
   createPageMetadata,
 } from "@/lib/site-seo";
 import { sectionHeadingDelays } from "@/lib/site-motion";
 
+const HERO_IMAGE = "/images/hizmetlerimiz-hero.jpg";
+
 export const metadata = createPageMetadata({
   title: "Hizmetlerimiz",
   description:
     "Voice Klinik işitme testi, cihaz uygulaması, satış, bakım, aksesuar ve satış sonrası destek hizmetleri.",
   path: "/hizmetlerimiz",
-  image: "/images/about-clinic.jpg",
+  image: HERO_IMAGE,
 });
 
 const services = [
@@ -67,7 +70,7 @@ export default function ServicesPage() {
         ]}
         eyebrow="TÜM HİZMETLER"
         title="İşitme sağlığınız için profesyonel hizmet alanları"
-        imageSrc="/images/about-clinic.jpg"
+        imageSrc={getVersionedPublicImageSrc(HERO_IMAGE)}
         imageAlt="Voice Klinik işitme sağlığı hizmetleri"
       />
 

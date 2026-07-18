@@ -287,6 +287,8 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                           <img
                             src={relatedImageSrc}
                             alt={relatedPost.title}
+                            loading="lazy"
+                            decoding="async"
                             className="size-full object-cover object-[68%_42%]"
                           />
                         </MotionCardImage>
