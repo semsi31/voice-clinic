@@ -236,6 +236,7 @@ export function Reveal({
         }
       });
 
+      // Hero entries only: failsafe if rAF path is skipped.
       safetyTimer = window.setTimeout(() => {
         if (isActive && !revealedRef.current) {
           reveal();
@@ -256,12 +257,6 @@ export function Reveal({
 
       armReveal();
       startObserver();
-      safetyTimer = window.setTimeout(() => {
-        if (isActive && !revealedRef.current) {
-          reveal();
-        }
-      }, REVEAL_SAFETY_TIMEOUT_MS);
-
       return cleanup;
     }
 
@@ -277,15 +272,11 @@ export function Reveal({
       });
     };
 
+    // Only reveal when the element actually enters the viewport.
+    // A timed failsafe would finish the animation off-screen before scroll.
     runAfterPaint(() => {
       armReveal();
       startObserver();
-
-      safetyTimer = window.setTimeout(() => {
-        if (isActive && !revealedRef.current) {
-          reveal();
-        }
-      }, REVEAL_SAFETY_TIMEOUT_MS);
     });
 
     return cleanup;

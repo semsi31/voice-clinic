@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { m } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +28,7 @@ export function DeviceCardsCarousel({ items }: DeviceCardsCarouselProps) {
   const lastIndex = items.length - 1;
   const canPrev = active > 0;
   const canNext = active < lastIndex;
+  const activeItem = items[active];
 
   const goTo = useCallback(
     (index: number) => {
@@ -84,24 +85,41 @@ export function DeviceCardsCarousel({ items }: DeviceCardsCarouselProps) {
     dragDelta.current = 0;
   };
 
+  const navButtonClassName = cn(
+    "absolute top-1/2 z-30 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full",
+    "border border-[#eadfca] bg-white text-[#071225]",
+    "shadow-[0_8px_24px_rgba(15,23,42,0.08)]",
+    "transition duration-300 ease-out",
+    "hover:border-[#C49A3A]/70 hover:bg-[#C49A3A] hover:text-white hover:shadow-[0_10px_28px_rgba(196,154,58,0.28)]",
+    "active:scale-95",
+    "disabled:pointer-events-none disabled:border-[#eadfca]/70 disabled:bg-[#faf8f3] disabled:text-[#071225]/30 disabled:shadow-none",
+    "sm:size-12",
+  );
+
   return (
-    <div className="relative flex items-center gap-2 sm:gap-3 lg:gap-4">
+    <div className="relative w-full">
       <button
         type="button"
         aria-label="Önceki kart"
         disabled={!canPrev}
         onClick={() => go(-1)}
-        className={cn(
-          "z-20 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-[#eadfca] bg-white text-[#071225] shadow-md transition sm:size-11",
-          "hover:border-[#D4AF37]/55 hover:text-[#B88A28]",
-          "disabled:pointer-events-none disabled:opacity-30",
-        )}
+        className={cn(navButtonClassName, "left-2 sm:left-4 lg:left-8")}
       >
-        <ChevronLeft className="size-5" aria-hidden="true" />
+        <ChevronLeft className="size-5 sm:size-6" strokeWidth={2.25} aria-hidden="true" />
+      </button>
+
+      <button
+        type="button"
+        aria-label="Sonraki kart"
+        disabled={!canNext}
+        onClick={() => go(1)}
+        className={cn(navButtonClassName, "right-2 sm:right-4 lg:right-8")}
+      >
+        <ChevronRight className="size-5 sm:size-6" strokeWidth={2.25} aria-hidden="true" />
       </button>
 
       <div
-        className="relative h-[400px] w-full min-w-0 select-none touch-pan-y overflow-hidden sm:h-[440px] lg:h-[480px]"
+        className="relative h-[320px] w-full select-none touch-pan-y overflow-x-clip overflow-y-visible sm:h-[360px] lg:h-[400px]"
         onTouchStart={(event) => onPointerDown(event.touches[0]?.clientX ?? 0)}
         onTouchMove={(event) => onPointerMove(event.touches[0]?.clientX ?? 0)}
         onTouchEnd={onPointerUp}
@@ -122,26 +140,28 @@ export function DeviceCardsCarousel({ items }: DeviceCardsCarouselProps) {
           const offset = index - active;
           const absOffset = Math.abs(offset);
           const isActive = offset === 0;
-          const isPreview = absOffset === 1;
-          const isVisible = absOffset <= 1;
+          const isPreview = absOffset >= 1 && absOffset <= 2;
+          const isVisible = absOffset <= 2;
+          const previewScale = absOffset === 1 ? 0.88 : 0.76;
+          const previewOpacity = absOffset === 1 ? 0.78 : 0.5;
 
           return (
             <m.article
               key={device.title}
               className={cn(
-                "absolute top-1/2 left-1/2 flex w-[78%] max-w-[24rem] origin-center flex-col overflow-hidden rounded-[1.75rem] border bg-white sm:w-[62%] sm:max-w-[28rem] lg:w-[52%] lg:max-w-[30rem]",
+                "absolute top-1/2 left-1/2 flex origin-center flex-col overflow-hidden rounded-[1.75rem] border bg-white",
                 isActive
-                  ? "border-[#D4AF37]/45 shadow-[0_22px_50px_rgba(15,23,42,0.14)]"
-                  : "border-[#eadfca] shadow-[0_12px_28px_rgba(15,23,42,0.08)]",
+                  ? "w-[min(24rem,84vw)] border-[#D4AF37]/45 shadow-[0_22px_50px_rgba(15,23,42,0.14)] sm:w-[min(26.5rem,50vw)] lg:w-[min(28.5rem,34vw)]"
+                  : "w-[min(22rem,78vw)] border-[#eadfca] shadow-[0_12px_28px_rgba(15,23,42,0.08)] sm:w-[min(24rem,46vw)] lg:w-[min(26rem,30vw)]",
                 isPreview && "cursor-pointer",
               )}
               initial={false}
               animate={{
-                x: `calc(-50% + ${offset * 58}%)`,
+                x: `calc(-50% + ${offset * 30}vw)`,
                 y: "-50%",
-                scale: isActive ? 1 : 0.72,
-                opacity: isVisible ? (isActive ? 1 : 0.5) : 0,
-                zIndex: isActive ? 20 : isPreview ? 10 : 0,
+                scale: isActive ? 1 : previewScale,
+                opacity: isVisible ? (isActive ? 1 : previewOpacity) : 0,
+                zIndex: isActive ? 30 : Math.max(0, 20 - absOffset * 8),
               }}
               transition={TRANSITION}
               aria-hidden={!isVisible}
@@ -151,45 +171,47 @@ export function DeviceCardsCarousel({ items }: DeviceCardsCarouselProps) {
                 }
               }}
             >
-              <div className="relative h-52 overflow-hidden bg-[radial-gradient(circle_at_24%_24%,rgba(212,175,55,0.24),transparent_30%),linear-gradient(135deg,#fff8e8_0%,#ead8b8_45%,#102A43_120%)] sm:h-60">
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-[radial-gradient(circle_at_24%_24%,rgba(212,175,55,0.24),transparent_30%),linear-gradient(135deg,#fff8e8_0%,#ead8b8_45%,#102A43_120%)]">
                 {device.imageSrc ? (
                   <Image
                     src={device.imageSrc}
                     alt={device.title}
                     fill
                     unoptimized
-                    sizes="(min-width: 1024px) 30rem, (min-width: 640px) 28rem, 78vw"
+                    sizes="(min-width: 1024px) 26rem, (min-width: 640px) 24rem, 78vw"
                     className="object-cover"
                     draggable={false}
                   />
                 ) : null}
-              </div>
-              <div className="flex flex-1 flex-col p-5 sm:p-6">
-                <h3 className="font-serif text-xl font-bold leading-tight text-[#071225] sm:text-2xl">
-                  {device.title}
-                </h3>
-                <p className="mt-2 line-clamp-3 text-sm leading-7 text-slate-600">
-                  {device.description}
-                </p>
               </div>
             </m.article>
           );
         })}
       </div>
 
-      <button
-        type="button"
-        aria-label="Sonraki kart"
-        disabled={!canNext}
-        onClick={() => go(1)}
-        className={cn(
-          "z-20 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-[#eadfca] bg-white text-[#071225] shadow-md transition sm:size-11",
-          "hover:border-[#D4AF37]/55 hover:text-[#B88A28]",
-          "disabled:pointer-events-none disabled:opacity-30",
-        )}
-      >
-        <ChevronRight className="size-5" aria-hidden="true" />
-      </button>
+      <div className="relative mx-auto mt-6 min-h-[7.5rem] max-w-2xl overflow-hidden px-4 text-center sm:mt-8 sm:min-h-[6.5rem]">
+        <AnimatePresence mode="wait">
+          {activeItem ? (
+            <m.div
+              key={activeItem.title}
+              initial={{ opacity: 0, y: 32 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={TRANSITION}
+            >
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#B88A28]">
+                Seçili cihaz
+              </p>
+              <h3 className="mt-2 font-serif text-2xl font-bold tracking-tight text-[#071225] sm:text-[1.75rem]">
+                {activeItem.title}
+              </h3>
+              <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-600">
+                {activeItem.description}
+              </p>
+            </m.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

@@ -207,33 +207,31 @@ export default function HomePage() {
             </div>
           </Reveal>
 
-          <Reveal variant="slide-right" delay={SPLIT_TEXT_DELAY_MS} className="relative hidden md:block">
-            <div className="grid grid-cols-2 gap-3">
-              {appointmentBenefits.map((item, index) => (
-                <Reveal
-                  key={item.title}
-                  asChild
-                  variant="fade-up-card"
-                  delay={sectionHeadingDelays.content + getTrustStaggerDelay(index)}
-                >
-                  <div className="rounded-2xl border border-white/12 bg-white/8 p-5 shadow-lg shadow-black/5 backdrop-blur">
-                    <IconBadge
-                      name={item.icon}
-                      variant="gold"
-                      size="sm"
-                      className="mb-4 inline-flex bg-[#D4AF37] text-primary"
-                    />
-                    <h3 className="text-base font-bold text-white">
-                      {item.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-white/68">
-                      {item.description}
-                    </p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </Reveal>
+          <div className="relative hidden grid-cols-2 gap-3 md:grid">
+            {appointmentBenefits.map((item, index) => (
+              <Reveal
+                key={item.title}
+                asChild
+                variant="fade-up-card"
+                delay={SPLIT_TEXT_DELAY_MS + getTrustStaggerDelay(index)}
+              >
+                <div className="rounded-2xl border border-white/12 bg-white/8 p-5 shadow-lg shadow-black/5 backdrop-blur">
+                  <IconBadge
+                    name={item.icon}
+                    variant="gold"
+                    size="sm"
+                    className="mb-4 inline-flex bg-[#D4AF37] text-primary"
+                  />
+                  <h3 className="text-base font-bold text-white">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-white/68">
+                    {item.description}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 

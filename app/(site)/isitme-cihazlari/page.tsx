@@ -20,7 +20,7 @@ export const metadata = createPageMetadata({
   description:
     "İşitme cihazı türleri, kullanım seçenekleri ve doğru cihaz seçimi hakkında Voice Klinik bilgilendirme sayfası.",
   path: "/isitme-cihazlari",
-  image: "/images/blog-hearing-aid-selection.jpg",
+  image: "/images/service-hearing-test.jpg",
 });
 
 const deviceTypes = [
@@ -92,13 +92,13 @@ export default function HearingDevicesPage() {
         ]}
         eyebrow="İŞİTME CİHAZLARI"
         title="Yaşam tarzınıza uygun işitme cihazı seçenekleri"
-        imageSrc="/images/blog-hearing-aid-selection.jpg"
-        imageClassName="object-[center_35%]"
+        imageSrc={getVersionedPublicImageSrc("/images/service-hearing-test.jpg")}
+        imageClassName="object-[center_40%]"
         imageAlt="Voice Klinik işitme cihazı seçenekleri"
       />
 
-      <section className="py-12 md:py-16 lg:py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <section className="overflow-x-clip py-12 md:py-16 lg:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex max-w-3xl flex-col gap-0 sm:mb-6">
             <Reveal variant="fade-up-compact" delay={sectionHeadingDelays.eyebrow}>
               <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#B88A28]">
@@ -113,7 +113,8 @@ export default function HearingDevicesPage() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        {/* Full-bleed track so side previews fill empty gutters without shrinking cards. */}
+        <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 px-2 sm:px-4">
           <DeviceCardsCarousel items={carouselItems} />
         </div>
       </section>
