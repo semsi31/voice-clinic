@@ -1,10 +1,9 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import Link from "next/link";
 import { JsonLd } from "@/components/site/json-ld";
 import { PageImageHero } from "@/components/site/page-image-hero";
 import { Reveal } from "@/components/site/motion/reveal";
 import { IconBadge, SiteIcon, type SiteIconName } from "@/components/site/site-icon";
+import { cdnImageSrc } from "@/lib/cdn-image";
 import {
   buildBreadcrumbJsonLd,
   createPageMetadata,
@@ -49,8 +48,6 @@ const serviceValues = [
   icon: SiteIconName;
 }[];
 
-const hasAboutImage = existsSync(join(process.cwd(), "public/images/about-clinic.jpg"));
-
 export default function CorporatePage() {
   return (
     <main className="bg-background text-foreground">
@@ -67,7 +64,7 @@ export default function CorporatePage() {
         ]}
         eyebrow="KURUMSAL"
         title="Doğru bilgilendirme ve profesyonel uygulama"
-        imageSrc={hasAboutImage ? "/images/about-clinic.jpg" : "/images/hero-hearing-care..jpg"}
+        imageSrc={cdnImageSrc("/images/about-clinic.jpg")}
         imageAlt="Voice Klinik İşitme Merkezi kurumsal bilgilendirme"
       />
 
@@ -105,7 +102,7 @@ export default function CorporatePage() {
                 </div>
               </Reveal>
 
-          <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:mt-12 lg:grid-cols-4 lg:gap-5">
+          <ul className="mt-10 grid grid-cols-1 gap-3 min-[375px]:grid-cols-2 sm:gap-4 lg:mt-12 lg:grid-cols-4 lg:gap-5">
             {serviceValues.map((item, index) => (
               <Reveal
                 key={item.title}

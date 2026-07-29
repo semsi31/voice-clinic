@@ -1,4 +1,5 @@
 import { PageImageHero } from "@/components/site/page-image-hero";
+import { cdnImageSrc } from "@/lib/cdn-image";
 
 export type PageHeroBreadcrumb = {
   label: string;
@@ -13,7 +14,7 @@ export type PageHeroProps = {
   className?: string;
 };
 
-const LEGAL_HERO_IMAGE = "/images/about-clinic.jpg";
+const LEGAL_HERO_IMAGE = cdnImageSrc("/images/about-clinic.jpg");
 
 export function PageHero({ title, breadcrumbs, tag }: PageHeroProps) {
   return (

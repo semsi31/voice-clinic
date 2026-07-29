@@ -1,5 +1,3 @@
-import { existsSync, statSync } from "node:fs";
-import { join } from "node:path";
 import Link from "next/link";
 import { ContactCta } from "@/components/site/contact-cta";
 import { JsonLd } from "@/components/site/json-ld";
@@ -7,6 +5,7 @@ import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-car
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { PageImageHero } from "@/components/site/page-image-hero";
 import { Reveal } from "@/components/site/motion/reveal";
+import { cdnImageSrc } from "@/lib/cdn-image";
 import {
   buildBreadcrumbJsonLd,
   createPageMetadata,
@@ -21,30 +20,6 @@ export const metadata = createPageMetadata({
   path: "/blog",
   image: "/images/blog-hearing-test.jpg",
 });
-
-function getPublicImage(src: string) {
-  const imagePath = join(process.cwd(), "public", src.replace(/^\//, ""));
-
-  if (!existsSync(imagePath)) {
-    return null;
-  }
-
-  return {
-    src: `${src}?v=${Math.round(statSync(imagePath).mtimeMs)}`,
-    alt: src,
-  };
-}
-
-function getBlogListCoverSrc(slug: string, fallback: string) {
-  const webpSrc = `/images/${slug}.webp`;
-  const webpPath = join(process.cwd(), "public", webpSrc.slice(1));
-
-  if (existsSync(webpPath)) {
-    return webpSrc;
-  }
-
-  return fallback;
-}
 
 const blogListCoverPositions: Partial<Record<string, string>> = {};
 
@@ -61,20 +36,10 @@ function BlogImage({
   alt: string;
   className?: string;
 }) {
-  const image = getPublicImage(src);
-
-  if (!image) {
-    return (
-      <div
-        className={`bg-[radial-gradient(circle_at_24%_24%,rgba(212,175,55,0.18),transparent_30%),linear-gradient(135deg,#fff8e8_0%,#ead8b8_45%,#102A43_120%)] ${className ?? ""}`}
-      />
-    );
-  }
-
   return (
     // eslint-disable-next-line @next/next/no-img-element -- Cover thumbnails use direct img with object-cover crop.
     <img
-      src={image.src}
+      src={cdnImageSrc(src)}
       alt={alt}
       loading="lazy"
       decoding="async"
@@ -99,7 +64,7 @@ export default function BlogPage() {
         ]}
         eyebrow="BİLGİ MERKEZİ"
         title="İşitme sağlığı hakkında bilgilendirici içerikler"
-        imageSrc="/images/blog-hearing-test.jpg"
+        imageSrc={cdnImageSrc("/images/blog-hearing-test.jpg")}
         imageAlt="Voice Klinik blog ve bilgilendirici içerikler"
       />
 
@@ -113,7 +78,7 @@ export default function BlogPage() {
               >
                 <div className="relative aspect-[16/9] w-full overflow-hidden lg:aspect-auto lg:h-[400px] lg:max-h-[400px]">
                   <BlogImage
-                    src={getBlogListCoverSrc(featuredPost.slug, featuredPost.image)}
+                    src={featuredPost.image}
                     alt={featuredPost.title}
                     className={`site-card-image-motion absolute inset-0 size-full object-cover ${getBlogListCoverPosition(featuredPost.slug)}`}
                   />
@@ -169,13 +134,13 @@ export default function BlogPage() {
                 <MotionCard
                   key={post.slug}
                   index={index}
-                  className="group flex h-full flex-col overflow-hidden rounded-xl border border-[#eadfca]/80 bg-white transition-colors hover:border-[#D4AF37]/40"
+                  className="group flex h-full min-w-0 w-full flex-col overflow-hidden rounded-xl border border-[#eadfca]/80 bg-white transition-colors hover:border-[#D4AF37]/40"
                 >
                   <Link href={`/blog/${post.slug}`} className="block overflow-hidden">
                     <div className="relative aspect-[16/9] w-full max-h-[200px] overflow-hidden">
                       <MotionCardImage className="absolute inset-0 size-full">
                         <BlogImage
-                          src={getBlogListCoverSrc(post.slug, post.image)}
+                          src={post.image}
                           alt={post.title}
                           className={`size-full object-cover ${getBlogListCoverPosition(post.slug)}`}
                         />

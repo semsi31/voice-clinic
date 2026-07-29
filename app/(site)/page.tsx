@@ -5,6 +5,7 @@ import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { Reveal } from "@/components/site/motion/reveal";
 import { StatsSection } from "@/components/site/stats-section";
 import { IconBadge, SiteIcon, type SiteIconName } from "@/components/site/site-icon";
+import { cdnImageSrc } from "@/lib/cdn-image";
 import {
   buildLocalBusinessJsonLd,
   createPageMetadata,
@@ -29,23 +30,25 @@ const serviceCards = [
   {
     title: "İşitme Testi ve Değerlendirme",
     description: "İşitme durumunuzu profesyonel testlerle değerlendiriyor, doğru çözüm yolunu birlikte planlıyoruz.",
-    image: "/images/service-hearing-test.jpg",
+    image: cdnImageSrc("/images/service-hearing-test.jpg"),
   },
   {
     title: "İşitme Cihazı Uygulaması",
     description: "Kişiye özel cihaz uygulaması, ayarlama ve kullanım sürecinde anlaşılır destek sunuyoruz.",
-    image: "/images/service-hearing-aid-fitting.jpg",
+    image: cdnImageSrc("/images/service-hearing-aid-fitting.jpg"),
   },
   {
     title: "İşitme Cihazı Satışı",
     description: "İhtiyacınıza ve yaşam tarzınıza uygun modern işitme cihazı seçeneklerini sunuyoruz.",
-    image: "/images/service-hearing-aid-sales.jpg",
+    image: cdnImageSrc("/images/service-hearing-aid-sales.jpg"),
   },
 ] satisfies {
   title: string;
   description: string;
   image: string;
 }[];
+
+const CTA_RANDEVU_IMAGE = cdnImageSrc("/images/cta-randevu.jpg");
 
 const reasons = [
   "Uzman ve deneyimli kadro",
@@ -122,7 +125,7 @@ export default function HomePage() {
                 <MotionCard
                   key={card.title}
                   index={index}
-                  className="group overflow-hidden rounded-[1.75rem] border border-[#eadfca] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.07)] hover:border-[#D4AF37]/45 hover:shadow-[0_18px_44px_rgba(15,23,42,0.09)]"
+                  className="group min-w-0 w-full overflow-hidden rounded-[1.75rem] border border-[#eadfca] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.07)] hover:border-[#D4AF37]/45 hover:shadow-[0_18px_44px_rgba(15,23,42,0.09)]"
                 >
                   <div
                     className="relative min-h-[210px] overflow-hidden bg-[#f6eddf]"
@@ -156,7 +159,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0" aria-hidden="true">
           <img
-            src="/images/cta-randevu.jpg"
+            src={CTA_RANDEVU_IMAGE}
             alt=""
             loading="lazy"
             decoding="async"

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Reveal } from "@/components/site/motion/reveal";
 import { cn } from "@/lib/utils";
 import { SiteIcon } from "@/components/site/site-icon";
+import { cdnImageSrc } from "@/lib/cdn-image";
 
 export type ContactCtaProps = {
   title: string;
@@ -10,7 +11,7 @@ export type ContactCtaProps = {
   appointmentLabel?: string;
   phoneHref?: string;
   phoneLabel?: string;
-  /** Full-bleed background. Put the file in `public/images/`. */
+  /** Full-bleed background (CDN path `/images/...` or absolute URL). */
   imageSrc?: string;
   className?: string;
 };
@@ -25,13 +26,14 @@ export function ContactCta({
   imageSrc = "/images/cta-randevu.jpg",
   className,
 }: ContactCtaProps) {
+  const resolvedImageSrc = cdnImageSrc(imageSrc);
   return (
     <section className={cn("bg-[#faf8f3] px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12", className)}>
       <Reveal variant="fade-up" duration={700} className="mx-auto max-w-7xl">
         <div className="relative overflow-hidden rounded-[1.75rem] border border-[#eadfca] shadow-[0_18px_44px_rgba(15,23,42,0.10)]">
           <div className="absolute inset-0" aria-hidden="true">
             <img
-              src={imageSrc}
+              src={resolvedImageSrc}
               alt=""
               loading="lazy"
               decoding="async"

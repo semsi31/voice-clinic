@@ -25,9 +25,16 @@ import {
   panelFilterInputClassName,
   panelFilterLabelClassName,
   panelFilterSelectClassName,
+  panelMobileCardClassName,
+  panelMobileCardLabelClassName,
+  panelMobileCardListClassName,
+  panelMobileCardValueClassName,
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableCellClassName,
+  panelTableClassName,
+  panelTableDesktopClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
   panelTableHeadClassName,
@@ -453,107 +460,186 @@ export function StockProductsTable({
         </div>
 
         {filteredProducts.length > 0 ? (
-          <div className={panelTableScrollClassName}>
-            <table className="w-full min-w-[960px] table-fixed border-separate border-spacing-0 text-left text-sm">
-              <colgroup>
-                <col className="w-[4%]" />
-                <col className="w-[14%]" />
-                <col className="w-[10%]" />
-                <col className="w-[12%]" />
-                <col className="w-[10%]" />
-                <col className="w-[10%]" />
-                <col className="w-[8%]" />
-                <col className="w-[8%]" />
-                <col className="w-[9%]" />
-                <col className="w-[8%]" />
-              </colgroup>
-              <thead>
-                <tr className={panelTableHeadRowClassName}>
-                  <th className={panelTableHeadClassName}>
-                    <TableSelectAllCheckbox
-                      allSelected={allFilteredSelected}
-                      someSelected={someFilteredSelected}
-                      onToggle={toggleFilteredSelection}
+          <>
+            <div className={panelMobileCardListClassName}>
+              {filteredProducts.map((product) => (
+                <article
+                  key={`mobile-${product.id}`}
+                  className={panelMobileCardClassName}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="break-words font-bold text-slate-950">
+                        {product.name}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {stockProductTypeLabels[product.product_type]}
+                        {" · "}
+                        {stockBrandModel(product)}
+                      </p>
+                    </div>
+                    <StatusBadge status={product.status} />
+                  </div>
+                  <dl className="mt-3 grid grid-cols-2 gap-3">
+                    <div>
+                      <dt className={panelMobileCardLabelClassName}>
+                        Mevcut Adet
+                      </dt>
+                      <dd className={panelMobileCardValueClassName}>
+                        {product.quantity}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={panelMobileCardLabelClassName}>Min. Stok</dt>
+                      <dd className={panelMobileCardValueClassName}>
+                        {product.min_stock}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={panelMobileCardLabelClassName}>Seri No</dt>
+                      <dd
+                        className={`${panelMobileCardValueClassName} break-all font-mono text-xs`}
+                      >
+                        {product.serial_no || "-"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={panelMobileCardLabelClassName}>
+                        Şube / Birim
+                      </dt>
+                      <dd
+                        className={`${panelMobileCardValueClassName} break-words`}
+                      >
+                        {product.branch_unit || "-"}
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      className={`${panelSecondaryButtonClassName} min-h-11 flex-1`}
+                      onClick={() => setModalProduct(product)}
+                    >
+                      <Pencil className="size-4" aria-hidden="true" />
+                      Düzenle
+                    </button>
+                    <DeleteStockProductButton
+                      product={product}
+                      onDeleted={handleRecordsDeleted}
                     />
-                  </th>
-                  <th className={panelTableHeadClassName}>Ürün Adı</th>
-                  <th className={panelTableHeadClassName}>Ürün Tipi</th>
-                  <th className={panelTableHeadClassName}>
-                    Marka / Model
-                  </th>
-                  <th className={panelTableHeadClassName}>Seri No</th>
-                  <th className={panelTableHeadClassName}>
-                    Şube / Birim
-                  </th>
-                  <th className={`${panelTableHeadClassName} text-right`}>
-                    Mevcut Adet
-                  </th>
-                  <th className={`${panelTableHeadClassName} text-right`}>
-                    Min. Stok
-                  </th>
-                  <th className={panelTableHeadClassName}>Durum</th>
-                  <th className={panelTableActionsHeadClassName}>İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.map((product) => (
-                  <tr
-                    key={product.id}
-                    className={panelTableRowClassName}
-                  >
-                    <td className="border-b border-slate-100 px-4 py-4">
-                      <TableRowCheckbox
-                        checked={selectedIds.has(product.id)}
-                        label={`${product.name} kaydını seç`}
-                        onToggle={() => toggleRecordSelection(product.id)}
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div
+              className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}
+            >
+              <table className={panelTableClassName}>
+                <thead>
+                  <tr className={panelTableHeadRowClassName}>
+                    <th className={`${panelTableHeadClassName} w-10`}>
+                      <TableSelectAllCheckbox
+                        allSelected={allFilteredSelected}
+                        someSelected={someFilteredSelected}
+                        onToggle={toggleFilteredSelection}
                       />
-                    </td>
-                    <td className="border-b border-slate-100 px-4 py-4 font-semibold text-slate-950">
-                      {product.name}
-                    </td>
-                    <td className="border-b border-slate-100 px-4 py-4">
-                      {stockProductTypeLabels[product.product_type]}
-                    </td>
-                    <td className="border-b border-slate-100 px-4 py-4">
-                      {stockBrandModel(product)}
-                    </td>
-                    <td className="border-b border-slate-100 px-4 py-4 font-mono text-xs">
-                      {product.serial_no || "-"}
-                    </td>
-                    <td className="border-b border-slate-100 px-4 py-4">
-                      {product.branch_unit || "-"}
-                    </td>
-                    <td className="border-b border-slate-100 px-4 py-4 text-right font-semibold text-slate-950">
-                      {product.quantity}
-                    </td>
-                    <td className="border-b border-slate-100 px-4 py-4 text-right">
-                      {product.min_stock}
-                    </td>
-                    <td className="border-b border-slate-100 px-4 py-4">
-                      <StatusBadge status={product.status} />
-                    </td>
-                    <td className={panelTableActionsCellClassName}>
-                      <div className="flex shrink-0 items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          className={rowActionButtonClassName}
-                          aria-label="Düzenle"
-                          title="Düzenle"
-                          onClick={() => setModalProduct(product)}
-                        >
-                          <Pencil className="size-4" aria-hidden="true" />
-                        </button>
-                        <DeleteStockProductButton
-                          product={product}
-                          onDeleted={handleRecordsDeleted}
-                        />
-                      </div>
-                    </td>
+                    </th>
+                    <th className={panelTableHeadClassName}>Ürün Adı</th>
+                    <th className={`${panelTableHeadClassName} w-[7.5rem]`}>
+                      Ürün Tipi
+                    </th>
+                    <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
+                      Marka / Model
+                    </th>
+                    <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
+                      Seri No
+                    </th>
+                    <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
+                      Şube / Birim
+                    </th>
+                    <th className={`${panelTableHeadClassName} w-[5.5rem] text-right`}>
+                      Adet
+                    </th>
+                    <th className={`${panelTableHeadClassName} w-[5.5rem] text-right`}>
+                      Min.
+                    </th>
+                    <th className={`${panelTableHeadClassName} w-[6.5rem]`}>Durum</th>
+                    <th className={panelTableActionsHeadClassName}>İşlemler</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product) => (
+                    <tr key={product.id} className={panelTableRowClassName}>
+                      <td className={panelTableCellClassName}>
+                        <TableRowCheckbox
+                          checked={selectedIds.has(product.id)}
+                          label={`${product.name} kaydını seç`}
+                          onToggle={() => toggleRecordSelection(product.id)}
+                        />
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} min-w-0 truncate font-semibold text-slate-950`}
+                        title={product.name}
+                      >
+                        {product.name}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} truncate`}
+                        title={stockProductTypeLabels[product.product_type]}
+                      >
+                        {stockProductTypeLabels[product.product_type]}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} hidden min-w-0 truncate xl:table-cell`}
+                        title={stockBrandModel(product)}
+                      >
+                        {stockBrandModel(product)}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} hidden truncate font-mono text-xs xl:table-cell`}
+                        title={product.serial_no || undefined}
+                      >
+                        {product.serial_no || "-"}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} hidden truncate xl:table-cell`}
+                        title={product.branch_unit || undefined}
+                      >
+                        {product.branch_unit || "-"}
+                      </td>
+                      <td className={`${panelTableCellClassName} whitespace-nowrap text-right font-semibold text-slate-950`}>
+                        {product.quantity}
+                      </td>
+                      <td className={`${panelTableCellClassName} whitespace-nowrap text-right`}>
+                        {product.min_stock}
+                      </td>
+                      <td className={panelTableCellClassName}>
+                        <StatusBadge status={product.status} />
+                      </td>
+                      <td className={panelTableActionsCellClassName}>
+                        <div className="flex shrink-0 items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            className={rowActionButtonClassName}
+                            aria-label="Düzenle"
+                            title="Düzenle"
+                            onClick={() => setModalProduct(product)}
+                          >
+                            <Pencil className="size-4" aria-hidden="true" />
+                          </button>
+                          <DeleteStockProductButton
+                            product={product}
+                            onDeleted={handleRecordsDeleted}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
           <EmptyState
             icon={FileSearch}

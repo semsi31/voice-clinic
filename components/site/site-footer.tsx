@@ -12,6 +12,9 @@ import {
   getFooterRevealDelay,
   type FooterRevealColumn,
 } from "@/lib/site-motion";
+import { cdnImageSrc } from "@/lib/cdn-image";
+
+const LOGO_SRC = cdnImageSrc("/images/voice-logo.png");
 
 function subscribeToMobileFooter(cb: () => void) {
   const mediaQuery = window.matchMedia("(max-width: 767px)");
@@ -129,10 +132,11 @@ export function SiteFooter() {
               aria-label="Ana sayfa"
             >
               <Image
-                src="/images/voice-logo.png"
+                src={LOGO_SRC}
                 alt="Voice Klinik İşitme Merkezi"
                 width={645}
                 height={823}
+                unoptimized
                 className="h-12 w-auto object-contain"
               />
             </Link>
@@ -206,23 +210,23 @@ export function SiteFooter() {
             </h2>
             <div className="mt-4 space-y-3 text-sm leading-6 text-white/78">
               {contactItems.map((item) => (
-                <div key={item.label} className="flex items-start gap-3">
+                <div key={item.label} className="flex min-w-0 items-start gap-3">
                   <span className="site-footer-icon mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-xl border bg-white/6 shadow-sm shadow-black/10 backdrop-blur">
                     <SiteIcon name={item.icon} className="size-3.5" />
                   </span>
-                  <div>
+                  <div className="min-w-0">
                     <span className="block text-xs font-bold uppercase tracking-[0.12em] text-white/54">
                       {item.label}
                     </span>
                     {item.href ? (
                       <Link
                         href={item.href}
-                        className="site-footer-contact-link mt-0.5 block text-sm font-medium text-white/82"
+                        className="site-footer-contact-link mt-0.5 block break-words text-sm font-medium text-white/82"
                       >
                         {item.value}
                       </Link>
                     ) : (
-                      <span className="mt-0.5 block text-sm font-medium text-white/82">
+                      <span className="mt-0.5 block break-words text-sm font-medium text-white/82">
                         {item.value}
                       </span>
                     )}

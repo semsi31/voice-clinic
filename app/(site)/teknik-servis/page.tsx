@@ -1,5 +1,3 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import Image from "next/image";
 import { ContactCta } from "@/components/site/contact-cta";
 import { JsonLd } from "@/components/site/json-ld";
@@ -7,6 +5,7 @@ import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-car
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { PageImageHero } from "@/components/site/page-image-hero";
 import { Reveal } from "@/components/site/motion/reveal";
+import { cdnImageSrc } from "@/lib/cdn-image";
 import {
   buildBreadcrumbJsonLd,
   createPageMetadata,
@@ -29,25 +28,25 @@ const serviceItems = [
     title: "İşitme Cihazı Tamiri",
     description:
       "Cihazınızda yaşanan kullanım sorunlarını değerlendiriyor, gerekli servis yönlendirmesi ve takip süreci için destek sağlıyoruz.",
-    image: "/images/service-repair.jpg",
+    image: cdnImageSrc("/images/service-repair.jpg"),
   },
   {
     title: "Cihaz Bakımı",
     description:
       "Düzenli temizlik, kontrol ve bakım adımlarıyla cihazınızın daha verimli ve konforlu çalışmasına yardımcı oluyoruz.",
-    image: "/images/service-device-care.jpg",
+    image: cdnImageSrc("/images/service-device-care.jpg"),
   },
   {
     title: "Arıza Tespit",
     description:
       "Ses azalması, bağlantı problemi veya kullanım sırasında fark edilen sorunlar için ön değerlendirme süreci yürütüyoruz.",
-    image: "/images/service-fault-detection.jpg",
+    image: cdnImageSrc("/images/service-fault-detection.jpg"),
   },
   {
     title: "Garanti ve Servis Süreci",
     description:
       "Garanti kapsamı, servis yönlendirmesi, teslim ve takip süreçlerinde kullanıcıya anlaşılır bilgilendirme sunuyoruz.",
-    image: "/images/service-warranty.jpg",
+    image: cdnImageSrc("/images/service-warranty.jpg"),
   },
 ];
 
@@ -58,10 +57,6 @@ const serviceSteps = [
   "Kullanıcıya süreç hakkında bilgi verilir",
   "Cihaz teslim ve takip süreci tamamlanır",
 ];
-
-function publicImageExists(src: string) {
-  return existsSync(join(process.cwd(), "public", src.replace(/^\//, "")));
-}
 
 export default function TechnicalServicePage() {
   return (
@@ -79,7 +74,7 @@ export default function TechnicalServicePage() {
         ]}
         eyebrow="TEKNİK SERVİS"
         title="İşitme cihazınız için güvenilir teknik destek"
-        imageSrc="/images/blog-hearing-aid-care.jpg"
+        imageSrc={cdnImageSrc("/images/blog-hearing-aid-care.jpg")}
         imageAlt="Voice Klinik işitme cihazı teknik servis"
       />
 
@@ -87,39 +82,34 @@ export default function TechnicalServicePage() {
         <div className="mx-auto max-w-6xl">
           <h2 className="sr-only">Teknik servis hizmetleri</h2>
           <MotionGrid className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {serviceItems.map((service, index) => {
-              const hasImage = publicImageExists(service.image);
-
-              return (
-                <MotionCard
-                  key={service.title}
-                  index={index}
-                  className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-[#eadfca] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.07)] hover:border-[#D4AF37]/45 hover:shadow-[0_18px_44px_rgba(15,23,42,0.09)]"
-                >
-                  <div className="relative h-48 overflow-hidden bg-[radial-gradient(circle_at_24%_24%,rgba(212,175,55,0.24),transparent_30%),linear-gradient(135deg,#fff8e8_0%,#ead8b8_45%,#102A43_120%)]">
-                    {hasImage ? (
-                      <MotionCardImage className="absolute inset-0">
-                        <Image
-                          src={service.image}
-                          alt={service.title}
-                          fill
-                          sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
-                          className="object-cover"
-                        />
-                      </MotionCardImage>
-                    ) : null}
-                  </div>
-                  <div className="flex flex-1 flex-col p-6">
-                    <h3 className="font-serif text-2xl font-bold leading-tight text-[#071225] transition-colors group-hover:text-[#B88A28]">
-                      {service.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-7 text-slate-600">
-                      {service.description}
-                    </p>
-                  </div>
-                </MotionCard>
-              );
-            })}
+            {serviceItems.map((service, index) => (
+              <MotionCard
+                key={service.title}
+                index={index}
+                className="group flex h-full min-w-0 w-full flex-col overflow-hidden rounded-[1.75rem] border border-[#eadfca] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.07)] hover:border-[#D4AF37]/45 hover:shadow-[0_18px_44px_rgba(15,23,42,0.09)]"
+              >
+                <div className="relative h-48 overflow-hidden bg-[radial-gradient(circle_at_24%_24%,rgba(212,175,55,0.24),transparent_30%),linear-gradient(135deg,#fff8e8_0%,#ead8b8_45%,#102A43_120%)]">
+                  <MotionCardImage className="absolute inset-0">
+                    <Image
+                      src={service.image}
+                      alt={service.title}
+                      fill
+                      unoptimized
+                      sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
+                      className="object-cover"
+                    />
+                  </MotionCardImage>
+                </div>
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="font-serif text-2xl font-bold leading-tight text-[#071225] transition-colors group-hover:text-[#B88A28]">
+                    {service.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">
+                    {service.description}
+                  </p>
+                </div>
+              </MotionCard>
+            ))}
           </MotionGrid>
         </div>
       </section>
@@ -139,7 +129,7 @@ export default function TechnicalServicePage() {
               </h2>
             </Reveal>
 
-            <ol className="mt-7 grid gap-4 md:grid-cols-5">
+            <ol className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {serviceSteps.map((step, index) => (
                 <Reveal
                   key={step}

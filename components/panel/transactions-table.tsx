@@ -21,8 +21,11 @@ import {
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
   panelTableActionsHeadClassName,
+  panelTableCellClassName,
+  panelTableClassName,
   panelTableDesktopClassName,
   panelTableHeadClassName,
+  panelTableHeadRowClassName,
   panelTableRowClassName,
   panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
@@ -42,8 +45,8 @@ import {
   useTableBulkSelection,
 } from "@/components/panel/table-bulk-selection";
 
-const tableCellClassName =
-  "border-b border-slate-100 px-3 py-3 align-middle text-slate-700";
+const tableCellClassName = `${panelTableCellClassName} text-slate-700`;
+const secondaryColClassName = "hidden xl:table-cell";
 
 function deviceLabel(transaction: PatientTransactionRecord) {
   return [transaction.brand, transaction.model].filter(Boolean).join(" ") || "-";
@@ -374,7 +377,7 @@ export function TransactionsTable({
         <div className="flex items-end">
           <PanelLink
             href="/panel/transactions"
-            className={`${panelSecondaryButtonClassName} h-10 px-4 py-2`}
+            className={`${panelSecondaryButtonClassName} h-10 w-full px-4 py-2 sm:w-auto`}
           >
             Sıfırla
           </PanelLink>
@@ -465,32 +468,44 @@ export function TransactionsTable({
           </div>
 
           <div className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}>
-          <table className="w-full min-w-[1240px] border-separate border-spacing-0 text-left text-sm">
+          <table className={panelTableClassName}>
             <thead>
-              <tr>
-                <th className={panelTableHeadClassName}>
+              <tr className={panelTableHeadRowClassName}>
+                <th className={`${panelTableHeadClassName} w-10`}>
                   <TableSelectAllCheckbox
                     allSelected={allFilteredSelected}
                     someSelected={someFilteredSelected}
                     onToggle={toggleFilteredSelection}
                   />
                 </th>
-                <th className={panelTableHeadClassName}>İşlem No</th>
-                <th className={panelTableHeadClassName}>Tarih</th>
-                <th className={panelTableHeadClassName}>Şube / Birim</th>
-                <th className={panelTableHeadClassName}>Hasta Adı Soyadı</th>
-                <th className={panelTableHeadClassName}>Kaynak</th>
-                <th className={panelTableHeadClassName}>Telefon</th>
-                <th className={panelTableHeadClassName}>Yapılan İşlem</th>
-                <th className={panelTableHeadClassName}>Marka / Model</th>
-                <th className={`${panelTableHeadClassName} text-right`}>
-                  Satış Tutarı
+                <th className={`${panelTableHeadClassName} w-[7rem]`}>İşlem No</th>
+                <th className={`${panelTableHeadClassName} w-[6.5rem]`}>Tarih</th>
+                <th className={`${panelTableHeadClassName} ${secondaryColClassName}`}>
+                  Şube / Birim
                 </th>
-                <th className={`${panelTableHeadClassName} text-right`}>Ödenen</th>
-                <th className={`${panelTableHeadClassName} text-right`}>
-                  Kalan Borç
+                <th className={panelTableHeadClassName}>Hasta</th>
+                <th className={`${panelTableHeadClassName} ${secondaryColClassName}`}>
+                  Kaynak
                 </th>
-                <th className={panelTableHeadClassName}>Durum</th>
+                <th className={`${panelTableHeadClassName} ${secondaryColClassName}`}>
+                  Telefon
+                </th>
+                <th className={panelTableHeadClassName}>İşlem</th>
+                <th className={`${panelTableHeadClassName} ${secondaryColClassName}`}>
+                  Marka / Model
+                </th>
+                <th className={`${panelTableHeadClassName} w-[6.5rem] text-right`}>
+                  Satış
+                </th>
+                <th
+                  className={`${panelTableHeadClassName} w-[6.5rem] text-right ${secondaryColClassName}`}
+                >
+                  Ödenen
+                </th>
+                <th className={`${panelTableHeadClassName} w-[6.5rem] text-right`}>
+                  Kalan
+                </th>
+                <th className={`${panelTableHeadClassName} w-[6rem]`}>Durum</th>
                 <th className={panelTableActionsHeadClassName}>İşlemler</th>
               </tr>
             </thead>
@@ -515,36 +530,49 @@ export function TransactionsTable({
                   <td className={`${tableCellClassName} whitespace-nowrap`}>
                     {formatDate(transaction.transaction_date)}
                   </td>
-                  <td className={tableCellClassName}>
+                  <td className={`${tableCellClassName} ${secondaryColClassName} truncate`} title={transaction.branch || undefined}>
                     {transaction.branch || "-"}
                   </td>
                   <td
-                    className={`${tableCellClassName} font-semibold text-slate-950`}
+                    className={`${tableCellClassName} min-w-0 truncate font-semibold text-slate-950`}
+                    title={transaction.patient_name}
                   >
                     {transaction.patient_name}
                   </td>
-                  <td className={`${tableCellClassName} whitespace-nowrap`}>
+                  <td className={`${tableCellClassName} whitespace-nowrap ${secondaryColClassName}`}>
                     {isLegacyTransaction(transaction) ? <LegacyBadge /> : "Normal"}
                   </td>
-                  <td className={`${tableCellClassName} whitespace-nowrap`}>
+                  <td className={`${tableCellClassName} whitespace-nowrap ${secondaryColClassName}`}>
                     {transaction.patient_phone || "-"}
                   </td>
-                  <td className={tableCellClassName}>
+                  <td
+                    className={`${tableCellClassName} min-w-0 truncate`}
+                    title={transaction.operation_description}
+                  >
                     {transaction.operation_description}
                   </td>
-                  <td className={`${tableCellClassName} max-w-[140px] truncate`}>
+                  <td
+                    className={`${tableCellClassName} min-w-0 truncate ${secondaryColClassName}`}
+                    title={
+                      isLegacyTransaction(transaction)
+                        ? undefined
+                        : deviceLabel(transaction)
+                    }
+                  >
                     {isLegacyTransaction(transaction) ? "-" : deviceLabel(transaction)}
                   </td>
                   <td
-                    className={`${tableCellClassName} text-right font-semibold tabular-nums text-slate-950`}
+                    className={`${tableCellClassName} whitespace-nowrap text-right font-semibold tabular-nums text-slate-950`}
                   >
                     {formatCurrency(transaction.sale_amount)}
                   </td>
-                  <td className={`${tableCellClassName} text-right tabular-nums`}>
+                  <td
+                    className={`${tableCellClassName} whitespace-nowrap text-right tabular-nums ${secondaryColClassName}`}
+                  >
                     {formatCurrency(transaction.paid_amount)}
                   </td>
                   <td
-                    className={`${tableCellClassName} text-right font-semibold tabular-nums text-slate-950`}
+                    className={`${tableCellClassName} whitespace-nowrap text-right font-semibold tabular-nums text-slate-950`}
                   >
                     {formatCurrency(transaction.remaining_debt)}
                   </td>

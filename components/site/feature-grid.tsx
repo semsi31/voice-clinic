@@ -47,12 +47,12 @@ export function FeatureGrid({ items, columns = 3, className }: FeatureGridProps)
               variant="fade-up-card"
               delay={getGridCardDelay(index)}
             >
-              <article className="site-card-motion group rounded-2xl border border-[#eadfca] bg-white p-5 shadow-lg shadow-slate-950/5 hover:border-[#D4AF37]/45 hover:shadow-xl hover:shadow-slate-950/10">
+              <article className="site-card-motion group min-w-0 w-full rounded-2xl border border-[#eadfca] bg-white p-5 shadow-lg shadow-slate-950/5 hover:border-[#D4AF37]/45 hover:shadow-xl hover:shadow-slate-950/10">
                 <IconBadge name={getIconName(item)} variant="light" size="sm" className="mb-4" />
-                <h3 className="text-lg font-bold tracking-tight text-primary">
+                <h3 className="break-words text-lg font-bold tracking-tight text-primary">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">
                   {item.description}
                 </p>
               </article>

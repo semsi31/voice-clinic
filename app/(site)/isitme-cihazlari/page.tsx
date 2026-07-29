@@ -6,14 +6,12 @@ import {
 import { JsonLd } from "@/components/site/json-ld";
 import { PageImageHero } from "@/components/site/page-image-hero";
 import { Reveal } from "@/components/site/motion/reveal";
-import { getVersionedPublicImageSrc } from "@/lib/public-image";
+import { cdnImageSrc } from "@/lib/cdn-image";
 import {
   buildBreadcrumbJsonLd,
   createPageMetadata,
 } from "@/lib/site-seo";
 import { sectionHeadingDelays } from "@/lib/site-motion";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 
 export const metadata = createPageMetadata({
   title: "İşitme Cihazları",
@@ -62,19 +60,10 @@ const deviceTypes = [
   },
 ];
 
-function resolveDeviceImage(src: string): string | null {
-  const filePath = join(process.cwd(), "public", src.replace(/^\//, ""));
-  if (!existsSync(filePath)) {
-    return null;
-  }
-
-  return getVersionedPublicImageSrc(src);
-}
-
 export default function HearingDevicesPage() {
   const carouselItems: DeviceCarouselItem[] = deviceTypes.map((device) => ({
     ...device,
-    imageSrc: resolveDeviceImage(device.image),
+    imageSrc: cdnImageSrc(device.image),
   }));
 
   return (
@@ -92,12 +81,12 @@ export default function HearingDevicesPage() {
         ]}
         eyebrow="İŞİTME CİHAZLARI"
         title="Yaşam tarzınıza uygun işitme cihazı seçenekleri"
-        imageSrc={getVersionedPublicImageSrc("/images/service-hearing-test.jpg")}
+        imageSrc={cdnImageSrc("/images/service-hearing-test.jpg")}
         imageClassName="object-[center_40%]"
         imageAlt="Voice Klinik işitme cihazı seçenekleri"
       />
 
-      <section className="overflow-x-clip py-12 md:py-16 lg:py-20">
+      <section className="scroll-mt-[5.75rem] py-12 md:py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex max-w-3xl flex-col gap-0 sm:mb-6">
             <Reveal variant="fade-up-compact" delay={sectionHeadingDelays.eyebrow}>
@@ -113,8 +102,8 @@ export default function HearingDevicesPage() {
           </div>
         </div>
 
-        {/* Full-bleed track so side previews fill empty gutters without shrinking cards. */}
-        <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 px-2 sm:px-4">
+        {/* Overflow only inside the carousel track — never clip controls at section level. */}
+        <div className="relative w-full max-w-full min-w-0 px-2 sm:px-4">
           <DeviceCardsCarousel items={carouselItems} />
         </div>
       </section>

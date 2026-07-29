@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { existsSync, statSync } from "node:fs";
-import { join } from "node:path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ContactCta } from "@/components/site/contact-cta";
@@ -8,6 +6,7 @@ import { JsonLd } from "@/components/site/json-ld";
 import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-card";
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { Reveal } from "@/components/site/motion/reveal";
+import { cdnImageSrc } from "@/lib/cdn-image";
 import { heroDelays, IMAGE_REVEAL_DURATION_MS, sectionHeadingDelays } from "@/lib/site-motion";
 import {
   buildBlogPostingJsonLd,
@@ -22,16 +21,6 @@ type BlogDetailPageProps = {
     slug: string;
   }>;
 };
-
-function getPublicImageSrc(src: string) {
-  const imagePath = join(process.cwd(), "public", src.replace(/^\//, ""));
-
-  if (!existsSync(imagePath)) {
-    return null;
-  }
-
-  return `${src}?v=${Math.round(statSync(imagePath).mtimeMs)}`;
-}
 
 export function generateStaticParams() {
   return blogPosts.map((post) => ({
@@ -73,7 +62,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     notFound();
   }
 
-  const imageSrc = getPublicImageSrc(post.image);
+  const imageSrc = cdnImageSrc(post.image);
   const relatedPosts = blogPosts
     .filter((relatedPost) => relatedPost.slug !== post.slug)
     .slice(0, 3);
@@ -82,7 +71,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const postPath = `/blog/${post.slug}`;
 
   return (
-    <main className="overflow-x-hidden bg-[#faf8f3] text-foreground">
+    <main className="bg-[#faf8f3] text-foreground">
       <JsonLd
         data={[
           buildBreadcrumbJsonLd([
@@ -101,27 +90,23 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
         ]}
       />
       <div className="relative h-[240px] w-full overflow-hidden sm:h-[300px] lg:h-[360px] xl:h-[400px]">
-        {imageSrc ? (
-          <Reveal
-            variant="fade-image"
-            duration={IMAGE_REVEAL_DURATION_MS}
-            className="absolute inset-0"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element -- Full-bleed hero banner requires direct img with object-cover crop. */}
-            <img
-              src={imageSrc}
-              alt={post.title}
-              width={1600}
-              height={900}
-              decoding="async"
-              fetchPriority="high"
-              sizes="100vw"
-              className="size-full object-cover object-[68%_42%]"
-            />
-          </Reveal>
-        ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(212,175,55,0.2),transparent_28%),linear-gradient(135deg,#fff8e8_0%,#ead8b8_48%,#102A43_125%)]" />
-        )}
+        <Reveal
+          variant="fade-image"
+          duration={IMAGE_REVEAL_DURATION_MS}
+          className="absolute inset-0"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- Full-bleed hero banner requires direct img with object-cover crop. */}
+          <img
+            src={imageSrc}
+            alt={post.title}
+            width={1600}
+            height={900}
+            decoding="async"
+            fetchPriority="high"
+            sizes="100vw"
+            className="size-full object-cover object-[68%_42%]"
+          />
+        </Reveal>
         <div className="absolute inset-0 bg-[#071225]/20" aria-hidden="true" />
         <div
           className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#faf8f3]/75"
@@ -208,7 +193,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
             <article className="order-2 min-w-0 max-w-4xl lg:order-1">
               <Reveal variant="fade-up">
-                <p className="border-l-2 border-[#D4AF37] bg-[#fffdf8] px-5 py-3.5 text-[0.9375rem] font-medium leading-7 text-[#071225] sm:text-base sm:leading-8">
+                <p className="min-w-0 break-words border-l-2 border-[#D4AF37] bg-[#fffdf8] px-4 py-3.5 text-[0.9375rem] font-medium leading-7 text-[#071225] sm:px-5 sm:text-base sm:leading-8">
                   {post.intro}
                 </p>
               </Reveal>
@@ -250,7 +235,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                 ))}
                 {post.closing ? (
                   <Reveal variant="fade-up" delay={80}>
-                    <p className="mt-12 border-l-2 border-[#D4AF37]/60 bg-[#fffdf8] px-5 py-3.5 text-[0.9375rem] font-medium leading-7 text-[#071225] sm:text-base sm:leading-8">
+                    <p className="mt-12 min-w-0 break-words border-l-2 border-[#D4AF37]/60 bg-[#fffdf8] px-4 py-3.5 text-[0.9375rem] font-medium leading-7 text-[#071225] sm:px-5 sm:text-base sm:leading-8">
                       {post.closing}
                     </p>
                   </Reveal>
@@ -268,9 +253,9 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                 İlgili yazılar
               </h2>
             </Reveal>
-            <MotionGrid className="mt-5 grid gap-5 md:grid-cols-3">
+            <MotionGrid className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {relatedPosts.map((relatedPost, index) => {
-                const relatedImageSrc = getPublicImageSrc(relatedPost.image);
+                const relatedImageSrc = cdnImageSrc(relatedPost.image);
 
                 return (
                   <MotionCard

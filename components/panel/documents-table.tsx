@@ -38,6 +38,8 @@ import {
   panelTableActionsCellClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
+  panelTableCellClassName,
+  panelTableClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
   panelTableDesktopClassName,
@@ -501,19 +503,10 @@ export function DocumentsTable({
             </div>
 
             <div className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}>
-            <table className="w-full min-w-[960px] table-fixed border-separate border-spacing-0 text-left text-sm">
-              <colgroup>
-                <col className="w-[4%]" />
-                <col className="w-[20%]" />
-                <col className="w-[11%]" />
-                <col className="w-[10%]" />
-                <col className="w-[12%]" />
-                <col className="w-[31%]" />
-                <col className="w-[8%]" />
-              </colgroup>
+            <table className={panelTableClassName}>
               <thead>
                 <tr className={panelTableHeadRowClassName}>
-                  <th className={panelTableHeadClassName}>
+                  <th className={`${panelTableHeadClassName} w-10`}>
                     <TableSelectAllCheckbox
                       allSelected={allFilteredSelected}
                       someSelected={someFilteredSelected}
@@ -523,16 +516,16 @@ export function DocumentsTable({
                   <th className={panelTableHeadClassName}>
                     Belge Adı
                   </th>
-                  <th className={panelTableHeadClassName}>
+                  <th className={`${panelTableHeadClassName} w-[7rem]`}>
                     Dosya Türü
                   </th>
-                  <th className={panelTableHeadClassName}>
-                    Dosya Boyutu
+                  <th className={`${panelTableHeadClassName} w-[6.5rem] whitespace-nowrap`}>
+                    Boyut
                   </th>
-                  <th className={panelTableHeadClassName}>
-                    Yüklenme Tarihi
+                  <th className={`${panelTableHeadClassName} w-[7rem]`}>
+                    Tarih
                   </th>
-                  <th className={panelTableHeadClassName}>
+                  <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
                     Açıklama
                   </th>
                   <th className={panelTableActionsHeadClassName}>İşlemler</th>
@@ -544,26 +537,32 @@ export function DocumentsTable({
                     key={document.id}
                     className={panelTableRowClassName}
                   >
-                    <td className="border-b border-slate-100 px-4 py-4">
+                    <td className={panelTableCellClassName}>
                       <TableRowCheckbox
                         checked={selectedIds.has(document.id)}
                         label={`${document.title} belgesini seç`}
                         onToggle={() => toggleRecordSelection(document.id)}
                       />
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-4 font-semibold text-slate-950 truncate">
+                    <td
+                      className={`${panelTableCellClassName} min-w-0 truncate font-semibold text-slate-950`}
+                      title={document.title}
+                    >
                       {document.title}
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-4">
+                    <td className={panelTableCellClassName}>
                       <FileTypeBadge fileType={document.file_type} />
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-4 whitespace-nowrap">
+                    <td className={`${panelTableCellClassName} whitespace-nowrap`}>
                       {document.file_size || "-"}
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-4 whitespace-nowrap">
+                    <td className={`${panelTableCellClassName} whitespace-nowrap`}>
                       {formatDate(document.created_at)}
                     </td>
-                    <td className="truncate border-b border-slate-100 px-4 py-4">
+                    <td
+                      className={`${panelTableCellClassName} hidden min-w-0 truncate xl:table-cell`}
+                      title={document.description || undefined}
+                    >
                       {document.description || "-"}
                     </td>
                     <td className={panelTableActionsCellClassName}>

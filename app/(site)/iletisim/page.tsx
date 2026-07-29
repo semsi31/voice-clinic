@@ -8,6 +8,7 @@ import type { IconType } from "react-icons";
 import { AppointmentFormSection } from "@/components/site/appointment-form-section";
 import { ContactRequestForm } from "@/components/site/contact-request-form";
 import { JsonLd } from "@/components/site/json-ld";
+import { cdnImageSrc } from "@/lib/cdn-image";
 import {
   buildBreadcrumbJsonLd,
   createPageMetadata,
@@ -118,14 +119,14 @@ export default function ContactPage() {
         ]}
         eyebrow="İLETİŞİM"
         title="Bizimle iletişime geçin"
-        imageSrc="/images/hero-hearing-care..jpg"
+        imageSrc={cdnImageSrc("/images/hero-hearing-care..jpg")}
         imageAlt="Voice Klinik İşitme Merkezi iletişim"
       />
 
       <section className="px-4 py-10 sm:px-6 md:py-14 lg:px-8 lg:py-16">
         <div className="mx-auto max-w-6xl">
           <h2 className="sr-only">İletişim bilgileri</h2>
-          <MotionGrid className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+          <MotionGrid className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
             {contactCards.map((card, index) => {
               const Icon = card.icon;
 
@@ -133,7 +134,7 @@ export default function ContactPage() {
                 <MotionCard
                   key={card.title}
                   index={index}
-                  className="flex h-full flex-col rounded-2xl border border-[#eadfca]/90 bg-white/90 p-3.5 sm:rounded-[1.5rem] sm:p-5 lg:p-5 xl:p-6"
+                  className="flex h-full min-w-0 w-full flex-col rounded-2xl border border-[#eadfca]/90 bg-white/90 p-3.5 sm:rounded-[1.5rem] sm:p-5 lg:p-5 xl:p-6"
                 >
                   <span
                     className={`inline-flex size-9 items-center justify-center rounded-xl text-lg sm:size-11 sm:rounded-2xl sm:text-[22px] ${card.iconClassName}`}
@@ -163,7 +164,7 @@ export default function ContactPage() {
 
             <MotionCard
               index={contactCards.length}
-              className="flex h-full flex-col rounded-2xl border border-[#eadfca]/90 bg-white/90 p-3.5 sm:rounded-[1.5rem] sm:p-5 lg:p-5 xl:p-6"
+              className="flex h-full min-w-0 w-full flex-col rounded-2xl border border-[#eadfca]/90 bg-white/90 p-3.5 sm:rounded-[1.5rem] sm:p-5 lg:p-5 xl:p-6"
             >
               <span
                 className={`inline-flex size-9 items-center justify-center rounded-xl text-lg sm:size-11 sm:rounded-2xl sm:text-[22px] ${locationCard.iconClassName}`}
@@ -173,10 +174,10 @@ export default function ContactPage() {
               <h3 className="mt-3 font-serif text-base font-bold text-[#071225] sm:mt-4 sm:text-xl lg:text-xl xl:text-2xl">
                 {locationCard.title}
               </h3>
-              <p className="mt-1 text-xs font-semibold leading-5 text-[#071225] sm:mt-2 sm:text-sm sm:leading-7">
+              <p className="mt-1 break-words text-xs font-semibold leading-5 text-[#071225] sm:mt-2 sm:text-sm sm:leading-7">
                 {locationCard.value}
               </p>
-              <p className="mt-2 flex-1 text-xs leading-5 text-slate-600 sm:mt-3 sm:text-sm sm:leading-7">
+              <p className="mt-2 min-w-0 flex-1 break-words text-xs leading-5 text-slate-600 sm:mt-3 sm:text-sm sm:leading-7">
                 {locationCard.addressLines.map((line) => (
                   <span key={line} className="block">
                     {line}

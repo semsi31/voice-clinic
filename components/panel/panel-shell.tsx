@@ -48,8 +48,8 @@ export function PanelShell({
   }, [isMobileMenuOpen]);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-slate-100 text-slate-950">
-      <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:block">
+    <div className="flex min-h-screen min-w-0 max-w-full flex-col bg-slate-100 text-slate-950">
+      <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-20 lg:block">
         <PanelSidebar />
       </div>
 
@@ -66,7 +66,7 @@ export function PanelShell({
             aria-label="Panel menüsünü kapat"
             onClick={closeMobileMenu}
           />
-          <div className="relative flex h-full max-h-dvh w-[min(100%,18rem)] flex-col bg-white shadow-xl">
+          <div className="relative flex h-dvh max-h-dvh w-[min(100%,18rem)] flex-col bg-white shadow-xl">
             <button
               type="button"
               className="absolute right-3 top-3 z-10 inline-flex size-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 shadow-sm"
@@ -82,7 +82,7 @@ export function PanelShell({
         </div>
       ) : null}
 
-      <div className="min-w-0 lg:pl-72">
+      <div className="flex min-w-0 w-full max-w-full flex-1 flex-col lg:pl-72">
         <PanelTopbar
           onMenuClick={() => setIsMobileMenuOpen(true)}
           userGreeting={userGreeting}
@@ -90,8 +90,8 @@ export function PanelShell({
           userName={userName}
           userEmail={userEmail}
         />
-        <main className="px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
-          <div className="mx-auto w-full max-w-[1680px]">{children}</div>
+        <main className="min-w-0 w-full max-w-full flex-1 px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+          <div className="mx-auto min-w-0 w-full max-w-full">{children}</div>
         </main>
       </div>
     </div>

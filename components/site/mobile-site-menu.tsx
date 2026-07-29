@@ -13,7 +13,10 @@ import {
   siteSocialLinks,
 } from "@/components/site/site-navigation";
 import { MOBILE_MENU_CLOSE_MS } from "@/lib/site-motion";
+import { cdnImageSrc } from "@/lib/cdn-image";
 import { cn } from "@/lib/utils";
+
+const LOGO_SRC = cdnImageSrc("/images/voice-logo.png");
 
 const socialIconMap = {
   Instagram: FaInstagram,
@@ -138,7 +141,7 @@ export function MobileSiteMenu() {
             <nav
               id="mobile-site-menu"
               className={cn(
-                "site-menu-drawer absolute inset-y-0 right-0 flex w-[min(100%,20.5rem)] max-w-[85vw] flex-col border-l border-[#D4AF37]/20 bg-[#fffdf8] shadow-[-12px_0_40px_rgba(7,18,37,0.18)]",
+                "site-menu-drawer absolute inset-y-0 right-0 flex h-dvh max-h-dvh w-[min(100%,20.5rem)] max-w-[min(85vw,20.5rem)] flex-col border-l border-[#D4AF37]/20 bg-[#fffdf8] shadow-[-12px_0_40px_rgba(7,18,37,0.18)]",
                 isOpen && !isClosing && "site-menu-drawer--open",
                 isClosing && "site-menu-drawer--closing",
               )}
@@ -148,11 +151,12 @@ export function MobileSiteMenu() {
                 <div className="flex items-center gap-3">
                   <span className="flex size-10 items-center justify-center rounded-xl border border-[#D4AF37]/30 bg-white shadow-sm">
                     <Image
-                      src="/images/voice-logo.png"
+                      src={LOGO_SRC}
                       alt=""
                       aria-hidden="true"
                       width={645}
                       height={823}
+                      unoptimized
                       className="h-7 w-auto object-contain"
                     />
                   </span>
@@ -187,7 +191,7 @@ export function MobileSiteMenu() {
                         <Link
                           href={item.href}
                           className={cn(
-                            "site-menu-item block min-h-11 rounded-xl px-3 py-2.5 text-[15px] font-bold text-[#071225] transition-colors hover:bg-[#f7f2e7] hover:text-[#B88A28]",
+                            "site-menu-item flex min-h-11 items-center rounded-xl px-3 py-2.5 text-[15px] font-bold text-[#071225] transition-colors hover:bg-[#f7f2e7] hover:text-[#B88A28]",
                             isActive &&
                               "bg-[#C49A3A] text-white shadow-md shadow-[#C49A3A]/25 hover:bg-[#B88A28] hover:text-white",
                           )}
@@ -203,7 +207,7 @@ export function MobileSiteMenu() {
                                 key={child.href}
                                 href={child.href}
                                 className={cn(
-                                  "site-menu-item block min-h-10 rounded-lg px-2 py-2 text-sm font-medium text-[#071225]/75 transition-colors hover:bg-[#f7f2e7] hover:text-[#B88A28]",
+                                  "site-menu-item flex min-h-11 items-center rounded-lg px-2 py-2 text-sm font-medium text-[#071225]/75 transition-colors hover:bg-[#f7f2e7] hover:text-[#B88A28]",
                                   pathname.startsWith(child.href) &&
                                     "bg-[#fff8e8] font-semibold text-[#B88A28]",
                                 )}
@@ -264,7 +268,7 @@ export function MobileSiteMenu() {
     <div key={pathname} className="lg:hidden">
       <button
         type="button"
-        className="site-menu-toggle-motion inline-flex size-10 items-center justify-center rounded-full border border-[#eadfca] bg-white text-[#071225] shadow-sm hover:border-[#D4AF37]/45 hover:text-[#B88A28] sm:size-11"
+        className="site-menu-toggle-motion inline-flex size-11 items-center justify-center rounded-full border border-[#eadfca] bg-white text-[#071225] shadow-sm hover:border-[#D4AF37]/45 hover:text-[#B88A28]"
         aria-expanded={isOpen}
         aria-controls="mobile-site-menu"
         aria-label={isOpen ? "Menüyü kapat" : "Menüyü aç"}

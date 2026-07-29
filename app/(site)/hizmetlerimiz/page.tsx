@@ -4,7 +4,7 @@ import { MotionCard, MotionCardImage } from "@/components/site/motion/motion-car
 import { MotionGrid } from "@/components/site/motion/motion-grid";
 import { Reveal } from "@/components/site/motion/reveal";
 import { PageImageHero } from "@/components/site/page-image-hero";
-import { getVersionedPublicImageSrc } from "@/lib/public-image";
+import { cdnImageSrc } from "@/lib/cdn-image";
 import {
   buildBreadcrumbJsonLd,
   createPageMetadata,
@@ -25,32 +25,32 @@ const services = [
   {
     title: "İşitme Testi ve Değerlendirme",
     description: "İşitme durumunuzu profesyonel değerlendirme süreciyle analiz ediyor, günlük yaşam ihtiyaçlarınızı dikkate alarak size en uygun yönlendirmeyi planlıyoruz.",
-    image: "/images/service-hearing-test.jpg",
+    image: cdnImageSrc("/images/service-hearing-test.jpg"),
   },
   {
     title: "İşitme Cihazı Uygulaması",
     description: "İhtiyacınıza uygun işitme cihazının seçimi, uygulanması ve kişisel ayarlarının yapılması sürecinde uzman desteği sunuyoruz.",
-    image: "/images/service-hearing-aid-fitting.jpg",
+    image: cdnImageSrc("/images/service-hearing-aid-fitting.jpg"),
   },
   {
     title: "İşitme Cihazı Satışı",
     description: "Farklı kullanım beklentilerine ve işitme ihtiyaçlarına uygun modern işitme cihazı seçenekleri hakkında anlaşılır bilgilendirme sağlıyoruz.",
-    image: "/images/service-hearing-aid-sales.jpg",
+    image: cdnImageSrc("/images/service-hearing-aid-sales.jpg"),
   },
   {
     title: "Cihaz Bakım ve Kontrol",
     description: "İşitme cihazınızın performansını korumak için düzenli bakım, temizlik ve kontrol süreçlerinde profesyonel destek veriyoruz.",
-    image: "/images/service-device-care.jpg",
+    image: cdnImageSrc("/images/service-device-care.jpg"),
   },
   {
     title: "Yedek Parça ve Aksesuar",
     description: "Cihaz kullanım konforunu artıran aksesuarlar, pil, kulak kalıbı ve ihtiyaç duyulan yedek parça çözümleriyle yanınızda oluyoruz.",
-    image: "/images/service-accessories.jpg",
+    image: cdnImageSrc("/images/service-accessories.jpg"),
   },
   {
     title: "Satış Sonrası Destek",
     description: "Cihaz kullanım sürecinde karşılaşabileceğiniz sorular, ayarlama ihtiyaçları ve takip süreçleri için satış sonrasında da destek sunuyoruz.",
-    image: "/images/service-after-sales.jpg",
+    image: cdnImageSrc("/images/service-after-sales.jpg"),
   },
 ];
 
@@ -70,7 +70,7 @@ export default function ServicesPage() {
         ]}
         eyebrow="TÜM HİZMETLER"
         title="İşitme sağlığınız için profesyonel hizmet alanları"
-        imageSrc={getVersionedPublicImageSrc(HERO_IMAGE)}
+        imageSrc={cdnImageSrc(HERO_IMAGE)}
         imageAlt="Voice Klinik işitme sağlığı hizmetleri"
       />
 
@@ -92,7 +92,7 @@ export default function ServicesPage() {
               <MotionCard
                 key={service.title}
                 index={index}
-                className="group overflow-hidden rounded-[1.75rem] border border-[#eadfca] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.07)] hover:border-[#D4AF37]/45 hover:shadow-[0_18px_44px_rgba(15,23,42,0.09)]"
+                className="group min-w-0 w-full overflow-hidden rounded-[1.75rem] border border-[#eadfca] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.07)] hover:border-[#D4AF37]/45 hover:shadow-[0_18px_44px_rgba(15,23,42,0.09)]"
               >
                 <div
                   className="relative min-h-[210px] overflow-hidden bg-[#f6eddf]"

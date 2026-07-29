@@ -4,6 +4,9 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { PanelLink } from "@/components/panel/panel-link";
 import { panelNavigation } from "@/components/panel/panel-navigation";
+import { cdnImageSrc } from "@/lib/cdn-image";
+
+const LOGO_SRC = cdnImageSrc("/images/voice-logo.png");
 
 type PanelSidebarProps = {
   onNavigate?: () => void;
@@ -22,10 +25,11 @@ export function PanelSidebar({ onNavigate }: PanelSidebarProps) {
         >
           <span className="flex size-11 items-center justify-center rounded-2xl bg-white shadow-sm">
             <Image
-              src="/images/voice-logo.png"
+              src={LOGO_SRC}
               alt="Voice Klinik"
               width={645}
               height={823}
+              unoptimized
               className="h-8 w-auto object-contain"
             />
           </span>

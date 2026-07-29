@@ -4,9 +4,12 @@ import Link from "next/link";
 import { Reveal } from "@/components/site/motion/reveal";
 import { heroDelays, IMAGE_REVEAL_DURATION_MS } from "@/lib/site-motion";
 import { SiteIcon } from "@/components/site/site-icon";
+import { cdnImageSrc } from "@/lib/cdn-image";
+
+const heroImageUrl = cdnImageSrc("/images/hero-hearing-care..jpg");
 
 const heroBackgroundImage =
-  "linear-gradient(90deg, rgba(7,18,37,0.78) 0%, rgba(7,18,37,0.68) 34%, rgba(7,18,37,0.35) 64%, rgba(7,18,37,0.06) 100%), linear-gradient(180deg, rgba(7,18,37,0.10) 0%, rgba(7,18,37,0.04) 52%, rgba(7,18,37,0.22) 100%), url('/images/hero-hearing-care..jpg'), linear-gradient(110deg, #071225 0%, #102A43 48%, #d8c09c 100%)";
+  `linear-gradient(90deg, rgba(7,18,37,0.78) 0%, rgba(7,18,37,0.68) 34%, rgba(7,18,37,0.35) 64%, rgba(7,18,37,0.06) 100%), linear-gradient(180deg, rgba(7,18,37,0.10) 0%, rgba(7,18,37,0.04) 52%, rgba(7,18,37,0.22) 100%), url('${heroImageUrl}'), linear-gradient(110deg, #071225 0%, #102A43 48%, #d8c09c 100%)`;
 
 export function HomeHeroSlider() {
   return (

@@ -28,7 +28,8 @@ export function PageImageHero({
   const resolvedAlt = imageAlt?.trim() || title;
 
   return (
-    <section className="px-4 pt-24 sm:px-6 sm:pt-28 lg:px-8 lg:pt-32">
+    // Header: pt-3 + ~3.75rem bar ≈ 4.5rem; keep ~1.25rem clearance → 5.75rem on mobile.
+    <section className="px-4 pt-[5.75rem] sm:px-6 sm:pt-28 lg:px-8 lg:pt-32">
       <div className="mx-auto max-w-7xl">
         <div className="relative h-[240px] overflow-hidden rounded-2xl sm:h-[300px] lg:h-[360px] lg:rounded-[1.75rem]">
           <m.div

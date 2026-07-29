@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cdnImageSrc } from "@/lib/cdn-image";
 
 export const SITE_NAME = "Voice Klinik İşitme Merkezi";
 export const SITE_NAME_SHORT = "Voice Klinik";
@@ -103,6 +104,16 @@ export function absoluteUrl(path = "/"): string {
   return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+/** Absolute image URL for OG/JSON-LD — prefers R2 CDN when configured. */
+export function absoluteImageUrl(path = DEFAULT_OG_IMAGE): string {
+  const resolved = cdnImageSrc(path);
+  if (/^https?:\/\//i.test(resolved)) {
+    return resolved;
+  }
+
+  return absoluteUrl(resolved);
+}
+
 export type PageMetadataInput = {
   title: string;
   description: string;
@@ -126,7 +137,7 @@ export function createPageMetadata({
   modifiedTime,
 }: PageMetadataInput): Metadata {
   const canonical = absoluteUrl(path);
-  const ogImage = absoluteUrl(image);
+  const ogImage = absoluteImageUrl(image);
   const ogTitle = absoluteTitle ? title : `${title} | ${SITE_NAME_SHORT}`;
 
   return {
@@ -224,8 +235,8 @@ export function buildLocalBusinessJsonLd() {
     url: absoluteUrl("/"),
     telephone: SITE_BUSINESS.telephoneSchema,
     email: SITE_BUSINESS.email,
-    image: absoluteUrl(DEFAULT_OG_IMAGE),
-    logo: absoluteUrl(SITE_LOGO),
+    image: absoluteImageUrl(DEFAULT_OG_IMAGE),
+    logo: absoluteImageUrl(SITE_LOGO),
     address: {
       "@type": "PostalAddress",
       streetAddress: SITE_BUSINESS.streetAddress,
@@ -258,7 +269,7 @@ export function buildBlogPostingJsonLd(input: {
     description: input.description,
     mainEntityOfPage: absoluteUrl(input.path),
     url: absoluteUrl(input.path),
-    image: [absoluteUrl(input.image)],
+    image: [absoluteImageUrl(input.image)],
     author: {
       "@type": "Organization",
       name: SITE_NAME,
@@ -269,7 +280,7 @@ export function buildBlogPostingJsonLd(input: {
       name: SITE_NAME,
       logo: {
         "@type": "ImageObject",
-        url: absoluteUrl(SITE_LOGO),
+        url: absoluteImageUrl(SITE_LOGO),
       },
     },
     ...(input.datePublished ? { datePublished: input.datePublished } : {}),

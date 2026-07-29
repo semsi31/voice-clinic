@@ -31,6 +31,8 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableCellClassName,
+  panelTableClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
   panelTableHeadClassName,
@@ -502,22 +504,22 @@ export function TransactionDetailWorkspace({
                   </div>
 
                   <div className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}>
-                  <table className="min-w-[860px] w-full border-separate border-spacing-0 text-left text-sm">
+                  <table className={panelTableClassName}>
                     <thead>
                       <tr className={panelTableHeadRowClassName}>
-                        <th className={panelTableHeadClassName}>
+                        <th className={`${panelTableHeadClassName} w-[7.5rem]`}>
                           Ödeme Tarihi
                         </th>
-                        <th className={panelTableHeadClassName}>
+                        <th className={`${panelTableHeadClassName} w-[8rem]`}>
                           Ödeme Yöntemi
                         </th>
-                        <th className={`${panelTableHeadClassName} text-right`}>
+                        <th className={`${panelTableHeadClassName} w-[7rem] text-right`}>
                           Tutar
                         </th>
                         <th className={panelTableHeadClassName}>
                           Açıklama
                         </th>
-                        <th className={panelTableHeadClassName}>
+                        <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
                           Alan Personel
                         </th>
                         <th className={panelTableActionsHeadClassName}>
@@ -531,19 +533,25 @@ export function TransactionDetailWorkspace({
                           key={payment.id}
                           className={panelTableRowClassName}
                         >
-                          <td className="border-b border-slate-100 px-3 py-2.5">
+                          <td className={`${panelTableCellClassName} whitespace-nowrap`}>
                             {formatDate(payment.payment_date)}
                           </td>
-                          <td className="border-b border-slate-100 px-3 py-2.5">
+                          <td className={panelTableCellClassName}>
                             {paymentMethodLabels[payment.payment_method]}
                           </td>
-                          <td className="border-b border-slate-100 px-3 py-2.5 text-right font-semibold tabular-nums text-slate-950">
+                          <td className={`${panelTableCellClassName} whitespace-nowrap text-right font-semibold tabular-nums text-slate-950`}>
                             {formatCurrency(payment.amount)}
                           </td>
-                          <td className="max-w-[220px] truncate border-b border-slate-100 px-3 py-2.5">
+                          <td
+                            className={`${panelTableCellClassName} min-w-0 truncate`}
+                            title={payment.description || undefined}
+                          >
                             {payment.description || "Ek bilgi yok"}
                           </td>
-                          <td className="border-b border-slate-100 px-3 py-2.5">
+                          <td
+                            className={`${panelTableCellClassName} hidden min-w-0 truncate xl:table-cell`}
+                            title={payment.received_by || undefined}
+                          >
                             {payment.received_by || "Ek bilgi yok"}
                           </td>
                           <td className={panelTableActionsCellClassName}>

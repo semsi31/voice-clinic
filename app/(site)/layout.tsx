@@ -9,7 +9,7 @@ export default function SiteLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="site-theme flex min-h-screen flex-col overflow-x-hidden bg-background">
+    <div className="site-theme flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <div className="flex-1">
         <SiteMotionProvider>

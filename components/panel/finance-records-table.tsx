@@ -46,13 +46,20 @@ import {
   panelFilterInputClassName,
   panelFilterLabelClassName,
   panelFilterSelectClassName,
+  panelMobileCardClassName,
+  panelMobileCardLabelClassName,
+  panelMobileCardListClassName,
+  panelMobileCardValueClassName,
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
-  panelTableRowClassName,
   panelTableActionsHeadClassName,
+  panelTableCellClassName,
+  panelTableClassName,
+  panelTableDesktopClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
+  panelTableRowClassName,
   panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
@@ -495,120 +502,196 @@ export function FinanceRecordsTable({
         </div>
 
         {filteredEntries.length > 0 ? (
-          <div className={panelTableScrollClassName}>
-            <table className="w-full min-w-[980px] table-fixed border-separate border-spacing-0 text-left text-sm">
-              <colgroup>
-                <col className="w-[4%]" />
-                <col className="w-[9%]" />
-                <col className="w-[11%]" />
-                <col className="w-[12%]" />
-                <col className="w-[10%]" />
-                <col className="w-[12%]" />
-                <col className="w-[30%]" />
-                <col className="w-[8%]" />
-              </colgroup>
-              <thead>
-                <tr className={panelTableHeadRowClassName}>
-                  <th className={panelTableHeadClassName}>
-                    <TableSelectAllCheckbox
-                      allSelected={allFilteredSelected}
-                      someSelected={someFilteredSelected}
-                      onToggle={toggleFilteredSelection}
-                      label="Filtrelenen manuel kayıtları seç"
-                    />
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Tarih
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Kaynak / Tip
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Ödeme Yöntemi
-                  </th>
-                  <th className={`${panelTableHeadClassName} text-right`}>
-                    Tutar
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    İlgilenen Personel
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Açıklama
-                  </th>
-                  <th className={panelTableActionsHeadClassName}>İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEntries.map((entry) => (
-                  <tr
-                    key={`${entry.source}-${entry.id}`}
-                    className={panelTableRowClassName}
-                  >
-                    <td className="border-b border-slate-100 px-3 py-3">
-                      {entry.financeRecord ? (
-                        <TableRowCheckbox
-                          checked={selectedIds.has(entry.financeRecord.id)}
-                          label={`${entry.description} kaydını seç`}
-                          onToggle={() =>
-                            toggleRecordSelection(entry.financeRecord!.id)
-                          }
+          <>
+            <div className={panelMobileCardListClassName}>
+              {filteredEntries.map((entry) => (
+                <article
+                  key={`mobile-${entry.source}-${entry.id}`}
+                  className={panelMobileCardClassName}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="break-words font-bold text-slate-950">
+                        {entry.description}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {formatDate(entry.recordDate)}
+                      </p>
+                    </div>
+                    <SourceBadge source={entry.source} />
+                  </div>
+                  <dl className="mt-3 grid grid-cols-2 gap-3">
+                    <div>
+                      <dt className={panelMobileCardLabelClassName}>Tutar</dt>
+                      <dd
+                        className={`${panelMobileCardValueClassName} tabular-nums`}
+                      >
+                        {formatCurrency(entry.amount)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={panelMobileCardLabelClassName}>
+                        Ödeme Yöntemi
+                      </dt>
+                      <dd className={panelMobileCardValueClassName}>
+                        {financePaymentMethodLabels[entry.paymentMethod]}
+                      </dd>
+                    </div>
+                    <div className="col-span-2">
+                      <dt className={panelMobileCardLabelClassName}>
+                        İlgilenen Personel
+                      </dt>
+                      <dd className={`${panelMobileCardValueClassName} break-words`}>
+                        {entry.responsiblePerson || "-"}
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {entry.source === "patient_payment" &&
+                    entry.transactionId ? (
+                      <PanelLink
+                        href={`/panel/transactions/${entry.transactionId}`}
+                        className={`${panelPrimaryButtonClassName} min-h-11 flex-1`}
+                      >
+                        <ExternalLink className="size-4" aria-hidden="true" />
+                        İşleme Git
+                      </PanelLink>
+                    ) : entry.financeRecord ? (
+                      <>
+                        <button
+                          type="button"
+                          className={`${panelSecondaryButtonClassName} min-h-11 flex-1`}
+                          onClick={() => setEditRecord(entry.financeRecord!)}
+                        >
+                          <Pencil className="size-4" aria-hidden="true" />
+                          Düzenle
+                        </button>
+                        <DeleteFinanceRecordButton
+                          record={entry.financeRecord}
+                          onDeleted={handleRecordsDeleted}
                         />
-                      ) : null}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 whitespace-nowrap">
-                      {formatDate(entry.recordDate)}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3">
-                      <SourceBadge source={entry.source} />
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 truncate">
-                      {financePaymentMethodLabels[entry.paymentMethod]}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 text-right font-semibold tabular-nums text-slate-950 whitespace-nowrap">
-                      {formatCurrency(entry.amount)}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 truncate">
-                      {entry.responsiblePerson || "-"}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 min-w-0 truncate">
-                      {entry.description}
-                    </td>
-                    <td className={panelTableActionsCellClassName}>
-                      {entry.source === "patient_payment" &&
-                      entry.transactionId ? (
-                        <div className="flex shrink-0 items-center justify-end">
-                          <PanelLink
-                            href={`/panel/transactions/${entry.transactionId}`}
-                            className={rowActionButtonClassName}
-                            aria-label="İşleme Git"
-                            title="İşleme Git"
-                          >
-                            <ExternalLink className="size-4" aria-hidden="true" />
-                          </PanelLink>
-                        </div>
-                      ) : entry.financeRecord ? (
-                        <div className="flex shrink-0 items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            className={rowActionButtonClassName}
-                            aria-label="Düzenle"
-                            title="Düzenle"
-                            onClick={() => setEditRecord(entry.financeRecord!)}
-                          >
-                            <Pencil className="size-4" aria-hidden="true" />
-                          </button>
-                          <DeleteFinanceRecordButton
-                            record={entry.financeRecord}
-                            onDeleted={handleRecordsDeleted}
-                          />
-                        </div>
-                      ) : null}
-                    </td>
+                      </>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div
+              className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}
+            >
+              <table className={panelTableClassName}>
+                <thead>
+                  <tr className={panelTableHeadRowClassName}>
+                    <th className={`${panelTableHeadClassName} w-10`}>
+                      <TableSelectAllCheckbox
+                        allSelected={allFilteredSelected}
+                        someSelected={someFilteredSelected}
+                        onToggle={toggleFilteredSelection}
+                        label="Filtrelenen manuel kayıtları seç"
+                      />
+                    </th>
+                    <th className={`${panelTableHeadClassName} w-[7rem]`}>Tarih</th>
+                    <th className={`${panelTableHeadClassName} w-[8.5rem]`}>
+                      Kaynak / Tip
+                    </th>
+                    <th className={`${panelTableHeadClassName} w-[7.5rem]`}>
+                      Ödeme Yöntemi
+                    </th>
+                    <th className={`${panelTableHeadClassName} w-[7rem] text-right`}>
+                      Tutar
+                    </th>
+                    <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
+                      İlgilenen Personel
+                    </th>
+                    <th className={panelTableHeadClassName}>Açıklama</th>
+                    <th className={panelTableActionsHeadClassName}>İşlemler</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredEntries.map((entry) => (
+                    <tr
+                      key={`${entry.source}-${entry.id}`}
+                      className={panelTableRowClassName}
+                    >
+                      <td className={panelTableCellClassName}>
+                        {entry.financeRecord ? (
+                          <TableRowCheckbox
+                            checked={selectedIds.has(entry.financeRecord.id)}
+                            label={`${entry.description} kaydını seç`}
+                            onToggle={() =>
+                              toggleRecordSelection(entry.financeRecord!.id)
+                            }
+                          />
+                        ) : null}
+                      </td>
+                      <td className={`${panelTableCellClassName} whitespace-nowrap`}>
+                        {formatDate(entry.recordDate)}
+                      </td>
+                      <td className={panelTableCellClassName}>
+                        <SourceBadge source={entry.source} />
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} truncate`}
+                        title={financePaymentMethodLabels[entry.paymentMethod]}
+                      >
+                        {financePaymentMethodLabels[entry.paymentMethod]}
+                      </td>
+                      <td className={`${panelTableCellClassName} whitespace-nowrap text-right font-semibold tabular-nums text-slate-950`}>
+                        {formatCurrency(entry.amount)}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} hidden min-w-0 truncate xl:table-cell`}
+                        title={entry.responsiblePerson || undefined}
+                      >
+                        {entry.responsiblePerson || "-"}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} min-w-0 truncate`}
+                        title={entry.description}
+                      >
+                        {entry.description}
+                      </td>
+                      <td className={panelTableActionsCellClassName}>
+                        {entry.source === "patient_payment" &&
+                        entry.transactionId ? (
+                          <div className="flex shrink-0 items-center justify-end">
+                            <PanelLink
+                              href={`/panel/transactions/${entry.transactionId}`}
+                              className={rowActionButtonClassName}
+                              aria-label="İşleme Git"
+                              title="İşleme Git"
+                            >
+                              <ExternalLink
+                                className="size-4"
+                                aria-hidden="true"
+                              />
+                            </PanelLink>
+                          </div>
+                        ) : entry.financeRecord ? (
+                          <div className="flex shrink-0 items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              className={rowActionButtonClassName}
+                              aria-label="Düzenle"
+                              title="Düzenle"
+                              onClick={() => setEditRecord(entry.financeRecord!)}
+                            >
+                              <Pencil className="size-4" aria-hidden="true" />
+                            </button>
+                            <DeleteFinanceRecordButton
+                              record={entry.financeRecord}
+                              onDeleted={handleRecordsDeleted}
+                            />
+                          </div>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
           <EmptyState
             icon={FileSearch}

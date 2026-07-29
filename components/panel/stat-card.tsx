@@ -32,7 +32,7 @@ export function StatCard({
           <p className="text-xs font-semibold text-slate-500 sm:text-sm">
             {label}
           </p>
-          <p className="mt-1.5 text-xl font-bold tabular-nums text-slate-950 sm:mt-3 sm:text-2xl">
+          <p className="mt-1.5 break-words text-lg font-bold tabular-nums text-slate-950 sm:mt-3 sm:text-2xl">
             {value}
           </p>
         </div>

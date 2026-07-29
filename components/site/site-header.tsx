@@ -10,7 +10,10 @@ import {
   sitePrimaryNavigation,
   siteSocialLinks,
 } from "@/components/site/site-navigation";
+import { cdnImageSrc } from "@/lib/cdn-image";
 import { cn } from "@/lib/utils";
+
+const LOGO_SRC = cdnImageSrc("/images/voice-logo.png");
 
 const socialIconMap = {
   Instagram: FaInstagram,
@@ -34,21 +37,22 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4 lg:top-3 lg:px-4 lg:py-2 lg:px-8">
-      <div className="mx-auto flex min-h-[3.25rem] w-full items-center justify-between gap-3 rounded-2xl border border-[#eadfca]/80 bg-white px-3 py-2 shadow-[0_10px_36px_rgba(15,23,42,0.1)] backdrop-blur-xl sm:min-h-14 sm:gap-4 sm:rounded-[1.75rem] sm:px-4 lg:max-w-7xl lg:gap-6 lg:rounded-full lg:border-white/50 lg:px-6 lg:shadow-[0_18px_50px_rgba(15,23,42,0.12)]">
-        <div className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3">
+    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4 lg:top-3 lg:px-8 lg:py-2">
+      <div className="mx-auto flex min-h-11 w-full max-w-full items-center justify-between gap-2 rounded-2xl border border-[#eadfca]/80 bg-white px-2.5 py-2 shadow-[0_10px_36px_rgba(15,23,42,0.1)] backdrop-blur-xl sm:min-h-14 sm:gap-3 sm:rounded-[1.75rem] sm:px-4 lg:max-w-7xl lg:gap-3 lg:rounded-full lg:border-white/50 lg:px-4 lg:shadow-[0_18px_50px_rgba(15,23,42,0.12)] xl:gap-5 xl:px-6">
+        <div className="flex min-w-0 shrink items-center gap-2 sm:gap-3">
           <Link
             href="/"
-            className="site-logo-motion relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-white shadow-sm shadow-[#D4AF37]/10 sm:size-11 lg:rounded-2xl lg:size-12"
+            className="site-logo-motion relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-white shadow-sm shadow-[#D4AF37]/10 sm:size-11 lg:rounded-2xl lg:size-12"
             aria-label="Ana sayfa"
           >
             <Image
-              src="/images/voice-logo.png"
+              src={LOGO_SRC}
               alt="Voice Klinik İşitme Merkezi"
               width={645}
               height={823}
               priority
-              className="h-8 w-auto object-contain sm:h-9 lg:h-10"
+              unoptimized
+              className="h-8 w-auto max-w-none object-contain sm:h-9 lg:h-10"
             />
           </Link>
 
@@ -63,7 +67,7 @@ export function SiteHeader() {
         </div>
 
         <nav
-          className="relative z-10 hidden min-w-0 flex-1 items-center justify-evenly lg:flex"
+          className="relative z-10 hidden min-w-0 flex-1 items-center justify-evenly gap-0.5 xl:gap-1 lg:flex"
           aria-label="Site menüsü"
         >
           {sitePrimaryNavigation.map((item) => {
@@ -78,7 +82,7 @@ export function SiteHeader() {
                 key={`${item.title}-${item.href}`}
                 href={item.href}
                 className={cn(
-                  "site-nav-link-motion inline-flex whitespace-nowrap rounded-full px-2.5 py-1.5 text-[12px] font-semibold leading-none text-[#071225] transition-colors hover:bg-[#fff8e8] hover:text-[#B88A28] xl:px-3.5 xl:text-[13px]",
+                  "site-nav-link-motion inline-flex whitespace-nowrap rounded-full px-1.5 py-1.5 text-[11px] font-semibold leading-none text-[#071225] transition-colors hover:bg-[#fff8e8] hover:text-[#B88A28] xl:px-3 xl:text-[13px]",
                   isActive &&
                     "bg-[#C49A3A] text-white shadow-md shadow-[#C49A3A]/30 hover:bg-[#B88A28] hover:text-white",
                 )}
@@ -89,7 +93,7 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="relative z-10 flex shrink-0 items-center gap-2 lg:gap-3">
+        <div className="relative z-10 flex shrink-0 items-center gap-1.5 sm:gap-2 lg:gap-2 xl:gap-3">
           <div className="hidden items-center gap-1.5 xl:flex">
             {siteSocialLinks.map((item) => {
               const Icon = socialIconMap[item.title as keyof typeof socialIconMap];
@@ -112,7 +116,7 @@ export function SiteHeader() {
           {siteAppointmentLink ? (
             <Link
               href={siteAppointmentLink.href}
-              className="site-btn-motion hidden min-h-10 items-center justify-center whitespace-nowrap rounded-md bg-[#C49A3A] px-4 text-xs font-bold uppercase leading-none tracking-[0.04em] text-white shadow-lg shadow-[#C49A3A]/25 hover:bg-[#B88A28] hover:shadow-[#C49A3A]/40 lg:inline-flex"
+              className="site-btn-motion hidden min-h-10 items-center justify-center whitespace-nowrap rounded-md bg-[#C49A3A] px-3 text-xs font-bold uppercase leading-none tracking-[0.04em] text-white shadow-lg shadow-[#C49A3A]/25 hover:bg-[#B88A28] hover:shadow-[#C49A3A]/40 xl:inline-flex xl:px-4"
             >
               {siteAppointmentLink.title}
             </Link>

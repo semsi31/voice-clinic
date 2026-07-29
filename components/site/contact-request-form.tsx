@@ -30,12 +30,13 @@ const initialFormValues: FormValues = {
 };
 
 const inputClassName =
-  "site-form-field h-11 rounded-xl border border-[#eadfca] bg-[#fffdf8] px-4 text-base font-normal text-foreground outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/35";
+  "site-form-field h-11 w-full min-w-0 rounded-xl border border-[#eadfca] bg-[#fffdf8] px-4 text-base font-normal text-foreground outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/35";
 
 const textareaClassName =
-  "site-form-field min-h-28 resize-none rounded-xl border border-[#eadfca] bg-[#fffdf8] px-4 py-3 text-base font-normal text-foreground outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/35";
+  "site-form-field min-h-28 w-full min-w-0 resize-none rounded-xl border border-[#eadfca] bg-[#fffdf8] px-4 py-3 text-base font-normal text-foreground outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/35";
 
-const labelClassName = "site-form-label grid gap-2 text-sm font-semibold text-[#071225]";
+const labelClassName =
+  "site-form-label grid min-w-0 gap-2 text-sm font-semibold text-[#071225]";
 
 export function ContactRequestForm() {
   const [submitState, setSubmitState] = useState<SubmitState>(null);

@@ -31,9 +31,16 @@ import {
   panelFilterInputClassName,
   panelFilterLabelClassName,
   panelFilterSelectClassName,
+  panelMobileCardClassName,
+  panelMobileCardLabelClassName,
+  panelMobileCardListClassName,
+  panelMobileCardValueClassName,
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableCellClassName,
+  panelTableClassName,
+  panelTableDesktopClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
   panelTableHeadClassName,
@@ -525,7 +532,7 @@ export function CargoRecordsTable({
           </div>
         }
       >
-        <div className={`${panelFilterGridClassName} md:grid-cols-4`}>
+        <div className={panelFilterGridClassName}>
           <label className={panelFilterFieldClassName}>
             <span className={panelFilterLabelClassName}>Ara</span>
             <div className="relative">
@@ -588,121 +595,203 @@ export function CargoRecordsTable({
         </div>
 
         {filteredRecords.length > 0 ? (
-          <div className={panelTableScrollClassName}>
-            <table className="w-full min-w-[1180px] table-fixed border-separate border-spacing-0 text-left text-sm">
-              <colgroup>
-                <col className="w-[4%]" />
-                <col className="w-[9%]" />
-                <col className="w-[11%]" />
-                <col className="w-[14%]" />
-                <col className="w-[10%]" />
-                <col className="w-[13%]" />
-                <col className="w-[12%]" />
-                <col className="w-[9%]" />
-                <col className="w-[14%]" />
-                <col className="w-[8%]" />
-              </colgroup>
-              <thead>
-                <tr className={panelTableHeadRowClassName}>
-                  <th className={panelTableHeadClassName}>
-                    <input
-                      type="checkbox"
-                      aria-label="Filtrelenen kayıtları seç"
-                      checked={allFilteredSelected}
-                      ref={(input) => {
-                        if (input) {
-                          input.indeterminate =
-                            someFilteredSelected && !allFilteredSelected;
-                        }
-                      }}
-                      onChange={toggleFilteredSelection}
-                      className="size-5 min-h-5 min-w-5 rounded border-slate-300 text-sky-700 focus:ring-sky-200"
+          <>
+            <div className={panelMobileCardListClassName}>
+              {filteredRecords.map((record) => (
+                <article
+                  key={`mobile-${record.id}`}
+                  className={panelMobileCardClassName}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="break-words font-bold text-slate-950">
+                        {record.sender_name}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {formatDate(record.cargo_date)}
+                        {" · "}
+                        {record.cargo_company}
+                      </p>
+                    </div>
+                    <StatusBadge status={record.status} />
+                  </div>
+                  <dl className="mt-3 grid grid-cols-2 gap-3">
+                    <div className="col-span-2">
+                      <dt className={panelMobileCardLabelClassName}>
+                        Yapılan İşlem
+                      </dt>
+                      <dd
+                        className={`${panelMobileCardValueClassName} break-words`}
+                      >
+                        {record.process_description}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={panelMobileCardLabelClassName}>
+                        Takip No
+                      </dt>
+                      <dd
+                        className={`${panelMobileCardValueClassName} break-all font-mono text-xs`}
+                      >
+                        {record.tracking_number || "-"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={panelMobileCardLabelClassName}>
+                        Kargo Şubesi
+                      </dt>
+                      <dd
+                        className={`${panelMobileCardValueClassName} break-words`}
+                      >
+                        {record.cargo_branch || "-"}
+                      </dd>
+                    </div>
+                    {record.note ? (
+                      <div className="col-span-2">
+                        <dt className={panelMobileCardLabelClassName}>Not</dt>
+                        <dd
+                          className={`${panelMobileCardValueClassName} break-words font-normal text-slate-700`}
+                        >
+                          {record.note}
+                        </dd>
+                      </div>
+                    ) : null}
+                  </dl>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      className={`${panelSecondaryButtonClassName} min-h-11 flex-1`}
+                      onClick={() => setEditRecord(record)}
+                    >
+                      <Pencil className="size-4" aria-hidden="true" />
+                      Düzenle
+                    </button>
+                    <DeleteCargoRecordButton
+                      record={record}
+                      onDeleted={handleRecordsDeleted}
                     />
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Tarih
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Gönderen
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Yapılan İşlem
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Kargo Firması
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Kargo Şubesi
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Takip Numarası
-                  </th>
-                  <th className={panelTableHeadClassName}>Durum</th>
-                  <th className={panelTableHeadClassName}>Not</th>
-                  <th className={panelTableActionsHeadClassName}>İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRecords.map((record) => (
-                  <tr
-                    key={record.id}
-                    className={panelTableRowClassName}
-                  >
-                    <td className="border-b border-slate-100 px-3 py-3">
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div
+              className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}
+            >
+              <table className={panelTableClassName}>
+                <thead>
+                  <tr className={panelTableHeadRowClassName}>
+                    <th className={`${panelTableHeadClassName} w-10`}>
                       <input
                         type="checkbox"
-                        aria-label={`${record.sender_name} kaydını seç`}
-                        checked={selectedIds.has(record.id)}
-                        onChange={() => toggleRecordSelection(record.id)}
+                        aria-label="Filtrelenen kayıtları seç"
+                        checked={allFilteredSelected}
+                        ref={(input) => {
+                          if (input) {
+                            input.indeterminate =
+                              someFilteredSelected && !allFilteredSelected;
+                          }
+                        }}
+                        onChange={toggleFilteredSelection}
                         className="size-5 min-h-5 min-w-5 rounded border-slate-300 text-sky-700 focus:ring-sky-200"
                       />
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 whitespace-nowrap">
-                      {formatDate(record.cargo_date)}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 truncate">
-                      {record.sender_name}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 font-semibold text-slate-950 truncate">
-                      {record.process_description}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 truncate">
-                      {record.cargo_company}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 truncate">
-                      {record.cargo_branch || "-"}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 font-mono text-xs font-semibold text-slate-950 truncate">
-                      {record.tracking_number || "-"}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3">
-                      <StatusBadge status={record.status} />
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 min-w-0 truncate">
-                      {record.note || "-"}
-                    </td>
-                    <td className={panelTableActionsCellClassName}>
-                      <div className="flex shrink-0 items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          className={rowActionButtonClassName}
-                          aria-label="Düzenle"
-                          title="Düzenle"
-                          onClick={() => setEditRecord(record)}
-                        >
-                          <Pencil className="size-4" aria-hidden="true" />
-                        </button>
-                        <DeleteCargoRecordButton
-                          record={record}
-                          onDeleted={handleRecordsDeleted}
-                        />
-                      </div>
-                    </td>
+                    </th>
+                    <th className={`${panelTableHeadClassName} w-[6.5rem]`}>Tarih</th>
+                    <th className={panelTableHeadClassName}>Gönderen</th>
+                    <th className={panelTableHeadClassName}>Yapılan İşlem</th>
+                    <th className={`${panelTableHeadClassName} w-[8rem]`}>
+                      Kargo Firması
+                    </th>
+                    <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
+                      Kargo Şubesi
+                    </th>
+                    <th className={`${panelTableHeadClassName} w-[8rem]`}>
+                      Takip No
+                    </th>
+                    <th className={`${panelTableHeadClassName} w-[6.5rem]`}>Durum</th>
+                    <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
+                      Not
+                    </th>
+                    <th className={panelTableActionsHeadClassName}>İşlemler</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredRecords.map((record) => (
+                    <tr key={record.id} className={panelTableRowClassName}>
+                      <td className={panelTableCellClassName}>
+                        <input
+                          type="checkbox"
+                          aria-label={`${record.sender_name} kaydını seç`}
+                          checked={selectedIds.has(record.id)}
+                          onChange={() => toggleRecordSelection(record.id)}
+                          className="size-5 min-h-5 min-w-5 rounded border-slate-300 text-sky-700 focus:ring-sky-200"
+                        />
+                      </td>
+                      <td className={`${panelTableCellClassName} whitespace-nowrap`}>
+                        {formatDate(record.cargo_date)}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} min-w-0 truncate`}
+                        title={record.sender_name}
+                      >
+                        {record.sender_name}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} min-w-0 truncate font-semibold text-slate-950`}
+                        title={record.process_description}
+                      >
+                        {record.process_description}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} truncate`}
+                        title={record.cargo_company}
+                      >
+                        {record.cargo_company}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} hidden truncate xl:table-cell`}
+                        title={record.cargo_branch || undefined}
+                      >
+                        {record.cargo_branch || "-"}
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} truncate font-mono text-xs font-semibold text-slate-950`}
+                        title={record.tracking_number || undefined}
+                      >
+                        {record.tracking_number || "-"}
+                      </td>
+                      <td className={panelTableCellClassName}>
+                        <StatusBadge status={record.status} />
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} hidden min-w-0 truncate xl:table-cell`}
+                        title={record.note || undefined}
+                      >
+                        {record.note || "-"}
+                      </td>
+                      <td className={panelTableActionsCellClassName}>
+                        <div className="flex shrink-0 items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            className={rowActionButtonClassName}
+                            aria-label="Düzenle"
+                            title="Düzenle"
+                            onClick={() => setEditRecord(record)}
+                          >
+                            <Pencil className="size-4" aria-hidden="true" />
+                          </button>
+                          <DeleteCargoRecordButton
+                            record={record}
+                            onDeleted={handleRecordsDeleted}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
           <EmptyState
             icon={FileSearch}
