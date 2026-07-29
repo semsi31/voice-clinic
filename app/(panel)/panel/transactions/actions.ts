@@ -26,12 +26,17 @@ import {
   optionalText,
   parseMoneyInput,
   readText,
+  type DeviceDeliveryStatus,
   type PaymentMethod,
 } from "@/lib/transactions";
 import { extractFormValues } from "@/lib/panel-form";
 import { stockOptionLabel, type StockProductRecord } from "@/lib/stock";
 
 const allowedPaymentMethods = new Set(["cash", "credit_card", "bank_transfer"]);
+const allowedDeviceDeliveryStatuses = new Set<DeviceDeliveryStatus>([
+  "pending",
+  "delivered",
+]);
 const PAYMENT_EXCEEDS_SALE_ERROR = "Ödeme toplamı satış tutarını aşamaz.";
 
 function sumPaymentAmounts(
@@ -121,6 +126,7 @@ export type NewTransactionFormValues = {
   model: string;
   serial_no: string;
   ear_side: string;
+  device_delivery_status: string;
   sale_amount: string;
   stock_deduct_enabled: boolean;
   stock_product_id: string;
@@ -130,6 +136,10 @@ export type NewTransactionFormValues = {
   first_payment_amount: string;
   first_payment_description: string;
 };
+
+export type DeviceDeliveryActionResult =
+  | { ok: true }
+  | { ok: false; error: string };
 
 export type PaymentFormValues = {
   payment_date: string;
@@ -240,6 +250,7 @@ function extractNewTransactionFormValues(
     model: readText(formData.get("model")),
     serial_no: readText(formData.get("serial_no")),
     ear_side: readText(formData.get("ear_side")),
+    device_delivery_status: readText(formData.get("device_delivery_status")) || "pending",
     sale_amount: readRawFormValue(formData.get("sale_amount")),
     stock_deduct_enabled: formData.get("stock_deduct_enabled") === "true",
     stock_product_id: readText(formData.get("stock_product_id")),
@@ -249,6 +260,20 @@ function extractNewTransactionFormValues(
     first_payment_amount: readRawFormValue(formData.get("first_payment_amount")),
     first_payment_description: readText(formData.get("first_payment_description")),
   };
+}
+
+function normalizeDeviceDeliveryStatus(
+  value: FormDataEntryValue | null,
+): DeviceDeliveryStatus | null {
+  const status = readText(value) || "pending";
+  return allowedDeviceDeliveryStatuses.has(status as DeviceDeliveryStatus)
+    ? (status as DeviceDeliveryStatus)
+    : null;
+}
+
+function revalidateDeviceDeliveryPaths(transactionId: string) {
+  revalidatePath(`/panel/transactions/${transactionId}`);
+  revalidatePath("/panel/transactions");
 }
 
 function extractPaymentFormValues(formData: FormData): PaymentFormValues {
@@ -450,6 +475,27 @@ export async function createPatientTransaction(
     }
   }
 
+  const brand =
+    optionalText(formData.get("brand")) ||
+    optionalText(stockProduct?.brand ?? null);
+  const model =
+    optionalText(formData.get("model")) ||
+    optionalText(stockProduct?.model ?? null);
+  const serialNo =
+    optionalText(formData.get("serial_no")) ||
+    optionalText(stockProduct?.serial_no ?? null);
+
+  const deviceDeliveryStatus = normalizeDeviceDeliveryStatus(
+    formData.get("device_delivery_status"),
+  );
+
+  if (!deviceDeliveryStatus) {
+    return newTransactionFormError(
+      formData,
+      "Geçersiz cihaz teslim durumu.",
+    );
+  }
+
   const { data: transaction, error: transactionError } = await supabase
     .from("patient_transactions")
     .insert({
@@ -463,10 +509,13 @@ export async function createPatientTransaction(
       reference_source: optionalText(formData.get("reference_source")),
       operation_description: operationDescription,
       staff_name: staffName,
-      brand: optionalText(formData.get("brand")),
-      model: optionalText(formData.get("model")),
-      serial_no: optionalText(formData.get("serial_no")),
+      brand,
+      model,
+      serial_no: serialNo,
       ear_side: optionalText(formData.get("ear_side")),
+      device_delivery_status: deviceDeliveryStatus,
+      device_delivered_at:
+        deviceDeliveryStatus === "delivered" ? new Date().toISOString() : null,
       sale_amount: saleAmount,
       stock_deduct_enabled: stockDeductEnabled,
       stock_product_id: stockDeductEnabled ? stockProductId : null,
@@ -603,6 +652,65 @@ export async function createPatientTransaction(
     revalidateCount: 0,
   });
   redirect(`/panel/transactions/${transaction.id}`);
+}
+
+export async function updateDeviceDeliveryStatus(
+  transactionId: string,
+  status: DeviceDeliveryStatus,
+): Promise<DeviceDeliveryActionResult> {
+  if (!transactionId) {
+    return { ok: false, error: "İşlem kaydı bulunamadı." };
+  }
+
+  if (!allowedDeviceDeliveryStatuses.has(status)) {
+    return { ok: false, error: "Geçersiz cihaz teslim durumu." };
+  }
+
+  let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
+  try {
+    auth = await requireActivePanelUser();
+  } catch (error) {
+    return { ok: false, error: getPanelAuthErrorMessage(error) };
+  }
+
+  const { supabase } = auth;
+
+  const { data: existing, error: existingError } = await supabase
+    .from("patient_transactions")
+    .select("id, device_delivery_status, device_delivered_at, source_type")
+    .eq("id", transactionId)
+    .single();
+
+  if (existingError || !existing) {
+    return { ok: false, error: "İşlem kaydı bulunamadı." };
+  }
+
+  if (existing.source_type === "legacy_excel") {
+    return {
+      ok: false,
+      error: "Eski Excel kayıtlarında cihaz teslim durumu güncellenemez.",
+    };
+  }
+
+  const deliveredAt =
+    status === "delivered"
+      ? existing.device_delivered_at ?? new Date().toISOString()
+      : null;
+
+  const { error: updateError } = await supabase
+    .from("patient_transactions")
+    .update({
+      device_delivery_status: status,
+      device_delivered_at: deliveredAt,
+    })
+    .eq("id", transactionId);
+
+  if (updateError) {
+    return { ok: false, error: "Cihaz teslim durumu güncellenemedi." };
+  }
+
+  revalidateDeviceDeliveryPaths(transactionId);
+  return { ok: true };
 }
 
 export async function addTransactionPayment(

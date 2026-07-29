@@ -33,8 +33,10 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableActionsColClassName,
   panelTableBadgeCellClassName,
   panelTableCellClassName,
+  panelTableCheckboxColClassName,
   panelTableClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
@@ -535,16 +537,16 @@ export function StockProductsTable({
             <PanelTableFrame>
               <table className={panelTableClassName}>
                 <colgroup>
-                  <col className="w-9" />
-                  <col className="w-[16%]" />
-                  <col className="w-[11%]" />
-                  <col className="w-[13%]" />
-                  <col className="w-[11%]" />
-                  <col className="w-[11%]" />
-                  <col className="w-[6%]" />
-                  <col className="w-[6%]" />
-                  <col className="w-[7.25rem]" />
-                  <col className="w-[5.75rem]" />
+                  <col className={panelTableCheckboxColClassName} />
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col className={panelTableActionsColClassName} />
                 </colgroup>
                 <thead>
                   <tr className={panelTableHeadRowClassName}>
@@ -560,8 +562,8 @@ export function StockProductsTable({
                     <th className={panelTableHeadClassName}>Marka / Model</th>
                     <th className={panelTableHeadClassName}>Seri No</th>
                     <th className={panelTableHeadClassName}>Şube / Birim</th>
-                    <th className={`${panelTableHeadClassName} text-right`}>Adet</th>
-                    <th className={`${panelTableHeadClassName} text-right`}>Min.</th>
+                    <th className={panelTableHeadClassName}>Adet</th>
+                    <th className={panelTableHeadClassName}>Min.</th>
                     <th className={panelTableHeadClassName}>Durum</th>
                     <th className={panelTableActionsHeadClassName}>İşlemler</th>
                   </tr>
@@ -607,11 +609,11 @@ export function StockProductsTable({
                         {product.branch_unit || "-"}
                       </td>
                       <td
-                        className={`${panelTableCellClassName} text-right font-semibold text-slate-950`}
+                        className={`${panelTableCellClassName} font-semibold text-slate-950`}
                       >
                         {product.quantity}
                       </td>
-                      <td className={`${panelTableCellClassName} text-right`}>
+                      <td className={panelTableCellClassName}>
                         {product.min_stock}
                       </td>
                       <td className={panelTableBadgeCellClassName}>

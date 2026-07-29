@@ -25,8 +25,10 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableActionsColClassName,
   panelTableBadgeCellClassName,
   panelTableCellClassName,
+  panelTableCheckboxColClassName,
   panelTableClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
@@ -516,17 +518,17 @@ export function WebRequestsTable({
           <PanelTableFrame>
             <table className={panelTableClassName}>
               <colgroup>
-                <col className="w-9" />
-                <col className="w-[9%]" />
-                <col className="w-[11%]" />
-                <col className="w-[10%]" />
-                <col className="w-[12%]" />
-                <col className="w-[9%]" />
-                <col className="w-[11%]" />
-                <col className="w-[10%]" />
-                <col className="w-[7.25rem]" />
-                <col className="w-[11%]" />
-                <col className="w-[5.75rem]" />
+                <col className={panelTableCheckboxColClassName} />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col className={panelTableActionsColClassName} />
               </colgroup>
               <thead>
                 <tr className={panelTableHeadRowClassName}>

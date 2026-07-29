@@ -96,6 +96,7 @@ type TableSelectAllCheckboxProps = {
   someSelected: boolean;
   onToggle: () => void;
   label?: string;
+  disabled?: boolean;
 };
 
 export function TableSelectAllCheckbox({
@@ -103,19 +104,21 @@ export function TableSelectAllCheckbox({
   someSelected,
   onToggle,
   label = "Filtrelenen kayıtları seç",
+  disabled = false,
 }: Readonly<TableSelectAllCheckboxProps>) {
   return (
     <input
       type="checkbox"
       aria-label={label}
       checked={allSelected}
+      disabled={disabled}
       ref={(input) => {
         if (input) {
           input.indeterminate = someSelected && !allSelected;
         }
       }}
       onChange={onToggle}
-      className={tableCheckboxClassName}
+      className={`${tableCheckboxClassName} disabled:cursor-not-allowed disabled:opacity-40`}
     />
   );
 }
@@ -124,20 +127,23 @@ type TableRowCheckboxProps = {
   checked: boolean;
   label: string;
   onToggle: () => void;
+  disabled?: boolean;
 };
 
 export function TableRowCheckbox({
   checked,
   label,
   onToggle,
+  disabled = false,
 }: Readonly<TableRowCheckboxProps>) {
   return (
     <input
       type="checkbox"
       aria-label={label}
       checked={checked}
+      disabled={disabled}
       onChange={onToggle}
-      className={tableCheckboxClassName}
+      className={`${tableCheckboxClassName} disabled:cursor-not-allowed disabled:opacity-40`}
     />
   );
 }

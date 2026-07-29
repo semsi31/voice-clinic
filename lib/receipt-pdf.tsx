@@ -124,8 +124,8 @@ function getDefaultReceiptFontPath() {
 
 function drawLogoFallback(doc: PDFKit.PDFDocument, fonts: ReceiptFontSet) {
   doc.circle(79, 75, 25).fillColor(colors.goldPale).fill();
-  doc.circle(79, 75, 25).lineWidth(1).strokeColor(colors.border).stroke();
-  doc.circle(79, 75, 20).lineWidth(0.4).strokeColor(colors.goldLight).stroke();
+  doc.circle(79, 75, 25).lineWidth(1.4).strokeColor(colors.border).stroke();
+  doc.circle(79, 75, 20).lineWidth(1).strokeColor(colors.goldLight).stroke();
   doc
     .font(fonts.bold)
     .fontSize(14)
@@ -143,12 +143,14 @@ const colors = {
   ink: "#1f2933",
   muted: "#667085",
   mutedLight: "#98a2b3",
-  gold: "#b8892f",
-  goldDark: "#8d6418",
-  goldLight: "#ead8a8",
+  gold: "#9a6f1f",
+  goldDark: "#6b4a12",
+  goldLight: "#c9a24b",
   goldPale: "#fff9ea",
-  border: "#dfc27a",
-  borderSoft: "#efe2be",
+  /** Structural lines — dark enough to survive photocopy. */
+  border: "#5c4a1e",
+  borderSoft: "#7a6528",
+  rule: "#3f3214",
 };
 
 const ones = [
@@ -350,13 +352,14 @@ function drawFieldRow({
     .fill();
   doc
     .roundedRect(x, y, width, height, 7)
-    .lineWidth(0.8)
-    .strokeColor(colors.borderSoft)
+    .lineWidth(1.35)
+    .strokeColor(colors.border)
     .stroke();
   doc.rect(x + 1, y + 1, labelWidth - 1, height - 2).fillColor(colors.goldPale).fill();
   doc
     .moveTo(x + labelWidth, y)
     .lineTo(x + labelWidth, y + height)
+    .lineWidth(1.2)
     .strokeColor(colors.borderSoft)
     .stroke();
 
@@ -453,8 +456,8 @@ export async function generatePaymentReceiptPdfBuffer({
   const fonts = registerReceiptFonts(doc);
 
   doc.rect(0, 0, 595, 842).fillColor(colors.paper).fill();
-  doc.rect(32, 24, 531, 788).lineWidth(1).strokeColor(colors.border).stroke();
-  doc.rect(39, 31, 517, 774).lineWidth(0.45).strokeColor(colors.goldLight).stroke();
+  doc.rect(32, 24, 531, 788).lineWidth(1.75).strokeColor(colors.rule).stroke();
+  doc.rect(39, 31, 517, 774).lineWidth(1.15).strokeColor(colors.border).stroke();
 
   if (logoBuffer) {
     try {
@@ -487,8 +490,8 @@ export async function generatePaymentReceiptPdfBuffer({
   doc
     .moveTo(124, 96)
     .lineTo(248, 96)
-    .lineWidth(0.5)
-    .strokeColor(colors.goldLight)
+    .lineWidth(1.2)
+    .strokeColor(colors.border)
     .stroke();
 
   doc
@@ -497,8 +500,8 @@ export async function generatePaymentReceiptPdfBuffer({
     .fill();
   doc
     .roundedRect(336, 45, 202, 108, 9)
-    .lineWidth(0.55)
-    .strokeColor(colors.borderSoft)
+    .lineWidth(1.25)
+    .strokeColor(colors.border)
     .stroke();
   doc
     .font(fonts.bold)
@@ -509,7 +512,7 @@ export async function generatePaymentReceiptPdfBuffer({
       height: 12,
       align: "right",
     });
-  doc.moveTo(350, 76).lineTo(350, 139).lineWidth(0.65).strokeColor(colors.gold).stroke();
+  doc.moveTo(350, 76).lineTo(350, 139).lineWidth(1.25).strokeColor(colors.borderSoft).stroke();
   drawContactItem({
     doc,
     fonts,
@@ -532,8 +535,8 @@ export async function generatePaymentReceiptPdfBuffer({
   doc
     .moveTo(57, 162)
     .lineTo(538, 162)
-    .lineWidth(0.55)
-    .strokeColor(colors.goldLight)
+    .lineWidth(1.25)
+    .strokeColor(colors.border)
     .stroke();
 
   doc
@@ -556,10 +559,10 @@ export async function generatePaymentReceiptPdfBuffer({
       align: "center",
       characterSpacing: 1.6,
     });
-  doc.rect(216, 227, 163, 1).fillColor(colors.gold).fill();
+  doc.rect(216, 227, 163, 2).fillColor(colors.rule).fill();
 
   doc.roundedRect(202, 243, 190, 45, 8).fillColor(colors.goldPale).fill();
-  doc.roundedRect(202, 243, 190, 45, 8).lineWidth(0.7).strokeColor(colors.borderSoft).stroke();
+  doc.roundedRect(202, 243, 190, 45, 8).lineWidth(1.25).strokeColor(colors.border).stroke();
   doc
     .font(fonts.bold)
     .fontSize(8)
@@ -610,7 +613,7 @@ export async function generatePaymentReceiptPdfBuffer({
   });
 
   doc.roundedRect(57, 482, 481, 55, 9).fillColor(colors.goldPale).fill();
-  doc.roundedRect(57, 482, 481, 55, 9).lineWidth(0.65).strokeColor(colors.borderSoft).stroke();
+  doc.roundedRect(57, 482, 481, 55, 9).lineWidth(1.25).strokeColor(colors.border).stroke();
   doc
     .font(fonts.regular)
     .fontSize(11.2)
@@ -622,8 +625,14 @@ export async function generatePaymentReceiptPdfBuffer({
     });
 
   doc.roundedRect(337, 574, 201, 80, 9).fillColor("#ffffff").fill();
-  doc.roundedRect(337, 574, 201, 80, 9).lineWidth(0.7).strokeColor(colors.borderSoft).stroke();
+  doc.roundedRect(337, 574, 201, 80, 9).lineWidth(1.25).strokeColor(colors.border).stroke();
   doc.rect(338, 575, 199, 24).fillColor(colors.goldPale).fill();
+  doc
+    .moveTo(337, 599)
+    .lineTo(538, 599)
+    .lineWidth(1.1)
+    .strokeColor(colors.borderSoft)
+    .stroke();
   doc
     .font(fonts.bold)
     .fontSize(8.8)
@@ -634,14 +643,14 @@ export async function generatePaymentReceiptPdfBuffer({
       align: "center",
       characterSpacing: 1,
     });
-  doc.moveTo(356, 623).lineTo(520, 623).lineWidth(0.6).strokeColor(colors.goldLight).stroke();
+  doc.moveTo(356, 623).lineTo(520, 623).lineWidth(1.2).strokeColor(colors.border).stroke();
   doc.font(fonts.bold).fontSize(10.6).fillColor(colors.ink).text(receivedBy, 356, 632, {
     width: 164,
     height: 16,
     align: "center",
   });
 
-  doc.moveTo(57, 698).lineTo(538, 698).lineWidth(0.45).strokeColor(colors.goldLight).stroke();
+  doc.moveTo(57, 698).lineTo(538, 698).lineWidth(1.2).strokeColor(colors.border).stroke();
   doc
     .font(fonts.regular)
     .fontSize(8.1)

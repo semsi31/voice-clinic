@@ -54,9 +54,12 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableActionsColClassName,
   panelTableActionsHeadClassName,
   panelTableBadgeCellClassName,
   panelTableCellClassName,
+  panelTableCheckboxCellClassName,
+  panelTableCheckboxColClassName,
   panelTableClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
@@ -501,6 +504,13 @@ export function FinanceRecordsTable({
           </label>
         </div>
 
+        {filteredEntries.length > 0 && filteredDeletableRecords.length === 0 ? (
+          <p className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Listede yalnızca hasta tahsilatları var. Çoklu seçim / toplu silme
+            sadece manuel gelir ve gider kayıtlarında çalışır.
+          </p>
+        ) : null}
+
         {filteredEntries.length > 0 ? (
           <>
             <div className={panelMobileCardListClassName}>
@@ -510,13 +520,32 @@ export function FinanceRecordsTable({
                   className={panelMobileCardClassName}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="break-words font-bold text-slate-950">
-                        {entry.description}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {formatDate(entry.recordDate)}
-                      </p>
+                    <div className="flex min-w-0 flex-1 items-start gap-2">
+                      {entry.financeRecord ? (
+                        <TableRowCheckbox
+                          checked={selectedIds.has(entry.financeRecord.id)}
+                          label={`${entry.description} kaydını seç`}
+                          onToggle={() =>
+                            toggleRecordSelection(entry.financeRecord!.id)
+                          }
+                        />
+                      ) : (
+                        <input
+                          type="checkbox"
+                          disabled
+                          aria-label="Hasta tahsilatları buradan seçilemez"
+                          title="Hasta tahsilatları işlem sayfasından yönetilir"
+                          className="mt-0.5 size-5 min-h-5 min-w-5 rounded border-slate-300 opacity-40"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="break-words font-bold text-slate-950">
+                          {entry.description}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {formatDate(entry.recordDate)}
+                        </p>
+                      </div>
                     </div>
                     <SourceBadge source={entry.source} />
                   </div>
@@ -580,14 +609,14 @@ export function FinanceRecordsTable({
             <PanelTableFrame>
               <table className={panelTableClassName}>
                 <colgroup>
-                  <col className="w-9" />
-                  <col className="w-[8%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[7.25rem]" />
-                  <col className="w-[12%]" />
-                  <col className="w-[12%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[5.75rem]" />
+                  <col className={panelTableCheckboxColClassName} />
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col className={panelTableActionsColClassName} />
                 </colgroup>
                 <thead>
                   <tr className={panelTableHeadRowClassName}>
@@ -596,13 +625,14 @@ export function FinanceRecordsTable({
                         allSelected={allFilteredSelected}
                         someSelected={someFilteredSelected}
                         onToggle={toggleFilteredSelection}
+                        disabled={filteredDeletableRecords.length === 0}
                         label="Filtrelenen manuel kayıtları seç"
                       />
                     </th>
                     <th className={panelTableHeadClassName}>Tarih</th>
                     <th className={panelTableHeadClassName}>Kaynak / Tip</th>
                     <th className={panelTableHeadClassName}>Ödeme Yöntemi</th>
-                    <th className={`${panelTableHeadClassName} text-right`}>Tutar</th>
+                    <th className={panelTableHeadClassName}>Tutar</th>
                     <th className={panelTableHeadClassName}>İlgilenen Personel</th>
                     <th className={panelTableHeadClassName}>Açıklama</th>
                     <th className={panelTableActionsHeadClassName}>İşlemler</th>
@@ -614,7 +644,7 @@ export function FinanceRecordsTable({
                       key={`${entry.source}-${entry.id}`}
                       className={panelTableRowClassName}
                     >
-                      <td className={panelTableCellClassName}>
+                      <td className={panelTableCheckboxCellClassName}>
                         {entry.financeRecord ? (
                           <TableRowCheckbox
                             checked={selectedIds.has(entry.financeRecord.id)}
@@ -623,7 +653,15 @@ export function FinanceRecordsTable({
                               toggleRecordSelection(entry.financeRecord!.id)
                             }
                           />
-                        ) : null}
+                        ) : (
+                          <input
+                            type="checkbox"
+                            disabled
+                            aria-label="Hasta tahsilatları buradan seçilemez"
+                            title="Hasta tahsilatları işlem sayfasından yönetilir"
+                            className="size-5 min-h-5 min-w-5 rounded border-slate-300 opacity-40"
+                          />
+                        )}
                       </td>
                       <td
                         className={panelTableCellClassName}
@@ -641,7 +679,7 @@ export function FinanceRecordsTable({
                         {financePaymentMethodLabels[entry.paymentMethod]}
                       </td>
                       <td
-                        className={`${panelTableCellClassName} text-right font-semibold tabular-nums text-slate-950`}
+                        className={`${panelTableCellClassName} font-semibold tabular-nums text-slate-950`}
                         title={formatCurrency(entry.amount)}
                       >
                         {formatCurrency(entry.amount)}

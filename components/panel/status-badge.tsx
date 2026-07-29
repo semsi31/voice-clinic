@@ -24,6 +24,8 @@ export type PanelStatus =
 
 type StatusBadgeProps = {
   status: PanelStatus;
+  /** Shorter payment labels for dense table cells. */
+  compact?: boolean;
 };
 
 const statusConfig: Record<PanelStatus, { label: string; className: string }> = {
@@ -117,15 +119,77 @@ const statusConfig: Record<PanelStatus, { label: string; className: string }> = 
   },
 };
 
-export function StatusBadge({ status }: Readonly<StatusBadgeProps>) {
+const paymentStatusCompactLabels: Partial<Record<PanelStatus, string>> = {
+  paid: "Ödendi",
+  partial: "Kısmi",
+  unpaid: "Bekliyor",
+};
+
+export function StatusBadge({
+  status,
+  compact = false,
+}: Readonly<StatusBadgeProps>) {
   const config = statusConfig[status];
+  const label =
+    (compact && paymentStatusCompactLabels[status]) || config.label;
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] leading-none font-bold ${config.className}`}
+      className={`inline-flex w-fit max-w-none items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] leading-none font-bold min-[1440px]:px-2.5 min-[1440px]:py-1 min-[1440px]:text-[11px] ${config.className}`}
       title={config.label}
     >
-      {config.label}
+      {label}
+    </span>
+  );
+}
+
+type DeviceDeliveryBadgeProps = {
+  status: "pending" | "delivered";
+  /** Compact labels for dense laptop table cells. */
+  compact?: boolean;
+};
+
+const deviceDeliveryConfig: Record<
+  DeviceDeliveryBadgeProps["status"],
+  {
+    label: string;
+    shortLabel: string;
+    className: string;
+    dotClassName: string;
+  }
+> = {
+  pending: {
+    label: "Teslim Edilmedi",
+    shortLabel: "Bekliyor",
+    className: "border-[#f5d9a8] bg-[#fff6e8] text-[#8a5a00]",
+    dotClassName: "bg-[#e6a23c]",
+  },
+  delivered: {
+    label: "Teslim Edildi",
+    shortLabel: "Teslim",
+    className: "border-[#b6e3c8] bg-[#eefbf3] text-[#0f6b3c]",
+    dotClassName: "bg-[#22a06b]",
+  },
+};
+
+export function DeviceDeliveryBadge({
+  status,
+  compact = false,
+}: Readonly<DeviceDeliveryBadgeProps>) {
+  const config = deviceDeliveryConfig[status] ?? deviceDeliveryConfig.pending;
+  const label = compact ? config.shortLabel : config.label;
+
+  return (
+    <span
+      className={`inline-flex w-fit max-w-none items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] leading-none font-bold min-[1440px]:gap-1.5 min-[1440px]:px-2.5 min-[1440px]:py-1 min-[1440px]:text-[11px] ${config.className}`}
+      title={config.label}
+      aria-label={config.label}
+    >
+      <span
+        className={`size-1.5 shrink-0 rounded-full ${config.dotClassName}`}
+        aria-hidden="true"
+      />
+      {label}
     </span>
   );
 }

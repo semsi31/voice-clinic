@@ -26,10 +26,13 @@ import type { TransactionPaymentRecord } from "@/lib/transactions";
 
 type TransactionPaymentActionsProps = {
   payment: TransactionPaymentRecord;
+  /** Compact icon row for desktop tables; stack layout for mobile cards. */
+  variant?: "table" | "card";
 };
 
 export function TransactionPaymentActions({
   payment,
+  variant = "card",
 }: Readonly<TransactionPaymentActionsProps>) {
   const router = useRouter();
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -114,65 +117,105 @@ export function TransactionPaymentActions({
     received_by: payment.received_by ?? "",
   };
 
+  const receiptButton = payment.receipt_document_id ? (
+    <a
+      href={getDocumentDownloadPath(payment.receipt_document_id)}
+      className={rowActionButtonClassName}
+      aria-label="Makbuzu Aç"
+      title="Makbuz"
+      download
+    >
+      <FileText className="size-4" aria-hidden="true" />
+    </a>
+  ) : (
+    <button
+      type="button"
+      className={`${rowActionButtonClassName} border-amber-200 text-amber-800 hover:bg-amber-50`}
+      aria-label="Makbuzu Oluştur"
+      title={isCreateReceiptPending ? "Oluşturuluyor..." : "Makbuz yok — Oluştur"}
+      onClick={handleCreateReceipt}
+      disabled={isCreateReceiptPending}
+    >
+      <FileText className="size-4" aria-hidden="true" />
+    </button>
+  );
+
+  const editButton = (
+    <button
+      type="button"
+      className={rowActionButtonClassName}
+      aria-label="Ödemeyi Düzenle"
+      title="Ödemeyi Düzenle"
+      onClick={() => setIsEditOpen(true)}
+    >
+      <Pencil className="size-4" aria-hidden="true" />
+    </button>
+  );
+
+  const deleteButton = (
+    <button
+      type="button"
+      className={`${rowActionButtonClassName} hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700`}
+      aria-label="Ödemeyi Sil"
+      title="Ödemeyi Sil"
+      onClick={() => setIsDeleteOpen(true)}
+    >
+      <Trash2 className="size-4" aria-hidden="true" />
+    </button>
+  );
+
   return (
     <>
-      <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:items-end">
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {payment.receipt_document_id ? (
-            <a
-              href={getDocumentDownloadPath(payment.receipt_document_id)}
-              className={rowActionButtonClassName}
-              aria-label="Makbuzu Aç"
-              title="Makbuz"
-              download
-            >
-              <FileText className="size-4" aria-hidden="true" />
-            </a>
-          ) : (
-            <>
-              <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">
-                Makbuz yok
-              </span>
-              <button
-                type="button"
-                className={`${rowActionButtonClassName} px-2 text-[11px] font-bold`}
-                aria-label="Makbuzu Oluştur"
-                title="Makbuzu Oluştur"
-                onClick={handleCreateReceipt}
-                disabled={isCreateReceiptPending}
-              >
-                {isCreateReceiptPending ? "..." : "Oluştur"}
-              </button>
-            </>
-          )}
-          <button
-            type="button"
-            className={rowActionButtonClassName}
-            aria-label="Ödemeyi Düzenle"
-            title="Ödemeyi Düzenle"
-            onClick={() => setIsEditOpen(true)}
-          >
-            <Pencil className="size-4" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={`${rowActionButtonClassName} hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700`}
-            aria-label="Ödemeyi Sil"
-            title="Ödemeyi Sil"
-            onClick={() => setIsDeleteOpen(true)}
-          >
-            <Trash2 className="size-4" aria-hidden="true" />
-          </button>
+      {variant === "table" ? (
+        <div className="flex shrink-0 items-center justify-end gap-1">
+          {receiptButton}
+          {editButton}
+          {deleteButton}
         </div>
-        {warning ? (
-          <span
-            role="status"
-            className="max-w-48 text-right text-[11px] font-semibold text-amber-800"
-          >
-            {warning}
-          </span>
-        ) : null}
-      </div>
+      ) : (
+        <div className="flex w-full flex-col items-stretch gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {payment.receipt_document_id ? (
+              receiptButton
+            ) : (
+              <>
+                <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">
+                  Makbuz yok
+                </span>
+                <button
+                  type="button"
+                  className={`${rowActionButtonClassName} px-2 text-[11px] font-bold`}
+                  aria-label="Makbuzu Oluştur"
+                  title="Makbuzu Oluştur"
+                  onClick={handleCreateReceipt}
+                  disabled={isCreateReceiptPending}
+                >
+                  {isCreateReceiptPending ? "..." : "Oluştur"}
+                </button>
+              </>
+            )}
+            {editButton}
+            {deleteButton}
+          </div>
+          {warning ? (
+            <span
+              role="status"
+              className="text-[11px] font-semibold text-amber-800"
+            >
+              {warning}
+            </span>
+          ) : null}
+        </div>
+      )}
+
+      {variant === "table" && warning ? (
+        <span
+          role="status"
+          className="mt-1 block text-right text-[11px] font-semibold text-amber-800"
+        >
+          {warning}
+        </span>
+      ) : null}
 
       {isEditOpen ? (
         <ActionModal

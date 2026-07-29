@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { NewTransactionFormValues } from "@/app/(panel)/panel/transactions/actions";
 import { stockOptionLabel, type StockProductRecord } from "@/lib/stock";
+import { deviceDeliveryStatusOptions } from "@/lib/transactions";
 
 const inputClassName =
   "h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:ring-4 focus:ring-sky-100";
@@ -131,6 +132,19 @@ export function TransactionDeviceFields({
           <option value="right">Sağ</option>
           <option value="left">Sol</option>
           <option value="both">Çift</option>
+        </select>
+      </Field>
+      <Field label="Cihaz Teslim Durumu">
+        <select
+          name="device_delivery_status"
+          className={inputClassName}
+          defaultValue={values?.device_delivery_status || "pending"}
+        >
+          {deviceDeliveryStatusOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
         </select>
       </Field>
     </div>

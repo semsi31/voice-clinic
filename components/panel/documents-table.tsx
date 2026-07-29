@@ -37,10 +37,12 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableActionsColClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
   panelTableBadgeCellClassName,
   panelTableCellClassName,
+  panelTableCheckboxColClassName,
   panelTableClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
@@ -505,13 +507,13 @@ export function DocumentsTable({
             <PanelTableFrame>
             <table className={panelTableClassName}>
               <colgroup>
-                <col className="w-9" />
-                <col className="w-[24%]" />
+                <col className={panelTableCheckboxColClassName} />
+                <col className="w-[26%]" />
                 <col className="w-[5.5rem]" />
+                <col className="w-[8%]" />
                 <col className="w-[10%]" />
-                <col className="w-[12%]" />
-                <col className="w-[28%]" />
-                <col className="w-[5.75rem]" />
+                <col className="w-[34%]" />
+                <col className={panelTableActionsColClassName} />
               </colgroup>
               <thead>
                 <tr className={panelTableHeadRowClassName}>

@@ -14,8 +14,7 @@ type PanelTableFrameProps = {
 };
 
 /**
- * Table chrome: always fits width — no horizontal scroll.
- * Laptop density via CSS zoom on the table only.
+ * Table chrome: full-bleed inside rounded frame (no zoom gaps / sharp cuts).
  */
 export function PanelTableFrame({
   children,

@@ -9,14 +9,16 @@ import {
   BellPlus,
   CalendarDays,
   CreditCard,
-  Edit3,
   FileSpreadsheet,
   Package,
+  PackageCheck,
+  PackageX,
   Plus,
   UserRound,
 } from "lucide-react";
 import {
   createTransactionReminderAction,
+  updateDeviceDeliveryStatus,
   updateTransactionReminderAction,
 } from "@/app/(panel)/panel/transactions/actions";
 import {
@@ -32,14 +34,15 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableActionsColClassName,
+  panelTableActionsHeadClassName,
   panelTableCellClassName,
   panelTableClassName,
-  panelTableRowClassName,
-  panelTableActionsHeadClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
+  panelTableRowClassName,
 } from "@/components/panel/panel-styles";
-import { StatusBadge } from "@/components/panel/status-badge";
+import { DeviceDeliveryBadge, StatusBadge } from "@/components/panel/status-badge";
 import { TransactionPaymentActions } from "@/components/panel/transaction-payment-actions";
 import { TransactionPaymentForm } from "@/components/panel/transaction-payment-form";
 import { getFormRestoreKey } from "@/lib/panel-form";
@@ -53,6 +56,7 @@ import {
   formatCurrency,
   formatDate,
   paymentMethodLabels,
+  type DeviceDeliveryStatus,
   type PatientTransactionRecord,
   type TransactionPaymentRecord,
 } from "@/lib/transactions";
@@ -133,6 +137,62 @@ function SummaryValue({
   );
 }
 
+function DeviceDeliveryActions({
+  transactionId,
+  status,
+}: Readonly<{
+  transactionId: string;
+  status: DeviceDeliveryStatus;
+}>) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const markStatus = (nextStatus: DeviceDeliveryStatus) => {
+    if (isPending || nextStatus === status) return;
+    setError(null);
+
+    startTransition(async () => {
+      const result = await updateDeviceDeliveryStatus(transactionId, nextStatus);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
+    });
+  };
+
+  return (
+    <div className="space-y-2 px-3 pb-3 sm:px-6 sm:pb-5 lg:px-8">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <button
+          type="button"
+          disabled={isPending || status === "delivered"}
+          onClick={() => markStatus("delivered")}
+          className={`${panelPrimaryButtonClassName} w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto`}
+        >
+          <PackageCheck className="size-4" aria-hidden="true" />
+          {isPending ? "Güncelleniyor..." : "Teslim Edildi Olarak İşaretle"}
+        </button>
+        <button
+          type="button"
+          disabled={isPending || status === "pending"}
+          onClick={() => markStatus("pending")}
+          className={`${panelSecondaryButtonClassName} w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto`}
+        >
+          <PackageX className="size-4" aria-hidden="true" />
+          {isPending ? "Güncelleniyor..." : "Teslim Edilmedi Olarak İşaretle"}
+        </button>
+      </div>
+      {error ? (
+        <p className="text-sm font-medium text-rose-700" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function TabButton({
   id,
   label,
@@ -183,13 +243,6 @@ export function TransactionDetailWorkspace({
   );
   const [isReminderPending, startReminderTransition] = useTransition();
   const lastPayment = payments[0];
-  const hasDeviceInfo = Boolean(
-    transaction.brand ||
-      transaction.model ||
-      transaction.serial_no ||
-      transaction.ear_side ||
-      transaction.stock_deduct_enabled,
-  );
 
   const tabs: Array<{
     id: TabId;
@@ -253,6 +306,20 @@ export function TransactionDetailWorkspace({
   ];
 
   const deviceItems: InfoItem[] = [
+    {
+      label: "Cihaz Teslim Durumu",
+      value: (
+        <DeviceDeliveryBadge
+          status={transaction.device_delivery_status ?? "pending"}
+        />
+      ),
+    },
+    {
+      label: "Teslim Tarihi",
+      value: transaction.device_delivered_at
+        ? formatDate(transaction.device_delivered_at)
+        : "",
+    },
     { label: "Marka", value: transaction.brand },
     { label: "Model", value: transaction.model },
     { label: "Seri no", value: transaction.serial_no },
@@ -307,15 +374,18 @@ export function TransactionDetailWorkspace({
     <div className="space-y-5">
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:rounded-3xl">
         <div className="border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                {isLegacyExcelRecord ? <LegacyExcelBadge /> : null}
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600">
-                  {transaction.transaction_no ?? "İşlem kaydı"}
-                </span>
-                <StatusBadge status={transaction.payment_status} />
-              </div>
+          <div className="min-w-0 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <PanelLink
+                href="/panel/transactions"
+                className={`${panelSecondaryButtonClassName} w-full sm:w-auto`}
+              >
+                <ArrowLeft className="size-4" aria-hidden="true" />
+                Listeye Dön
+              </PanelLink>
+              {isLegacyExcelRecord ? <LegacyExcelBadge /> : null}
+            </div>
+            <div>
               <h1 className="text-xl font-black tracking-tight break-words text-slate-950 sm:text-3xl">
                 {transaction.patient_name}
               </h1>
@@ -326,75 +396,44 @@ export function TransactionDetailWorkspace({
                   : ""}
               </p>
             </div>
-
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:justify-end">
-              <PanelLink
-                href="/panel/transactions"
-                className={`${panelSecondaryButtonClassName} col-span-2 w-full sm:col-auto sm:w-auto`}
-              >
-                <ArrowLeft className="size-4" aria-hidden="true" />
-                Listeye Dön
-              </PanelLink>
-              <button
-                type="button"
-                className={`${panelSecondaryButtonClassName} w-full opacity-60 sm:w-auto`}
-                disabled
-                title="Bu işlem için düzenleme ekranı henüz tanımlı değil."
-              >
-                <Edit3 className="size-4" aria-hidden="true" />
-                Düzenle
-              </button>
-              {!isLegacyExcelRecord ? (
-                <button
-                  type="button"
-                  onClick={() => setIsPaymentOpen(true)}
-                  className={`${panelPrimaryButtonClassName} w-full sm:w-auto`}
-                >
-                  <Plus className="size-4" aria-hidden="true" />
-                  Ödeme Ekle
-                </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab("reminders");
-                  setIsReminderOpen(true);
-                }}
-                className={`${panelSecondaryButtonClassName} col-span-2 w-full sm:col-auto sm:w-auto`}
-              >
-                <BellPlus className="size-4" aria-hidden="true" />
-                <span className="sm:hidden">
-                  {reminder ? "Hatırlatıcı" : "Hatırlatıcı Ekle"}
-                </span>
-                <span className="hidden sm:inline">
-                  {reminder ? "Hatırlatıcıyı Düzenle" : "Hatırlatıcı Ekle"}
-                </span>
-              </button>
-            </div>
           </div>
         </div>
 
         {!isLegacyExcelRecord ? (
-          <div className="grid grid-cols-2 gap-2 px-3 py-3 sm:gap-3 sm:px-6 sm:py-5 lg:grid-cols-4 lg:px-8">
-            <SummaryValue
-              label="Satış tutarı"
-              value={formatCurrency(transaction.sale_amount)}
+          <>
+            <div className="grid grid-cols-2 gap-2 px-3 py-3 sm:gap-3 sm:px-6 sm:py-5 lg:grid-cols-3 xl:grid-cols-5 lg:px-8">
+              <SummaryValue
+                label="Satış tutarı"
+                value={formatCurrency(transaction.sale_amount)}
+              />
+              <SummaryValue
+                label="Ödenen tutar"
+                value={formatCurrency(transaction.paid_amount)}
+                tone="success"
+              />
+              <SummaryValue
+                label="Kalan borç"
+                value={formatCurrency(transaction.remaining_debt)}
+                tone={transaction.remaining_debt > 0 ? "danger" : "success"}
+              />
+              <SummaryValue
+                label="İşlem durumu"
+                value={<StatusBadge status={transaction.payment_status} />}
+              />
+              <SummaryValue
+                label="Teslim durumu"
+                value={
+                  <DeviceDeliveryBadge
+                    status={transaction.device_delivery_status ?? "pending"}
+                  />
+                }
+              />
+            </div>
+            <DeviceDeliveryActions
+              transactionId={transaction.id}
+              status={transaction.device_delivery_status ?? "pending"}
             />
-            <SummaryValue
-              label="Ödenen tutar"
-              value={formatCurrency(transaction.paid_amount)}
-              tone="success"
-            />
-            <SummaryValue
-              label="Kalan borç"
-              value={formatCurrency(transaction.remaining_debt)}
-              tone={transaction.remaining_debt > 0 ? "danger" : "success"}
-            />
-            <SummaryValue
-              label="İşlem durumu"
-              value={<StatusBadge status={transaction.payment_status} />}
-            />
-          </div>
+          </>
         ) : (
           <div className="px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
             <p className="max-w-3xl text-sm font-medium leading-6 text-slate-600">
@@ -503,61 +542,70 @@ export function TransactionDetailWorkspace({
                   </div>
 
                   <PanelTableFrame>
-                  <table className={panelTableClassName}>
-                    <thead>
-                      <tr className={panelTableHeadRowClassName}>
-                        <th className={panelTableHeadClassName}>Ödeme Tarihi</th>
-                        <th className={panelTableHeadClassName}>Ödeme Yöntemi</th>
-                        <th className={`${panelTableHeadClassName} text-right`}>
-                          Tutar
-                        </th>
-                        <th className={panelTableHeadClassName}>Açıklama</th>
-                        <th className={panelTableHeadClassName}>Alan Personel</th>
-                        <th className={panelTableActionsHeadClassName}>
-                          İşlemler
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {payments.map((payment) => (
-                        <tr
-                          key={payment.id}
-                          className={panelTableRowClassName}
-                        >
-                          <td
-                            className={panelTableCellClassName}
-                            title={formatDate(payment.payment_date)}
-                          >
-                            {formatDate(payment.payment_date)}
-                          </td>
-                          <td className={panelTableCellClassName}>
-                            {paymentMethodLabels[payment.payment_method]}
-                          </td>
-                          <td
-                            className={`${panelTableCellClassName} text-right font-semibold tabular-nums text-slate-950`}
-                            title={formatCurrency(payment.amount)}
-                          >
-                            {formatCurrency(payment.amount)}
-                          </td>
-                          <td
-                            className={panelTableCellClassName}
-                            title={payment.description || undefined}
-                          >
-                            {payment.description || "Ek bilgi yok"}
-                          </td>
-                          <td
-                            className={panelTableCellClassName}
-                            title={payment.received_by || undefined}
-                          >
-                            {payment.received_by || "Ek bilgi yok"}
-                          </td>
-                          <td className={panelTableActionsCellClassName}>
-                            <TransactionPaymentActions payment={payment} />
-                          </td>
+                    <table className={panelTableClassName}>
+                      <colgroup>
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                        <col className={panelTableActionsColClassName} />
+                      </colgroup>
+                      <thead>
+                        <tr className={panelTableHeadRowClassName}>
+                          <th className={panelTableHeadClassName}>Ödeme Tarihi</th>
+                          <th className={panelTableHeadClassName}>Ödeme Yöntemi</th>
+                          <th className={panelTableHeadClassName}>Tutar</th>
+                          <th className={panelTableHeadClassName}>Açıklama</th>
+                          <th className={panelTableHeadClassName}>Alan Personel</th>
+                          <th className={panelTableActionsHeadClassName}>
+                            İşlemler
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {payments.map((payment) => (
+                          <tr
+                            key={payment.id}
+                            className={panelTableRowClassName}
+                          >
+                            <td
+                              className={panelTableCellClassName}
+                              title={formatDate(payment.payment_date)}
+                            >
+                              {formatDate(payment.payment_date)}
+                            </td>
+                            <td className={panelTableCellClassName}>
+                              {paymentMethodLabels[payment.payment_method]}
+                            </td>
+                            <td
+                              className={`${panelTableCellClassName} font-semibold tabular-nums text-slate-950`}
+                              title={formatCurrency(payment.amount)}
+                            >
+                              {formatCurrency(payment.amount)}
+                            </td>
+                            <td
+                              className={panelTableCellClassName}
+                              title={payment.description || undefined}
+                            >
+                              {payment.description || "-"}
+                            </td>
+                            <td
+                              className={panelTableCellClassName}
+                              title={payment.received_by || undefined}
+                            >
+                              {payment.received_by || "-"}
+                            </td>
+                            <td className={panelTableActionsCellClassName}>
+                              <TransactionPaymentActions
+                                payment={payment}
+                                variant="table"
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </PanelTableFrame>
                 </>
               ) : (
@@ -570,14 +618,7 @@ export function TransactionDetailWorkspace({
           ) : null}
 
           {activeTab === "device" && !isLegacyExcelRecord ? (
-            hasDeviceInfo ? (
-              <InfoGrid items={deviceItems} />
-            ) : (
-              <EmptyState
-                title="Cihaz veya stok bilgisi yok"
-                description="Bu işlem için cihaz, seri no veya stok bağlantısı girilmemiş."
-              />
-            )
+            <InfoGrid items={deviceItems} />
           ) : null}
 
           {activeTab === "reminders" ? (

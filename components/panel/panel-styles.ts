@@ -24,16 +24,12 @@ export const panelPrimaryButtonClassName =
 export const panelSecondaryButtonClassName =
   "inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 [&_svg]:shrink-0";
 
-/** Table frame — never horizontal scroll (page or table). */
+/** Table frame — fills rounded corners; never horizontal scroll. */
 export const panelTableScrollClassName =
-  "w-full max-w-full min-w-0 overflow-x-clip rounded-2xl border border-slate-200";
+  "w-full max-w-full min-w-0 overflow-hidden rounded-2xl border border-slate-200";
 
-/**
- * Laptop: shrink table layout with CSS zoom so columns fit without scrolling.
- * Filters stay outside and full size.
- */
-export const panelTableZoomInnerClassName =
-  "w-full min-w-0 max-w-full lg:[zoom:0.8] xl:[zoom:0.9] 2xl:[zoom:1]";
+/** No CSS zoom — zoom left empty gaps inside rounded corners. */
+export const panelTableZoomInnerClassName = "w-full min-w-0 max-w-full";
 
 /** Always fills frame width — no sideways growth. */
 export const panelTableClassName =
@@ -45,7 +41,7 @@ export const panelTableCellClassName =
 
 /** Status / type chips — keep pill intact. */
 export const panelTableBadgeCellClassName =
-  "min-w-0 overflow-visible border-b border-slate-100 px-1 py-1.5 align-middle";
+  "min-w-0 overflow-visible border-b border-slate-100 px-1.5 py-1.5 align-middle";
 
 export const panelTableDesktopClassName = "hidden lg:block";
 
@@ -63,16 +59,29 @@ export const panelMobileCardValueClassName =
 
 /** Desktop table body row — alternating zebra + hover. */
 export const panelTableRowClassName =
-  "group text-slate-700 transition odd:bg-white even:bg-[#E8EEF5] hover:bg-sky-50/80";
+  "group text-slate-700 transition odd:bg-white even:bg-[#E8EEF5] hover:bg-sky-50/80 last:[&>td:first-child]:rounded-bl-[0.9rem] last:[&>td:last-child]:rounded-br-[0.9rem]";
 
-/** Header wraps cleanly; no mid-word letter splits when possible. */
+/**
+ * Shared header: equal horizontal padding so gaps between labels look even.
+ * Column widths come from colgroup (equal flexible cols).
+ */
 export const panelTableHeadClassName =
-  "min-w-0 break-words border-b-2 border-[#071225]/20 bg-[#0F2746] px-1.5 py-2 text-[9px] font-bold uppercase leading-tight tracking-wide text-white";
+  "min-w-0 break-words border-b-2 border-[#071225]/20 bg-[#0F2746] px-1.5 py-2.5 text-left text-[9px] font-bold uppercase leading-tight tracking-wide text-white first:rounded-tl-[0.9rem]";
 
 export const panelTableHeadRowClassName = "bg-[#0F2746]";
 
+/** Checkbox column — never clip the control; keep clicks working. */
+export const panelTableCheckboxCellClassName =
+  "relative z-[1] w-9 overflow-visible border-b border-slate-100 px-1.5 py-1.5 align-middle";
+
+/** Checkbox column width helper for colgroup. */
+export const panelTableCheckboxColClassName = "w-10";
+
+/** Actions column — fits 3 icon buttons. */
+export const panelTableActionsColClassName = "w-[7rem]";
+
 export const panelTableActionsHeadClassName =
-  "w-[5.75rem] border-b-2 border-[#071225]/20 bg-[#0F2746] px-1 py-2 text-right text-[9px] font-bold uppercase tracking-wide text-white";
+  "w-[7rem] rounded-tr-[0.9rem] border-b-2 border-[#071225]/20 bg-[#0F2746] px-1.5 py-2.5 text-right text-[9px] font-bold uppercase leading-tight tracking-wide text-white";
 
 export const panelTableActionsCellClassName =
-  "w-[5.75rem] overflow-visible border-b border-slate-100 px-1 py-1.5 text-right align-middle bg-white group-odd:bg-white group-even:bg-[#E8EEF5] group-hover:bg-sky-50/80";
+  "w-[7rem] overflow-visible border-b border-slate-100 px-1.5 py-1.5 text-right align-middle bg-white group-odd:bg-white group-even:bg-[#E8EEF5] group-hover:bg-sky-50/80";

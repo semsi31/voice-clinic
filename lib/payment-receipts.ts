@@ -401,6 +401,27 @@ async function cleanupReceiptDocumentById(
   }
 
   if (document.file_path) {
+    // Receipts reuse a stable R2 key per payment. After recreate, the new
+    // document row points at the same key — never delete R2 while another
+    // documents row still references it.
+    const { count: sharedPathCount, error: sharedPathError } = await supabase
+      .from("documents")
+      .select("id", { count: "exact", head: true })
+      .eq("file_path", document.file_path);
+
+    if (sharedPathError) {
+      console.error("Receipt shared path check failed; skipping R2 delete", {
+        documentId,
+        key: document.file_path,
+        error: errorDetails(sharedPathError),
+      });
+      return { ok: true };
+    }
+
+    if ((sharedPathCount ?? 0) > 0) {
+      return { ok: true };
+    }
+
     try {
       await deleteFileFromR2(document.file_path);
     } catch (error) {

@@ -1,6 +1,7 @@
 export type PaymentStatus = "paid" | "partial" | "unpaid";
 export type PaymentMethod = "cash" | "credit_card" | "bank_transfer";
 export type PatientTransactionSourceType = "manual" | "legacy_excel";
+export type DeviceDeliveryStatus = "pending" | "delivered";
 
 export type PatientTransactionRecord = {
   id: string;
@@ -33,7 +34,22 @@ export type PatientTransactionRecord = {
   source_type: PatientTransactionSourceType;
   legacy_sheet_name: string | null;
   legacy_row_number: number | null;
+  device_delivery_status: DeviceDeliveryStatus;
+  device_delivered_at: string | null;
 };
+
+export const deviceDeliveryStatusLabels: Record<DeviceDeliveryStatus, string> = {
+  pending: "Teslim Edilmedi",
+  delivered: "Teslim Edildi",
+};
+
+export const deviceDeliveryStatusOptions: {
+  value: DeviceDeliveryStatus;
+  label: string;
+}[] = [
+  { value: "pending", label: "Teslim Edilmedi" },
+  { value: "delivered", label: "Teslim Edildi" },
+];
 
 export type TransactionPaymentRecord = {
   id: string;
