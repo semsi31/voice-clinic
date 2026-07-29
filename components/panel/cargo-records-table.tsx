@@ -25,6 +25,7 @@ import {
 import { EmptyState } from "@/components/panel/empty-state";
 import { PanelCard } from "@/components/panel/panel-card";
 import { PanelPendingSubmitButton } from "@/components/panel/panel-pending-submit-button";
+import { PanelTableFrame } from "@/components/panel/panel-table-frame";
 import {
   panelFilterFieldClassName,
   panelFilterGridClassName,
@@ -38,14 +39,13 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableBadgeCellClassName,
   panelTableCellClassName,
   panelTableClassName,
-  panelTableDesktopClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
-  panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
 import { StatusBadge } from "@/components/panel/status-badge";
@@ -535,7 +535,7 @@ export function CargoRecordsTable({
         <div className={panelFilterGridClassName}>
           <label className={panelFilterFieldClassName}>
             <span className={panelFilterLabelClassName}>Ara</span>
-            <div className="relative">
+            <div className="relative min-w-0">
               <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                 <Search className="size-4" aria-hidden="true" />
               </span>
@@ -675,13 +675,23 @@ export function CargoRecordsTable({
               ))}
             </div>
 
-            <div
-              className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}
-            >
+            <PanelTableFrame>
               <table className={panelTableClassName}>
+                <colgroup>
+                  <col className="w-9" />
+                  <col className="w-[9%]" />
+                  <col className="w-[11%]" />
+                  <col className="w-[13%]" />
+                  <col className="w-[11%]" />
+                  <col className="w-[11%]" />
+                  <col className="w-[11%]" />
+                  <col className="w-[7.25rem]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[5.75rem]" />
+                </colgroup>
                 <thead>
                   <tr className={panelTableHeadRowClassName}>
-                    <th className={`${panelTableHeadClassName} w-10`}>
+                    <th className={panelTableHeadClassName}>
                       <input
                         type="checkbox"
                         aria-label="Filtrelenen kayıtları seç"
@@ -696,22 +706,14 @@ export function CargoRecordsTable({
                         className="size-5 min-h-5 min-w-5 rounded border-slate-300 text-sky-700 focus:ring-sky-200"
                       />
                     </th>
-                    <th className={`${panelTableHeadClassName} w-[6.5rem]`}>Tarih</th>
+                    <th className={panelTableHeadClassName}>Tarih</th>
                     <th className={panelTableHeadClassName}>Gönderen</th>
                     <th className={panelTableHeadClassName}>Yapılan İşlem</th>
-                    <th className={`${panelTableHeadClassName} w-[8rem]`}>
-                      Kargo Firması
-                    </th>
-                    <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
-                      Kargo Şubesi
-                    </th>
-                    <th className={`${panelTableHeadClassName} w-[8rem]`}>
-                      Takip No
-                    </th>
-                    <th className={`${panelTableHeadClassName} w-[6.5rem]`}>Durum</th>
-                    <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
-                      Not
-                    </th>
+                    <th className={panelTableHeadClassName}>Kargo Firması</th>
+                    <th className={panelTableHeadClassName}>Kargo Şubesi</th>
+                    <th className={panelTableHeadClassName}>Takip No</th>
+                    <th className={panelTableHeadClassName}>Durum</th>
+                    <th className={panelTableHeadClassName}>Not</th>
                     <th className={panelTableActionsHeadClassName}>İşlemler</th>
                   </tr>
                 </thead>
@@ -727,50 +729,53 @@ export function CargoRecordsTable({
                           className="size-5 min-h-5 min-w-5 rounded border-slate-300 text-sky-700 focus:ring-sky-200"
                         />
                       </td>
-                      <td className={`${panelTableCellClassName} whitespace-nowrap`}>
+                      <td
+                        className={panelTableCellClassName}
+                        title={formatDate(record.cargo_date)}
+                      >
                         {formatDate(record.cargo_date)}
                       </td>
                       <td
-                        className={`${panelTableCellClassName} min-w-0 truncate`}
+                        className={panelTableCellClassName}
                         title={record.sender_name}
                       >
                         {record.sender_name}
                       </td>
                       <td
-                        className={`${panelTableCellClassName} min-w-0 truncate font-semibold text-slate-950`}
+                        className={`${panelTableCellClassName} font-semibold text-slate-950`}
                         title={record.process_description}
                       >
                         {record.process_description}
                       </td>
                       <td
-                        className={`${panelTableCellClassName} truncate`}
+                        className={panelTableCellClassName}
                         title={record.cargo_company}
                       >
                         {record.cargo_company}
                       </td>
                       <td
-                        className={`${panelTableCellClassName} hidden truncate xl:table-cell`}
+                        className={panelTableCellClassName}
                         title={record.cargo_branch || undefined}
                       >
                         {record.cargo_branch || "-"}
                       </td>
                       <td
-                        className={`${panelTableCellClassName} truncate font-mono text-xs font-semibold text-slate-950`}
+                        className={`${panelTableCellClassName} font-mono text-xs font-semibold text-slate-950`}
                         title={record.tracking_number || undefined}
                       >
                         {record.tracking_number || "-"}
                       </td>
-                      <td className={panelTableCellClassName}>
+                      <td className={panelTableBadgeCellClassName}>
                         <StatusBadge status={record.status} />
                       </td>
                       <td
-                        className={`${panelTableCellClassName} hidden min-w-0 truncate xl:table-cell`}
+                        className={panelTableCellClassName}
                         title={record.note || undefined}
                       >
                         {record.note || "-"}
                       </td>
                       <td className={panelTableActionsCellClassName}>
-                        <div className="flex shrink-0 items-center justify-end gap-1.5">
+                        <div className="flex shrink-0 items-center justify-end gap-1">
                           <button
                             type="button"
                             className={rowActionButtonClassName}
@@ -790,7 +795,7 @@ export function CargoRecordsTable({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </PanelTableFrame>
           </>
         ) : (
           <EmptyState

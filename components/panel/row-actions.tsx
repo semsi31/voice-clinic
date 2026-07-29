@@ -7,7 +7,7 @@ import { ConfirmModal } from "@/components/panel/confirm-modal";
 import { PanelLink } from "@/components/panel/panel-link";
 
 export const rowActionButtonClassName =
-  "inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-100";
+  "inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-100";
 
 type ModalContent = {
   title: string;
@@ -51,7 +51,7 @@ export function RowActions({
 
   return (
     <>
-      <div className="flex shrink-0 items-center justify-end gap-1.5">
+      <div className="flex shrink-0 items-center justify-end gap-1">
         {showView ? (
           viewHref ? (
             <PanelLink

@@ -25,13 +25,15 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableBadgeCellClassName,
+  panelTableCellClassName,
+  panelTableClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
-  panelTableDesktopClassName,
-  panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
+import { PanelTableFrame } from "@/components/panel/panel-table-frame";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
 import { StatusBadge } from "@/components/panel/status-badge";
 import {
@@ -157,7 +159,7 @@ function WebRequestActions({ request, onDeleted }: WebRequestActionsProps) {
 
   return (
     <>
-      <div className="flex shrink-0 items-center justify-end gap-1.5">
+      <div className="flex shrink-0 items-center justify-end gap-1">
         <button
           type="button"
           className={rowActionButtonClassName}
@@ -399,10 +401,10 @@ export function WebRequestsTable({
         />
       }
     >
-      <div className={`${panelFilterGridClassName} md:grid-cols-4`}>
+      <div className={panelFilterGridClassName}>
         <label className={panelFilterFieldClassName}>
           <span className={panelFilterLabelClassName}>Ara</span>
-          <div className="relative">
+          <div className="relative min-w-0">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
               <Search className="size-4" aria-hidden="true" />
             </span>
@@ -511,106 +513,111 @@ export function WebRequestsTable({
             ))}
           </div>
 
-          <div className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}>
-          <table className="w-full min-w-[1120px] border-separate border-spacing-0 text-left text-sm">
-            <thead>
-              <tr className={panelTableHeadRowClassName}>
-                <th className={panelTableHeadClassName}>
-                  <TableSelectAllCheckbox
-                    allSelected={allFilteredSelected}
-                    someSelected={someFilteredSelected}
-                    onToggle={toggleFilteredSelection}
-                  />
-                </th>
-                <th className={panelTableHeadClassName}>
-                  Tarih
-                </th>
-                <th className={panelTableHeadClassName}>
-                  Ad Soyad
-                </th>
-                <th className={panelTableHeadClassName}>
-                  Telefon
-                </th>
-                <th className={panelTableHeadClassName}>
-                  E-posta
-                </th>
-                <th className={panelTableHeadClassName}>
-                  Talep Türü
-                </th>
-                <th className={panelTableHeadClassName}>
-                  Konu
-                </th>
-                <th className={panelTableHeadClassName}>
-                  Tercih Edilen Şube
-                </th>
-                <th className={panelTableHeadClassName}>
-                  Durum
-                </th>
-                <th className={panelTableHeadClassName}>
-                  Mesaj
-                </th>
-                <th className={panelTableActionsHeadClassName}>İşlemler</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRequests.map((request) => (
-                <tr
-                  key={request.id}
-                    className={panelTableRowClassName}
-                  >
-                    <td className="border-b border-slate-100 px-3 py-4">
+          <PanelTableFrame>
+            <table className={panelTableClassName}>
+              <colgroup>
+                <col className="w-9" />
+                <col className="w-[9%]" />
+                <col className="w-[11%]" />
+                <col className="w-[10%]" />
+                <col className="w-[12%]" />
+                <col className="w-[9%]" />
+                <col className="w-[11%]" />
+                <col className="w-[10%]" />
+                <col className="w-[7.25rem]" />
+                <col className="w-[11%]" />
+                <col className="w-[5.75rem]" />
+              </colgroup>
+              <thead>
+                <tr className={panelTableHeadRowClassName}>
+                  <th className={panelTableHeadClassName}>
+                    <TableSelectAllCheckbox
+                      allSelected={allFilteredSelected}
+                      someSelected={someFilteredSelected}
+                      onToggle={toggleFilteredSelection}
+                    />
+                  </th>
+                  <th className={panelTableHeadClassName}>Tarih</th>
+                  <th className={panelTableHeadClassName}>Ad Soyad</th>
+                  <th className={panelTableHeadClassName}>Telefon</th>
+                  <th className={panelTableHeadClassName}>E-posta</th>
+                  <th className={panelTableHeadClassName}>Talep Türü</th>
+                  <th className={panelTableHeadClassName}>Konu</th>
+                  <th className={panelTableHeadClassName}>Tercih Edilen Şube</th>
+                  <th className={panelTableHeadClassName}>Durum</th>
+                  <th className={panelTableHeadClassName}>Mesaj</th>
+                  <th className={panelTableActionsHeadClassName}>İşlemler</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRequests.map((request) => (
+                  <tr key={request.id} className={panelTableRowClassName}>
+                    <td className={panelTableCellClassName}>
                       <TableRowCheckbox
                         checked={selectedIds.has(request.id)}
                         label={`${request.name} talebini seç`}
                         onToggle={() => toggleRecordSelection(request.id)}
                       />
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-4 whitespace-nowrap">
-                    <div className="font-semibold text-slate-950">
+                    <td
+                      className={panelTableCellClassName}
+                      title={`${formatDate(request.created_at)} ${formatTime(request.created_at)}`}
+                    >
                       {formatDate(request.created_at)}
-                    </div>
-                    <div className="mt-1 text-xs text-slate-500">
-                      {formatTime(request.created_at)}
-                    </div>
-                  </td>
-                  <td className="border-b border-slate-100 px-3 py-4 font-semibold whitespace-nowrap text-slate-950">
-                    {request.name}
-                  </td>
-                  <td className="border-b border-slate-100 px-3 py-4 whitespace-nowrap">
-                    {request.phone}
-                  </td>
-                  <td className="max-w-[160px] truncate border-b border-slate-100 px-3 py-4">
-                    {request.email || "-"}
-                  </td>
-                  <td className="border-b border-slate-100 px-3 py-4 whitespace-nowrap">
-                    {requestTypeLabels[request.request_type]}
-                  </td>
-                  <td className="max-w-[180px] truncate border-b border-slate-100 px-3 py-4 font-semibold text-slate-950">
-                    {request.subject || "-"}
-                  </td>
-                  <td className="border-b border-slate-100 px-3 py-4 whitespace-nowrap">
-                    {request.preferred_branch || "-"}
-                  </td>
-                  <td className="border-b border-slate-100 px-3 py-4 whitespace-nowrap">
-                    <StatusBadge status={request.status} />
-                  </td>
-                  <td
-                    className="max-w-[200px] truncate border-b border-slate-100 px-3 py-4"
-                    title={request.message || undefined}
-                  >
-                    {request.message || "-"}
-                  </td>
-                  <td className={panelTableActionsCellClassName}>
-                    <WebRequestActions
-                      request={request}
-                      onDeleted={handleRecordsDeleted}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </td>
+                    <td
+                      className={`${panelTableCellClassName} font-semibold text-slate-950`}
+                      title={request.name}
+                    >
+                      {request.name}
+                    </td>
+                    <td
+                      className={panelTableCellClassName}
+                      title={request.phone}
+                    >
+                      {request.phone}
+                    </td>
+                    <td
+                      className={panelTableCellClassName}
+                      title={request.email || undefined}
+                    >
+                      {request.email || "-"}
+                    </td>
+                    <td className={panelTableCellClassName}>
+                      {requestTypeLabels[request.request_type]}
+                    </td>
+                    <td
+                      className={`${panelTableCellClassName} font-semibold text-slate-950`}
+                      title={request.subject || undefined}
+                    >
+                      {request.subject || "-"}
+                    </td>
+                    <td
+                      className={panelTableCellClassName}
+                      title={request.preferred_branch || undefined}
+                    >
+                      {request.preferred_branch || "-"}
+                    </td>
+                    <td className={panelTableBadgeCellClassName}>
+                      <StatusBadge status={request.status} />
+                    </td>
+                    <td
+                      className={panelTableCellClassName}
+                      title={request.message || undefined}
+                    >
+                      {request.message || "-"}
+                    </td>
+                    <td className={panelTableActionsCellClassName}>
+                      <WebRequestActions
+                        request={request}
+                        onDeleted={handleRecordsDeleted}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </PanelTableFrame>
         </>
       ) : (
         <EmptyState

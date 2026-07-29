@@ -38,13 +38,15 @@ import {
   panelPrimaryButtonClassName,
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
+  panelTableBadgeCellClassName,
+  panelTableCellClassName,
+  panelTableClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
-  panelTableDesktopClassName,
-  panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
+import { PanelTableFrame } from "@/components/panel/panel-table-frame";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
 import { StatusBadge } from "@/components/panel/status-badge";
 import {
@@ -85,7 +87,12 @@ function ReminderDateText({
   return (
     <div className={variant === "table" ? undefined : dateClassName}>
       {variant === "table" ? (
-        <div className={dateClassName}>{formatDate(reminder.reminder_date)}</div>
+        <span className={dateClassName}>
+          {formatDate(reminder.reminder_date)}
+          {reminder.reminder_time
+            ? ` · ${formatReminderTime(reminder.reminder_time)}`
+            : ""}
+        </span>
       ) : (
         <>
           {formatDate(reminder.reminder_date)}
@@ -94,11 +101,6 @@ function ReminderDateText({
             : ""}
         </>
       )}
-      {variant === "table" && reminder.reminder_time ? (
-        <div className="mt-1 text-xs text-slate-500">
-          {formatReminderTime(reminder.reminder_time)}
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -422,10 +424,10 @@ export function RemindersTable({
           </div>
         }
       >
-        <div className={`${panelFilterGridClassName} lg:grid-cols-4`}>
+        <div className={`${panelFilterGridClassName}`}>
           <label className={panelFilterFieldClassName}>
             <span className={panelFilterLabelClassName}>Ara</span>
-            <div className="relative">
+            <div className="relative min-w-0">
               <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                 <Search className="size-4" aria-hidden="true" />
               </span>
@@ -528,104 +530,122 @@ export function RemindersTable({
               ))}
             </div>
 
-            <div className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}>
-            <table className="w-full min-w-[1080px] table-fixed border-separate border-spacing-0 text-left text-sm">
-              <colgroup>
-                <col className="w-[4%]" />
-                <col className="w-[10%]" />
-                <col className="w-[13%]" />
-                <col className="w-[10%]" />
-                <col className="w-[11%]" />
-                <col className="w-[11%]" />
-                <col className="w-[8%]" />
-                <col className="w-[21%]" />
-                <col className="w-[8%]" />
-              </colgroup>
-              <thead>
-                <tr className={panelTableHeadRowClassName}>
-                  <th className={panelTableHeadClassName}>
-                    <TableSelectAllCheckbox
-                      allSelected={allFilteredSelected}
-                      someSelected={someFilteredSelected}
-                      onToggle={toggleFilteredSelection}
-                    />
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Hatırlatma Tarihi
-                  </th>
-                  <th className={panelTableHeadClassName}>Başlık</th>
-                  <th className={panelTableHeadClassName}>
-                    İlgili Hasta
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    İlgili İşlem
-                  </th>
-                  <th className={panelTableHeadClassName}>
-                    Sorumlu Personel
-                  </th>
-                  <th className={panelTableHeadClassName}>Durum</th>
-                  <th className={panelTableHeadClassName}>
-                    Açıklama
-                  </th>
-                  <th className={panelTableActionsHeadClassName}>İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredReminders.map((reminder) => (
-                  <tr
-                    key={reminder.id}
-                    className={panelTableRowClassName}
-                  >
-                    <td className="border-b border-slate-100 px-3 py-3">
-                      <TableRowCheckbox
-                        checked={selectedIds.has(reminder.id)}
-                        label={`${reminder.title} kaydını seç`}
-                        onToggle={() => toggleRecordSelection(reminder.id)}
+            <PanelTableFrame>
+              <table className={panelTableClassName}>
+                <colgroup>
+                  <col className="w-9" />
+                  <col className="w-[12%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[7.25rem]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[5.75rem]" />
+                </colgroup>
+                <thead>
+                  <tr className={panelTableHeadRowClassName}>
+                    <th className={panelTableHeadClassName}>
+                      <TableSelectAllCheckbox
+                        allSelected={allFilteredSelected}
+                        someSelected={someFilteredSelected}
+                        onToggle={toggleFilteredSelection}
                       />
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 whitespace-nowrap">
-                      <ReminderDateText reminder={reminder} />
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 font-semibold text-slate-950 truncate">
-                      {reminder.title}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 truncate">
-                      {reminder.patient_name || "-"}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 truncate">
-                      {reminder.related_record || "-"}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3 truncate">
-                      {reminder.responsible_person || "-"}
-                    </td>
-                    <td className="border-b border-slate-100 px-3 py-3">
-                      <StatusBadge status={reminder.status} />
-                    </td>
-                    <td className="max-w-0 truncate border-b border-slate-100 px-3 py-3">
-                      {reminder.description || "-"}
-                    </td>
-                    <td className={panelTableActionsCellClassName}>
-                      <div className="flex shrink-0 items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          className={rowActionButtonClassName}
-                          aria-label="Düzenle"
-                          title="Düzenle"
-                          onClick={() => setEditReminder(reminder)}
-                        >
-                          <Pencil className="size-4" aria-hidden="true" />
-                        </button>
-                        <DeleteReminderButton
-                          reminder={reminder}
-                          onDeleted={handleRecordsDeleted}
-                        />
-                      </div>
-                    </td>
+                    </th>
+                    <th className={panelTableHeadClassName}>
+                      Hatırlatma Tarihi
+                    </th>
+                    <th className={panelTableHeadClassName}>Başlık</th>
+                    <th className={panelTableHeadClassName}>
+                      İlgili Hasta
+                    </th>
+                    <th className={panelTableHeadClassName}>
+                      İlgili İşlem
+                    </th>
+                    <th className={panelTableHeadClassName}>
+                      Sorumlu Personel
+                    </th>
+                    <th className={panelTableHeadClassName}>Durum</th>
+                    <th className={panelTableHeadClassName}>
+                      Açıklama
+                    </th>
+                    <th className={panelTableActionsHeadClassName}>İşlemler</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredReminders.map((reminder) => (
+                    <tr
+                      key={reminder.id}
+                      className={panelTableRowClassName}
+                    >
+                      <td className={panelTableCellClassName}>
+                        <TableRowCheckbox
+                          checked={selectedIds.has(reminder.id)}
+                          label={`${reminder.title} kaydını seç`}
+                          onToggle={() => toggleRecordSelection(reminder.id)}
+                        />
+                      </td>
+                      <td
+                        className={panelTableCellClassName}
+                        title={reminder.reminder_date}
+                      >
+                        <ReminderDateText reminder={reminder} />
+                      </td>
+                      <td
+                        className={`${panelTableCellClassName} font-semibold text-slate-950`}
+                        title={reminder.title}
+                      >
+                        {reminder.title}
+                      </td>
+                      <td
+                        className={panelTableCellClassName}
+                        title={reminder.patient_name || undefined}
+                      >
+                        {reminder.patient_name || "-"}
+                      </td>
+                      <td
+                        className={panelTableCellClassName}
+                        title={reminder.related_record || undefined}
+                      >
+                        {reminder.related_record || "-"}
+                      </td>
+                      <td
+                        className={panelTableCellClassName}
+                        title={reminder.responsible_person || undefined}
+                      >
+                        {reminder.responsible_person || "-"}
+                      </td>
+                      <td className={panelTableBadgeCellClassName}>
+                        <StatusBadge status={reminder.status} />
+                      </td>
+                      <td
+                        className={panelTableCellClassName}
+                        title={reminder.description || undefined}
+                      >
+                        {reminder.description || "-"}
+                      </td>
+                      <td className={panelTableActionsCellClassName}>
+                        <div className="flex shrink-0 items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            className={rowActionButtonClassName}
+                            aria-label="Düzenle"
+                            title="Düzenle"
+                            onClick={() => setEditReminder(reminder)}
+                          >
+                            <Pencil className="size-4" aria-hidden="true" />
+                          </button>
+                          <DeleteReminderButton
+                            reminder={reminder}
+                            onDeleted={handleRecordsDeleted}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </PanelTableFrame>
           </>
         ) : (
           <EmptyState

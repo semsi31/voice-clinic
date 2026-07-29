@@ -122,7 +122,8 @@ export function StatusBadge({ status }: Readonly<StatusBadgeProps>) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold ${config.className}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] leading-none font-bold ${config.className}`}
+      title={config.label}
     >
       {config.label}
     </span>

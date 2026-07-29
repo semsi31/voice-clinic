@@ -25,6 +25,7 @@ import {
 import { EmptyState } from "@/components/panel/empty-state";
 import { PanelCard } from "@/components/panel/panel-card";
 import { PanelPendingSubmitButton } from "@/components/panel/panel-pending-submit-button";
+import { PanelTableFrame } from "@/components/panel/panel-table-frame";
 import {
   panelFilterFieldClassName,
   panelFilterGridClassName,
@@ -38,12 +39,11 @@ import {
   panelTableActionsCellClassName,
   panelTableRowClassName,
   panelTableActionsHeadClassName,
+  panelTableBadgeCellClassName,
   panelTableCellClassName,
   panelTableClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
-  panelTableDesktopClassName,
-  panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
 import {
@@ -70,7 +70,7 @@ const acceptedDocumentExtensions = ".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg";
 function FileTypeBadge({ fileType }: Readonly<{ fileType: DocumentFileType }>) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold ${documentFileTypeBadgeClassNames[fileType]}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] leading-none font-bold ${documentFileTypeBadgeClassNames[fileType]}`}
     >
       {documentFileTypeLabels[fileType]}
     </span>
@@ -423,10 +423,10 @@ export function DocumentsTable({
           </div>
         }
       >
-        <div className={`${panelFilterGridClassName} lg:grid-cols-2`}>
+        <div className={`${panelFilterGridClassName} xl:grid-cols-2`}>
           <label className={panelFilterFieldClassName}>
             <span className={panelFilterLabelClassName}>Ara</span>
-            <div className="relative">
+            <div className="relative min-w-0">
               <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                 <Search className="size-4" aria-hidden="true" />
               </span>
@@ -502,32 +502,31 @@ export function DocumentsTable({
               ))}
             </div>
 
-            <div className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}>
+            <PanelTableFrame>
             <table className={panelTableClassName}>
+              <colgroup>
+                <col className="w-9" />
+                <col className="w-[24%]" />
+                <col className="w-[5.5rem]" />
+                <col className="w-[10%]" />
+                <col className="w-[12%]" />
+                <col className="w-[28%]" />
+                <col className="w-[5.75rem]" />
+              </colgroup>
               <thead>
                 <tr className={panelTableHeadRowClassName}>
-                  <th className={`${panelTableHeadClassName} w-10`}>
+                  <th className={panelTableHeadClassName}>
                     <TableSelectAllCheckbox
                       allSelected={allFilteredSelected}
                       someSelected={someFilteredSelected}
                       onToggle={toggleFilteredSelection}
                     />
                   </th>
-                  <th className={panelTableHeadClassName}>
-                    Belge Adı
-                  </th>
-                  <th className={`${panelTableHeadClassName} w-[7rem]`}>
-                    Dosya Türü
-                  </th>
-                  <th className={`${panelTableHeadClassName} w-[6.5rem] whitespace-nowrap`}>
-                    Boyut
-                  </th>
-                  <th className={`${panelTableHeadClassName} w-[7rem]`}>
-                    Tarih
-                  </th>
-                  <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
-                    Açıklama
-                  </th>
+                  <th className={panelTableHeadClassName}>Belge Adı</th>
+                  <th className={panelTableHeadClassName}>Dosya Türü</th>
+                  <th className={panelTableHeadClassName}>Boyut</th>
+                  <th className={panelTableHeadClassName}>Tarih</th>
+                  <th className={panelTableHeadClassName}>Açıklama</th>
                   <th className={panelTableActionsHeadClassName}>İşlemler</th>
                 </tr>
               </thead>
@@ -545,28 +544,34 @@ export function DocumentsTable({
                       />
                     </td>
                     <td
-                      className={`${panelTableCellClassName} min-w-0 truncate font-semibold text-slate-950`}
+                      className={`${panelTableCellClassName} font-semibold text-slate-950`}
                       title={document.title}
                     >
                       {document.title}
                     </td>
-                    <td className={panelTableCellClassName}>
+                    <td className={panelTableBadgeCellClassName}>
                       <FileTypeBadge fileType={document.file_type} />
                     </td>
-                    <td className={`${panelTableCellClassName} whitespace-nowrap`}>
+                    <td
+                      className={panelTableCellClassName}
+                      title={document.file_size || undefined}
+                    >
                       {document.file_size || "-"}
                     </td>
-                    <td className={`${panelTableCellClassName} whitespace-nowrap`}>
+                    <td
+                      className={panelTableCellClassName}
+                      title={formatDate(document.created_at)}
+                    >
                       {formatDate(document.created_at)}
                     </td>
                     <td
-                      className={`${panelTableCellClassName} hidden min-w-0 truncate xl:table-cell`}
+                      className={panelTableCellClassName}
                       title={document.description || undefined}
                     >
                       {document.description || "-"}
                     </td>
                     <td className={panelTableActionsCellClassName}>
-                      <div className="flex shrink-0 items-center justify-end gap-1.5">
+                      <div className="flex shrink-0 items-center justify-end gap-1">
                         <DownloadDocumentButton document={document} />
                         <button
                           type="button"
@@ -587,7 +592,7 @@ export function DocumentsTable({
                 ))}
               </tbody>
             </table>
-          </div>
+          </PanelTableFrame>
           </>
         ) : (
           <EmptyState

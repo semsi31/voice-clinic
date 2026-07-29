@@ -7,16 +7,16 @@ export const panelStatGridClassName =
 export const panelFilterLabelClassName =
   "text-xs font-bold uppercase tracking-wide text-slate-500";
 
-export const panelFilterFieldClassName = "grid gap-1.5";
+export const panelFilterFieldClassName = "grid min-w-0 gap-1.5";
 
 export const panelFilterInputClassName =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-base font-medium text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:ring-4 focus:ring-sky-100 sm:text-sm";
+  "h-10 w-full min-w-0 max-w-full rounded-xl border border-slate-200 bg-white px-3 text-base font-medium text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:ring-4 focus:ring-sky-100 sm:text-sm";
 
 export const panelFilterSelectClassName =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-base font-medium text-slate-700 shadow-sm outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100 sm:text-sm";
+  "h-10 w-full min-w-0 max-w-full rounded-xl border border-slate-200 bg-white px-3 pr-8 text-base font-medium text-slate-700 shadow-sm outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100 sm:text-sm";
 
 export const panelFilterGridClassName =
-  "mb-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4";
+  "mb-3 grid min-w-0 grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-4";
 
 export const panelPrimaryButtonClassName =
   "inline-flex items-center justify-center gap-2 rounded-2xl bg-[#071225] px-4 py-3 text-sm font-bold !text-white shadow-sm transition hover:bg-[#0f2746] hover:!text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 [&_svg]:shrink-0";
@@ -24,15 +24,28 @@ export const panelPrimaryButtonClassName =
 export const panelSecondaryButtonClassName =
   "inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 [&_svg]:shrink-0";
 
+/** Table frame — never horizontal scroll (page or table). */
 export const panelTableScrollClassName =
-  "w-full max-w-full min-w-0 overflow-x-auto rounded-2xl border border-slate-200 [scrollbar-width:thin]";
+  "w-full max-w-full min-w-0 overflow-x-clip rounded-2xl border border-slate-200";
 
-/** Compact laptop table type + cell padding (1024–1440). */
+/**
+ * Laptop: shrink table layout with CSS zoom so columns fit without scrolling.
+ * Filters stay outside and full size.
+ */
+export const panelTableZoomInnerClassName =
+  "w-full min-w-0 max-w-full lg:[zoom:0.8] xl:[zoom:0.9] 2xl:[zoom:1]";
+
+/** Always fills frame width — no sideways growth. */
 export const panelTableClassName =
-  "w-full max-w-full table-fixed border-separate border-spacing-0 text-left text-[13px] leading-5";
+  "w-full max-w-full table-fixed border-separate border-spacing-0 text-left text-[11px] leading-snug";
 
+/** Full text, wraps in cell — no ellipsis, no horizontal overflow. */
 export const panelTableCellClassName =
-  "min-w-0 border-b border-slate-100 px-2 py-2.5 align-middle lg:px-2.5 lg:py-3";
+  "min-w-0 break-words [overflow-wrap:anywhere] border-b border-slate-100 px-1.5 py-1.5 align-middle";
+
+/** Status / type chips — keep pill intact. */
+export const panelTableBadgeCellClassName =
+  "min-w-0 overflow-visible border-b border-slate-100 px-1 py-1.5 align-middle";
 
 export const panelTableDesktopClassName = "hidden lg:block";
 
@@ -52,15 +65,14 @@ export const panelMobileCardValueClassName =
 export const panelTableRowClassName =
   "group text-slate-700 transition odd:bg-white even:bg-[#E8EEF5] hover:bg-sky-50/80";
 
-/** Shared `<th>` look — navy bar so headers never read as data cells. */
+/** Header wraps cleanly; no mid-word letter splits when possible. */
 export const panelTableHeadClassName =
-  "border-b-2 border-[#071225]/20 bg-[#0F2746] px-2 py-2 text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap lg:px-2.5 lg:py-2.5";
+  "min-w-0 break-words border-b-2 border-[#071225]/20 bg-[#0F2746] px-1.5 py-2 text-[9px] font-bold uppercase leading-tight tracking-wide text-white";
 
 export const panelTableHeadRowClassName = "bg-[#0F2746]";
 
 export const panelTableActionsHeadClassName =
-  "w-[7%] min-w-[4.5rem] border-b-2 border-[#071225]/20 bg-[#0F2746] px-2 py-2 text-right text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap lg:sticky lg:right-0 lg:z-[2] lg:px-2.5 lg:py-2.5 lg:shadow-[-8px_0_16px_-12px_rgba(7,18,37,0.35)]";
+  "w-[5.75rem] border-b-2 border-[#071225]/20 bg-[#0F2746] px-1 py-2 text-right text-[9px] font-bold uppercase tracking-wide text-white";
 
-/** Sticky actions cell follows row zebra via group-odd / group-even. */
 export const panelTableActionsCellClassName =
-  "border-b border-slate-100 px-2 py-2.5 text-right align-middle bg-white group-odd:bg-white group-even:bg-[#E8EEF5] group-hover:bg-sky-50/80 lg:sticky lg:right-0 lg:z-[1] lg:px-2.5 lg:py-3 lg:shadow-[-8px_0_16px_-12px_rgba(15,23,42,0.18)]";
+  "w-[5.75rem] overflow-visible border-b border-slate-100 px-1 py-1.5 text-right align-middle bg-white group-odd:bg-white group-even:bg-[#E8EEF5] group-hover:bg-sky-50/80";

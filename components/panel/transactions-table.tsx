@@ -7,6 +7,7 @@ import { ActionModal } from "@/components/panel/action-modal";
 import { EmptyState } from "@/components/panel/empty-state";
 import { PanelCard } from "@/components/panel/panel-card";
 import { PanelLink } from "@/components/panel/panel-link";
+import { PanelTableFrame } from "@/components/panel/panel-table-frame";
 import {
   panelFilterFieldClassName,
   panelFilterGridClassName,
@@ -21,13 +22,12 @@ import {
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
   panelTableActionsHeadClassName,
+  panelTableBadgeCellClassName,
   panelTableCellClassName,
   panelTableClassName,
-  panelTableDesktopClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
   panelTableRowClassName,
-  panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
 import { StatusBadge } from "@/components/panel/status-badge";
@@ -46,7 +46,6 @@ import {
 } from "@/components/panel/table-bulk-selection";
 
 const tableCellClassName = `${panelTableCellClassName} text-slate-700`;
-const secondaryColClassName = "hidden xl:table-cell";
 
 function deviceLabel(transaction: PatientTransactionRecord) {
   return [transaction.brand, transaction.model].filter(Boolean).join(" ") || "-";
@@ -311,10 +310,10 @@ export function TransactionsTable({
         </div>
       }
     >
-      <div className={`${panelFilterGridClassName} lg:grid-cols-5`}>
+      <div className={`${panelFilterGridClassName} 2xl:grid-cols-5`}>
         <label className={panelFilterFieldClassName}>
           <span className={panelFilterLabelClassName}>Ara</span>
-          <div className="relative">
+          <div className="relative min-w-0">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
               <Search className="size-4" aria-hidden="true" />
             </span>
@@ -467,45 +466,45 @@ export function TransactionsTable({
             ))}
           </div>
 
-          <div className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}>
+          <PanelTableFrame>
           <table className={panelTableClassName}>
+            <colgroup>
+              <col className="w-9" />
+              <col className="w-[9%]" />
+              <col className="w-[7%]" />
+              <col className="w-[8%]" />
+              <col className="w-[10%]" />
+              <col className="w-[6%]" />
+              <col className="w-[9%]" />
+              <col className="w-[10%]" />
+              <col className="w-[9%]" />
+              <col className="w-[7%]" />
+              <col className="w-[7%]" />
+              <col className="w-[7%]" />
+              <col className="w-[7.25rem]" />
+              <col className="w-[5.75rem]" />
+            </colgroup>
             <thead>
               <tr className={panelTableHeadRowClassName}>
-                <th className={`${panelTableHeadClassName} w-10`}>
+                <th className={panelTableHeadClassName}>
                   <TableSelectAllCheckbox
                     allSelected={allFilteredSelected}
                     someSelected={someFilteredSelected}
                     onToggle={toggleFilteredSelection}
                   />
                 </th>
-                <th className={`${panelTableHeadClassName} w-[7rem]`}>İşlem No</th>
-                <th className={`${panelTableHeadClassName} w-[6.5rem]`}>Tarih</th>
-                <th className={`${panelTableHeadClassName} ${secondaryColClassName}`}>
-                  Şube / Birim
-                </th>
+                <th className={panelTableHeadClassName}>İşlem No</th>
+                <th className={panelTableHeadClassName}>Tarih</th>
+                <th className={panelTableHeadClassName}>Şube / Birim</th>
                 <th className={panelTableHeadClassName}>Hasta</th>
-                <th className={`${panelTableHeadClassName} ${secondaryColClassName}`}>
-                  Kaynak
-                </th>
-                <th className={`${panelTableHeadClassName} ${secondaryColClassName}`}>
-                  Telefon
-                </th>
+                <th className={panelTableHeadClassName}>Kaynak</th>
+                <th className={panelTableHeadClassName}>Telefon</th>
                 <th className={panelTableHeadClassName}>İşlem</th>
-                <th className={`${panelTableHeadClassName} ${secondaryColClassName}`}>
-                  Marka / Model
-                </th>
-                <th className={`${panelTableHeadClassName} w-[6.5rem] text-right`}>
-                  Satış
-                </th>
-                <th
-                  className={`${panelTableHeadClassName} w-[6.5rem] text-right ${secondaryColClassName}`}
-                >
-                  Ödenen
-                </th>
-                <th className={`${panelTableHeadClassName} w-[6.5rem] text-right`}>
-                  Kalan
-                </th>
-                <th className={`${panelTableHeadClassName} w-[6rem]`}>Durum</th>
+                <th className={panelTableHeadClassName}>Marka / Model</th>
+                <th className={`${panelTableHeadClassName} text-right`}>Satış</th>
+                <th className={`${panelTableHeadClassName} text-right`}>Ödenen</th>
+                <th className={`${panelTableHeadClassName} text-right`}>Kalan</th>
+                <th className={panelTableHeadClassName}>Durum</th>
                 <th className={panelTableActionsHeadClassName}>İşlemler</th>
               </tr>
             </thead>
@@ -523,36 +522,37 @@ export function TransactionsTable({
                       />
                     </td>
                     <td
-                    className={`${tableCellClassName} font-semibold whitespace-nowrap text-slate-950`}
+                    className={`${tableCellClassName} font-semibold text-slate-950`}
+                    title={transaction.transaction_no ?? undefined}
                   >
                     {transaction.transaction_no ?? "-"}
                   </td>
-                  <td className={`${tableCellClassName} whitespace-nowrap`}>
+                  <td className={tableCellClassName} title={formatDate(transaction.transaction_date)}>
                     {formatDate(transaction.transaction_date)}
                   </td>
-                  <td className={`${tableCellClassName} ${secondaryColClassName} truncate`} title={transaction.branch || undefined}>
+                  <td className={tableCellClassName} title={transaction.branch || undefined}>
                     {transaction.branch || "-"}
                   </td>
                   <td
-                    className={`${tableCellClassName} min-w-0 truncate font-semibold text-slate-950`}
+                    className={`${tableCellClassName} font-semibold text-slate-950`}
                     title={transaction.patient_name}
                   >
                     {transaction.patient_name}
                   </td>
-                  <td className={`${tableCellClassName} whitespace-nowrap ${secondaryColClassName}`}>
+                  <td className={panelTableBadgeCellClassName}>
                     {isLegacyTransaction(transaction) ? <LegacyBadge /> : "Normal"}
                   </td>
-                  <td className={`${tableCellClassName} whitespace-nowrap ${secondaryColClassName}`}>
+                  <td className={tableCellClassName} title={transaction.patient_phone || undefined}>
                     {transaction.patient_phone || "-"}
                   </td>
                   <td
-                    className={`${tableCellClassName} min-w-0 truncate`}
+                    className={tableCellClassName}
                     title={transaction.operation_description}
                   >
                     {transaction.operation_description}
                   </td>
                   <td
-                    className={`${tableCellClassName} min-w-0 truncate ${secondaryColClassName}`}
+                    className={tableCellClassName}
                     title={
                       isLegacyTransaction(transaction)
                         ? undefined
@@ -562,29 +562,32 @@ export function TransactionsTable({
                     {isLegacyTransaction(transaction) ? "-" : deviceLabel(transaction)}
                   </td>
                   <td
-                    className={`${tableCellClassName} whitespace-nowrap text-right font-semibold tabular-nums text-slate-950`}
+                    className={`${tableCellClassName} text-right font-semibold tabular-nums text-slate-950`}
+                    title={formatCurrency(transaction.sale_amount)}
                   >
                     {formatCurrency(transaction.sale_amount)}
                   </td>
                   <td
-                    className={`${tableCellClassName} whitespace-nowrap text-right tabular-nums ${secondaryColClassName}`}
+                    className={`${tableCellClassName} text-right tabular-nums`}
+                    title={formatCurrency(transaction.paid_amount)}
                   >
                     {formatCurrency(transaction.paid_amount)}
                   </td>
                   <td
-                    className={`${tableCellClassName} whitespace-nowrap text-right font-semibold tabular-nums text-slate-950`}
+                    className={`${tableCellClassName} text-right font-semibold tabular-nums text-slate-950`}
+                    title={formatCurrency(transaction.remaining_debt)}
                   >
                     {formatCurrency(transaction.remaining_debt)}
                   </td>
-                  <td className={tableCellClassName}>
+                  <td className={panelTableBadgeCellClassName}>
                     {isLegacyTransaction(transaction) ? (
-                      "-"
+                      <span>-</span>
                     ) : (
                       <StatusBadge status={transaction.payment_status} />
                     )}
                   </td>
                   <td className={panelTableActionsCellClassName}>
-                    <div className="flex shrink-0 items-center justify-end gap-1.5">
+                    <div className="flex shrink-0 items-center justify-end gap-1">
                       <PanelLink
                         href={`/panel/transactions/${transaction.id}`}
                         className={rowActionButtonClassName}
@@ -603,7 +606,7 @@ export function TransactionsTable({
               ))}
             </tbody>
           </table>
-        </div>
+          </PanelTableFrame>
         </>
       ) : (
         <EmptyState

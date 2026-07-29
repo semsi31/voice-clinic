@@ -90,7 +90,7 @@ export function PanelShell({
           userName={userName}
           userEmail={userEmail}
         />
-        <main className="min-w-0 w-full max-w-full flex-1 px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+        <main className="min-w-0 w-full max-w-full flex-1 px-3 py-4 sm:px-5 sm:py-5 lg:px-5 lg:py-6 xl:px-8">
           <div className="mx-auto min-w-0 w-full max-w-full">{children}</div>
         </main>
       </div>

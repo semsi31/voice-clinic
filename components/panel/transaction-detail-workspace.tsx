@@ -25,6 +25,7 @@ import {
   formInputClassName,
   formTextareaClassName,
 } from "@/components/panel/action-modal";
+import { PanelTableFrame } from "@/components/panel/panel-table-frame";
 import {
   panelMobileCardClassName,
   panelMobileCardListClassName,
@@ -37,8 +38,6 @@ import {
   panelTableActionsHeadClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
-  panelTableDesktopClassName,
-  panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
 import { StatusBadge } from "@/components/panel/status-badge";
 import { TransactionPaymentActions } from "@/components/panel/transaction-payment-actions";
@@ -503,25 +502,17 @@ export function TransactionDetailWorkspace({
                     ))}
                   </div>
 
-                  <div className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}>
+                  <PanelTableFrame>
                   <table className={panelTableClassName}>
                     <thead>
                       <tr className={panelTableHeadRowClassName}>
-                        <th className={`${panelTableHeadClassName} w-[7.5rem]`}>
-                          Ödeme Tarihi
-                        </th>
-                        <th className={`${panelTableHeadClassName} w-[8rem]`}>
-                          Ödeme Yöntemi
-                        </th>
-                        <th className={`${panelTableHeadClassName} w-[7rem] text-right`}>
+                        <th className={panelTableHeadClassName}>Ödeme Tarihi</th>
+                        <th className={panelTableHeadClassName}>Ödeme Yöntemi</th>
+                        <th className={`${panelTableHeadClassName} text-right`}>
                           Tutar
                         </th>
-                        <th className={panelTableHeadClassName}>
-                          Açıklama
-                        </th>
-                        <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
-                          Alan Personel
-                        </th>
+                        <th className={panelTableHeadClassName}>Açıklama</th>
+                        <th className={panelTableHeadClassName}>Alan Personel</th>
                         <th className={panelTableActionsHeadClassName}>
                           İşlemler
                         </th>
@@ -533,23 +524,29 @@ export function TransactionDetailWorkspace({
                           key={payment.id}
                           className={panelTableRowClassName}
                         >
-                          <td className={`${panelTableCellClassName} whitespace-nowrap`}>
+                          <td
+                            className={panelTableCellClassName}
+                            title={formatDate(payment.payment_date)}
+                          >
                             {formatDate(payment.payment_date)}
                           </td>
                           <td className={panelTableCellClassName}>
                             {paymentMethodLabels[payment.payment_method]}
                           </td>
-                          <td className={`${panelTableCellClassName} whitespace-nowrap text-right font-semibold tabular-nums text-slate-950`}>
+                          <td
+                            className={`${panelTableCellClassName} text-right font-semibold tabular-nums text-slate-950`}
+                            title={formatCurrency(payment.amount)}
+                          >
                             {formatCurrency(payment.amount)}
                           </td>
                           <td
-                            className={`${panelTableCellClassName} min-w-0 truncate`}
+                            className={panelTableCellClassName}
                             title={payment.description || undefined}
                           >
                             {payment.description || "Ek bilgi yok"}
                           </td>
                           <td
-                            className={`${panelTableCellClassName} hidden min-w-0 truncate xl:table-cell`}
+                            className={panelTableCellClassName}
                             title={payment.received_by || undefined}
                           >
                             {payment.received_by || "Ek bilgi yok"}
@@ -561,7 +558,7 @@ export function TransactionDetailWorkspace({
                       ))}
                     </tbody>
                   </table>
-                </div>
+                  </PanelTableFrame>
                 </>
               ) : (
                 <EmptyState

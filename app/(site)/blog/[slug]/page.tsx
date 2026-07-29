@@ -89,7 +89,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           }),
         ]}
       />
-      <div className="relative h-[240px] w-full overflow-hidden sm:h-[300px] lg:h-[360px] xl:h-[400px]">
+      <div className="relative isolate min-h-[340px] w-full overflow-hidden sm:min-h-[400px] lg:min-h-[480px]">
         <Reveal
           variant="fade-image"
           duration={IMAGE_REVEAL_DURATION_MS}
@@ -107,9 +107,9 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             className="size-full object-cover object-[68%_42%]"
           />
         </Reveal>
-        <div className="absolute inset-0 bg-[#071225]/20" aria-hidden="true" />
+        <div className="absolute inset-0 bg-[#071225]/35" aria-hidden="true" />
         <div
-          className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#faf8f3]/75"
+          className="absolute inset-0 bg-gradient-to-t from-[#faf8f3] via-[#faf8f3]/20 to-[#071225]/30"
           aria-hidden="true"
         />
       </div>

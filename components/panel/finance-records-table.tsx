@@ -41,6 +41,7 @@ import {
   TableSelectAllCheckbox,
   useTableBulkSelection,
 } from "@/components/panel/table-bulk-selection";
+import { PanelTableFrame } from "@/components/panel/panel-table-frame";
 import {
   panelFilterFieldClassName,
   panelFilterInputClassName,
@@ -54,13 +55,12 @@ import {
   panelSecondaryButtonClassName,
   panelTableActionsCellClassName,
   panelTableActionsHeadClassName,
+  panelTableBadgeCellClassName,
   panelTableCellClassName,
   panelTableClassName,
-  panelTableDesktopClassName,
   panelTableHeadClassName,
   panelTableHeadRowClassName,
   panelTableRowClassName,
-  panelTableScrollClassName,
 } from "@/components/panel/panel-styles";
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
 import {
@@ -212,7 +212,7 @@ function SourceBadge({ source }: Readonly<{ source: FinanceEntrySource }>) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold ${styles[source]}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] leading-none font-bold ${styles[source]}`}
     >
       {financeEntrySourceLabels[source]}
     </span>
@@ -435,7 +435,7 @@ export function FinanceRecordsTable({
           </div>
         }
       >
-        <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mb-3 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <label className={panelFilterFieldClassName}>
             <span className={panelFilterLabelClassName}>Tarih</span>
             <input
@@ -485,7 +485,7 @@ export function FinanceRecordsTable({
 
           <label className={panelFilterFieldClassName}>
             <span className={panelFilterLabelClassName}>Ara</span>
-            <div className="relative">
+            <div className="relative min-w-0">
               <Search
                 className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
                 aria-hidden="true"
@@ -577,13 +577,21 @@ export function FinanceRecordsTable({
               ))}
             </div>
 
-            <div
-              className={`${panelTableScrollClassName} ${panelTableDesktopClassName}`}
-            >
+            <PanelTableFrame>
               <table className={panelTableClassName}>
+                <colgroup>
+                  <col className="w-9" />
+                  <col className="w-[8%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[7.25rem]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[5.75rem]" />
+                </colgroup>
                 <thead>
                   <tr className={panelTableHeadRowClassName}>
-                    <th className={`${panelTableHeadClassName} w-10`}>
+                    <th className={panelTableHeadClassName}>
                       <TableSelectAllCheckbox
                         allSelected={allFilteredSelected}
                         someSelected={someFilteredSelected}
@@ -591,19 +599,11 @@ export function FinanceRecordsTable({
                         label="Filtrelenen manuel kayıtları seç"
                       />
                     </th>
-                    <th className={`${panelTableHeadClassName} w-[7rem]`}>Tarih</th>
-                    <th className={`${panelTableHeadClassName} w-[8.5rem]`}>
-                      Kaynak / Tip
-                    </th>
-                    <th className={`${panelTableHeadClassName} w-[7.5rem]`}>
-                      Ödeme Yöntemi
-                    </th>
-                    <th className={`${panelTableHeadClassName} w-[7rem] text-right`}>
-                      Tutar
-                    </th>
-                    <th className={`${panelTableHeadClassName} hidden xl:table-cell`}>
-                      İlgilenen Personel
-                    </th>
+                    <th className={panelTableHeadClassName}>Tarih</th>
+                    <th className={panelTableHeadClassName}>Kaynak / Tip</th>
+                    <th className={panelTableHeadClassName}>Ödeme Yöntemi</th>
+                    <th className={`${panelTableHeadClassName} text-right`}>Tutar</th>
+                    <th className={panelTableHeadClassName}>İlgilenen Personel</th>
                     <th className={panelTableHeadClassName}>Açıklama</th>
                     <th className={panelTableActionsHeadClassName}>İşlemler</th>
                   </tr>
@@ -625,29 +625,35 @@ export function FinanceRecordsTable({
                           />
                         ) : null}
                       </td>
-                      <td className={`${panelTableCellClassName} whitespace-nowrap`}>
+                      <td
+                        className={panelTableCellClassName}
+                        title={formatDate(entry.recordDate)}
+                      >
                         {formatDate(entry.recordDate)}
                       </td>
-                      <td className={panelTableCellClassName}>
+                      <td className={panelTableBadgeCellClassName}>
                         <SourceBadge source={entry.source} />
                       </td>
                       <td
-                        className={`${panelTableCellClassName} truncate`}
+                        className={panelTableCellClassName}
                         title={financePaymentMethodLabels[entry.paymentMethod]}
                       >
                         {financePaymentMethodLabels[entry.paymentMethod]}
                       </td>
-                      <td className={`${panelTableCellClassName} whitespace-nowrap text-right font-semibold tabular-nums text-slate-950`}>
+                      <td
+                        className={`${panelTableCellClassName} text-right font-semibold tabular-nums text-slate-950`}
+                        title={formatCurrency(entry.amount)}
+                      >
                         {formatCurrency(entry.amount)}
                       </td>
                       <td
-                        className={`${panelTableCellClassName} hidden min-w-0 truncate xl:table-cell`}
+                        className={panelTableCellClassName}
                         title={entry.responsiblePerson || undefined}
                       >
                         {entry.responsiblePerson || "-"}
                       </td>
                       <td
-                        className={`${panelTableCellClassName} min-w-0 truncate`}
+                        className={panelTableCellClassName}
                         title={entry.description}
                       >
                         {entry.description}
@@ -669,7 +675,7 @@ export function FinanceRecordsTable({
                             </PanelLink>
                           </div>
                         ) : entry.financeRecord ? (
-                          <div className="flex shrink-0 items-center justify-end gap-1.5">
+                          <div className="flex shrink-0 items-center justify-end gap-1">
                             <button
                               type="button"
                               className={rowActionButtonClassName}
@@ -690,7 +696,7 @@ export function FinanceRecordsTable({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </PanelTableFrame>
           </>
         ) : (
           <EmptyState
