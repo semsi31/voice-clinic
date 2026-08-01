@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { PanelDetailGrid } from "@/components/panel/panel-detail-fields";
 import { PanelLink } from "@/components/panel/panel-link";
@@ -17,6 +18,8 @@ import {
 } from "lucide-react";
 import {
   createTransactionReminderAction,
+  getTransactionPaymentsAction,
+  getTransactionReminderAction,
   updateDeviceDeliveryStatus,
   updateTransactionReminderAction,
 } from "@/app/(panel)/panel/transactions/actions";
@@ -42,8 +45,6 @@ import {
   panelTableRowClassName,
 } from "@/components/panel/panel-styles";
 import { DeviceDeliveryBadge, StatusBadge } from "@/components/panel/status-badge";
-import { TransactionPaymentActions } from "@/components/panel/transaction-payment-actions";
-import { TransactionPaymentForm } from "@/components/panel/transaction-payment-form";
 import { getFormRestoreKey } from "@/lib/panel-form";
 import {
   formatReminderTime,
@@ -61,10 +62,24 @@ import {
   type TransactionPaymentRecord,
 } from "@/lib/transactions";
 
+const TransactionPaymentForm = dynamic(
+  () =>
+    import("@/components/panel/transaction-payment-form").then((mod) => ({
+      default: mod.TransactionPaymentForm,
+    })),
+  { ssr: false },
+);
+
+const TransactionPaymentActions = dynamic(
+  () =>
+    import("@/components/panel/transaction-payment-actions").then((mod) => ({
+      default: mod.TransactionPaymentActions,
+    })),
+  { ssr: false },
+);
+
 type TransactionDetailWorkspaceProps = {
   transaction: PatientTransactionRecord;
-  payments: TransactionPaymentRecord[];
-  reminder: ReminderRecord | null;
 };
 
 type TabId = "general" | "payments" | "device" | "reminders";
@@ -239,8 +254,6 @@ function TabButton({
 
 export function TransactionDetailWorkspace({
   transaction,
-  payments,
-  reminder,
 }: Readonly<TransactionDetailWorkspaceProps>) {
   const isLegacyExcelRecord = transaction.source_type === "legacy_excel";
   const [activeTab, setActiveTab] = useState<TabId>("general");
@@ -251,7 +264,62 @@ export function TransactionDetailWorkspace({
     null,
   );
   const [isReminderPending, startReminderTransition] = useTransition();
+  const [payments, setPayments] = useState<TransactionPaymentRecord[]>([]);
+  const [paymentsLoaded, setPaymentsLoaded] = useState(false);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [paymentsError, setPaymentsError] = useState<string | null>(null);
+  const [reminder, setReminder] = useState<ReminderRecord | null>(null);
+  const [reminderLoaded, setReminderLoaded] = useState(false);
+  const [reminderLoading, setReminderLoading] = useState(false);
+  const [reminderLoadError, setReminderLoadError] = useState<string | null>(null);
   const lastPayment = payments[0];
+
+  const loadPayments = async () => {
+    if (paymentsLoading) return;
+    setPaymentsLoading(true);
+    setPaymentsError(null);
+    try {
+      const result = await getTransactionPaymentsAction(transaction.id);
+      if (!result.ok) {
+        setPaymentsError(result.error);
+        return;
+      }
+      setPayments(result.payments);
+      setPaymentsLoaded(true);
+    } finally {
+      setPaymentsLoading(false);
+    }
+  };
+
+  const loadReminder = async () => {
+    if (reminderLoading) return;
+    setReminderLoading(true);
+    setReminderLoadError(null);
+    try {
+      const result = await getTransactionReminderAction(
+        transaction.id,
+        transaction.transaction_no,
+      );
+      if (!result.ok) {
+        setReminderLoadError(result.error);
+        return;
+      }
+      setReminder(result.reminder);
+      setReminderLoaded(true);
+    } finally {
+      setReminderLoading(false);
+    }
+  };
+
+  const selectTab = (id: TabId) => {
+    setActiveTab(id);
+    if (id === "payments" && !isLegacyExcelRecord && !paymentsLoaded) {
+      void loadPayments();
+    }
+    if (id === "reminders" && !reminderLoaded) {
+      void loadReminder();
+    }
+  };
 
   const tabs: Array<{
     id: TabId;
@@ -369,6 +437,8 @@ export function TransactionDetailWorkspace({
 
       setReminderDraft(null);
       setIsReminderOpen(false);
+      setReminderLoaded(false);
+      await loadReminder();
     });
   };
 
@@ -462,7 +532,7 @@ export function TransactionDetailWorkspace({
               shortLabel={tab.shortLabel}
               icon={tab.icon}
               activeTab={activeTab}
-              onSelect={setActiveTab}
+              onSelect={selectTab}
             />
           ))}
         </div>
@@ -491,18 +561,34 @@ export function TransactionDetailWorkspace({
 
           {activeTab === "payments" && !isLegacyExcelRecord ? (
             <div className="space-y-5">
+              {paymentsLoading && !paymentsLoaded ? (
+                <div className="h-40 animate-pulse rounded-2xl bg-slate-50" />
+              ) : null}
+              {paymentsError ? (
+                <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                  {paymentsError}
+                </p>
+              ) : null}
               <div className="flex flex-col gap-3 sm:gap-4">
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
                   <SummaryValue
                     label="Son ödeme tarihi"
-                    value={lastPayment ? formatDate(lastPayment.payment_date) : "Yok"}
+                    value={
+                      !paymentsLoaded
+                        ? "—"
+                        : lastPayment
+                          ? formatDate(lastPayment.payment_date)
+                          : "Yok"
+                    }
                   />
                   <SummaryValue
                     label="Son ödeme yöntemi"
                     value={
-                      lastPayment
-                        ? paymentMethodLabels[lastPayment.payment_method]
-                        : "Yok"
+                      !paymentsLoaded
+                        ? "—"
+                        : lastPayment
+                          ? paymentMethodLabels[lastPayment.payment_method]
+                          : "Yok"
                     }
                   />
                 </div>
@@ -516,7 +602,7 @@ export function TransactionDetailWorkspace({
                 </button>
               </div>
 
-              {payments.length > 0 ? (
+              {paymentsLoaded && payments.length > 0 ? (
                 <>
                   <div className={panelMobileCardListClassName}>
                     {payments.map((payment) => (
@@ -543,7 +629,13 @@ export function TransactionDetailWorkspace({
                           </p>
                         ) : null}
                         <div className="mt-3 border-t border-slate-100 pt-3">
-                          <TransactionPaymentActions payment={payment} />
+                          <TransactionPaymentActions
+                            payment={payment}
+                            onMutated={() => {
+                              setPaymentsLoaded(false);
+                              void loadPayments();
+                            }}
+                          />
                         </div>
                       </article>
                     ))}
@@ -608,6 +700,10 @@ export function TransactionDetailWorkspace({
                               <TransactionPaymentActions
                                 payment={payment}
                                 variant="table"
+                                onMutated={() => {
+                                  setPaymentsLoaded(false);
+                                  void loadPayments();
+                                }}
                               />
                             </td>
                           </tr>
@@ -616,12 +712,12 @@ export function TransactionDetailWorkspace({
                     </table>
                   </PanelTableFrame>
                 </>
-              ) : (
+              ) : paymentsLoaded ? (
                 <EmptyState
                   title="Ödeme kaydı yok"
                   description="Bu işlem için henüz ödeme eklenmemiş."
                 />
-              )}
+              ) : null}
             </div>
           ) : null}
 
@@ -631,6 +727,14 @@ export function TransactionDetailWorkspace({
 
           {activeTab === "reminders" ? (
             <div className="space-y-5">
+              {reminderLoading && !reminderLoaded ? (
+                <div className="h-40 animate-pulse rounded-2xl bg-slate-50" />
+              ) : null}
+              {reminderLoadError ? (
+                <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                  {reminderLoadError}
+                </p>
+              ) : null}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-lg font-black text-slate-950">
@@ -644,13 +748,14 @@ export function TransactionDetailWorkspace({
                   type="button"
                   onClick={() => setIsReminderOpen(true)}
                   className={`${panelPrimaryButtonClassName} w-full sm:w-auto`}
+                  disabled={!reminderLoaded}
                 >
                   <BellPlus className="size-4" aria-hidden="true" />
                   {reminder ? "Hatırlatıcıyı Düzenle" : "Hatırlatıcı Ekle"}
                 </button>
               </div>
 
-              {reminder ? (
+              {reminderLoaded && reminder ? (
                 <InfoGrid
                   items={[
                     {
@@ -676,12 +781,12 @@ export function TransactionDetailWorkspace({
                     },
                   ]}
                 />
-              ) : (
+              ) : reminderLoaded ? (
                 <EmptyState
                   title="Hatırlatıcı yok"
                   description="Bu işlem için henüz hatırlatıcı oluşturulmamış."
                 />
-              )}
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -698,7 +803,11 @@ export function TransactionDetailWorkspace({
           <TransactionPaymentForm
             transactionId={transaction.id}
             defaultReceivedBy={transaction.staff_name ?? ""}
-            onSuccess={() => setIsPaymentOpen(false)}
+            onSuccess={() => {
+              setIsPaymentOpen(false);
+              setPaymentsLoaded(false);
+              void loadPayments();
+            }}
           />
         </ActionModal>
       ) : null}

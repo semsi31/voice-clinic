@@ -509,6 +509,35 @@ export async function cleanupTransactionPaymentReceipts({
   return { ok: true };
 }
 
+/**
+ * After transaction+payments are gone, delete receipt document rows and
+ * defer R2 object removal. Skips per-payment clear/select round-trips.
+ */
+export function scheduleReceiptFilesCleanup(filePaths: string[]) {
+  const uniquePaths = Array.from(
+    new Set(filePaths.filter((path) => typeof path === "string" && path.length > 0)),
+  );
+
+  if (!uniquePaths.length) {
+    return;
+  }
+
+  after(async () => {
+    await Promise.all(
+      uniquePaths.map(async (key) => {
+        try {
+          await deleteFileFromR2(key);
+        } catch (error) {
+          console.error("Deferred receipt R2 cleanup failed", {
+            key,
+            error: errorDetails(error),
+          });
+        }
+      }),
+    );
+  });
+}
+
 /** @deprecated Use cleanupPaymentReceipt instead. */
 export async function deletePaymentReceiptDocument(
   params: CleanupPaymentReceiptParams,

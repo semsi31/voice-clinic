@@ -4,13 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   cleanupPaymentReceipt,
-  cleanupTransactionPaymentReceipts,
   PAYMENT_RECEIPT_DELETE_ERROR,
   schedulePaymentReceiptDocument,
+  scheduleReceiptFilesCleanup,
   scheduleRecreatePaymentReceiptDocument,
   TRANSACTION_RECEIPT_DELETE_ERROR,
 } from "@/lib/payment-receipts";
-import type { ReminderStatus } from "@/lib/reminders";
+import type { ReminderRecord, ReminderStatus } from "@/lib/reminders";
 import {
   getPanelAuthErrorMessage,
   requireActivePanelUser,
@@ -26,6 +26,7 @@ import {
   readText,
   type DeviceDeliveryStatus,
   type PaymentMethod,
+  type TransactionPaymentRecord,
 } from "@/lib/transactions";
 import { extractFormValues } from "@/lib/panel-form";
 import { stockOptionLabel, type StockProductRecord } from "@/lib/stock";
@@ -1170,6 +1171,89 @@ export async function getPaymentReceiptUrlAction(
   }
 }
 
+const paymentDetailColumns =
+  "id, created_at, updated_at, transaction_id, payment_date, payment_method, amount, description, received_by, receipt_document_id, receipt_generated_at";
+
+const reminderDetailColumns =
+  "id, reminder_date, reminder_time, title, patient_name, related_record, responsible_person, status, description, created_at, updated_at";
+
+/** Lazy tab data — not fetched on initial detail page render. */
+export async function getTransactionPaymentsAction(
+  transactionId: string,
+): Promise<
+  | { ok: true; payments: TransactionPaymentRecord[] }
+  | { ok: false; error: string }
+> {
+  if (!transactionId) {
+    return { ok: false, error: "İşlem kaydı bulunamadı." };
+  }
+
+  let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
+  try {
+    auth = await requireActivePanelUser();
+  } catch (error) {
+    return { ok: false, error: getPanelAuthErrorMessage(error) };
+  }
+
+  const { data, error } = await auth.supabase
+    .from("transaction_payments")
+    .select(paymentDetailColumns)
+    .eq("transaction_id", transactionId)
+    .order("payment_date", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return { ok: false, error: "Ödeme kayıtları okunamadı." };
+  }
+
+  return {
+    ok: true,
+    payments: (data ?? []) as TransactionPaymentRecord[],
+  };
+}
+
+/** Lazy tab data — not fetched on initial detail page render. */
+export async function getTransactionReminderAction(
+  transactionId: string,
+  transactionNo?: string | null,
+): Promise<
+  | { ok: true; reminder: ReminderRecord | null }
+  | { ok: false; error: string }
+> {
+  if (!transactionId) {
+    return { ok: false, error: "İşlem kaydı bulunamadı." };
+  }
+
+  let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
+  try {
+    auth = await requireActivePanelUser();
+  } catch (error) {
+    return { ok: false, error: getPanelAuthErrorMessage(error) };
+  }
+
+  const lookupValues = getTransactionReminderLookupValues({
+    id: transactionId,
+    transaction_no: transactionNo ?? null,
+  });
+
+  const { data, error } = await auth.supabase
+    .from("reminders")
+    .select(reminderDetailColumns)
+    .in("related_record", lookupValues)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    return { ok: false, error: "Hatırlatıcı kaydı okunamadı." };
+  }
+
+  return {
+    ok: true,
+    reminder: (data ?? null) as ReminderRecord | null,
+  };
+}
+
 export async function createTransactionReminderAction(
   transactionId: string,
   formData: FormData,
@@ -1322,6 +1406,15 @@ export async function updateTransactionReminderAction(
   return { ok: true };
 }
 
+type DeletePatientTransactionRpcResult = {
+  ok: boolean;
+  error?: string;
+  message?: string;
+  touched_stock?: boolean;
+  receipt_count?: number;
+  file_paths?: string[];
+};
+
 async function deletePatientTransactionById(
   id: string,
   options?: { skipRevalidate?: boolean },
@@ -1347,94 +1440,40 @@ async function deletePatientTransactionById(
     return { ok: false, error: "İşlem kaydı bulunamadı." };
   }
 
-  const { data: transaction, error: transactionError } = await timer.timeDb(() =>
-    supabase.from("patient_transactions").select("id").eq("id", id).maybeSingle(),
+  // One round-trip: stock return + cascade payments + receipt document rows.
+  // R2 object deletes stay deferred after the response.
+  const { data: rpcData, error: rpcError } = await timer.timeDb(() =>
+    supabase.rpc("delete_patient_transaction", {
+      p_id: id,
+      p_staff_name: email ?? "Panel",
+    }),
   );
+  timer.mark("rpc_delete");
 
-  if (transactionError || !transaction) {
-    timer.end({ error: "not_found" });
-    return { ok: false, error: "İşlem kaydı bulunamadı." };
+  if (rpcError) {
+    console.error("delete_patient_transaction rpc failed", { id, rpcError });
+    timer.end({ error: "rpc" });
+    return { ok: false, error: "İşlem kaydı silinemedi." };
   }
 
-  // Receipt DB cleanup and stock-return check are independent until final delete.
-  // R2 file deletes are deferred inside receipt cleanup.
-  const [receiptCleanupResult, existingReturnsResult] = await timer.timeDb(
-    () =>
-      Promise.all([
-        cleanupTransactionPaymentReceipts({
-          supabase,
-          transactionId: id,
-        }),
-        supabase
-          .from("stock_movements")
-          .select("id")
-          .eq("transaction_id", id)
-          .eq("movement_type", "return")
-          .limit(1),
-      ]),
-    2,
-  );
-  timer.mark("parallel_cleanup");
+  const result = (rpcData ?? {}) as DeletePatientTransactionRpcResult;
 
-  if (!receiptCleanupResult.ok) {
-    console.error(receiptCleanupResult.error, { transactionId: id });
-    timer.end({ error: "receipt_cleanup" });
+  if (!result.ok) {
+    timer.end({ error: result.error ?? "delete_failed" });
+    if (result.error === "not_found") {
+      return { ok: false, error: "İşlem kaydı bulunamadı." };
+    }
+    if (result.error === "delete_failed") {
+      console.error("delete_patient_transaction rpc business error", {
+        id,
+        message: result.message,
+      });
+    }
     return { ok: false, error: TRANSACTION_RECEIPT_DELETE_ERROR };
   }
 
-  let touchedStock = false;
-  const existingReturns = existingReturnsResult.data;
-
-  if (!existingReturns?.length) {
-    const { data: deductionMovements, error: movementsError } = await timer.timeDb(
-      () =>
-        supabase
-          .from("stock_movements")
-          .select("stock_product_id, quantity_change, movement_type")
-          .eq("transaction_id", id)
-          .in("movement_type", ["sale", "out"])
-          .lt("quantity_change", 0),
-    );
-
-    if (movementsError) {
-      timer.end({ error: "stock_read" });
-      return { ok: false, error: "Stok hareketleri okunamadı." };
-    }
-
-    if (deductionMovements?.length) {
-      const returnMovements = deductionMovements.map((movement) => ({
-        stock_product_id: movement.stock_product_id,
-        movement_type: "return" as const,
-        quantity_change: Math.abs(movement.quantity_change),
-        transaction_id: id,
-        staff_name: email ?? "Panel",
-        note: "İşlem silindiği için stok iadesi",
-      }));
-
-      const { error: returnError } = await timer.timeDb(() =>
-        supabase.from("stock_movements").insert(returnMovements),
-      );
-
-      if (returnError) {
-        timer.end({ error: "stock_return" });
-        return {
-          ok: false,
-          error: "Stok iadesi yapılamadığı için işlem silinmedi.",
-        };
-      }
-
-      touchedStock = true;
-    }
-  }
-
-  const { error } = await timer.timeDb(() =>
-    supabase.from("patient_transactions").delete().eq("id", id),
-  );
-
-  if (error) {
-    timer.end({ error: "delete" });
-    return { ok: false, error: "İşlem kaydı silinemedi." };
-  }
+  const filePaths = Array.isArray(result.file_paths) ? result.file_paths : [];
+  scheduleReceiptFilesCleanup(filePaths);
 
   if (!options?.skipRevalidate) {
     await timer.timeRevalidate(() => {
@@ -1442,9 +1481,20 @@ async function deletePatientTransactionById(
     });
   }
 
+  const touchedStock = Boolean(result.touched_stock);
   const _perf = timer.snapshot();
-  timer.end({ touchedStock, skipRevalidate: Boolean(options?.skipRevalidate) });
-  return { ok: true, touchedStock, touchedDocuments: true, _perf };
+  timer.end({
+    touchedStock,
+    receiptCount: result.receipt_count ?? 0,
+    deferredR2: filePaths.length,
+    skipRevalidate: Boolean(options?.skipRevalidate),
+  });
+  return {
+    ok: true,
+    touchedStock,
+    touchedDocuments: (result.receipt_count ?? 0) > 0,
+    _perf,
+  };
 }
 
 export async function deletePatientTransaction(

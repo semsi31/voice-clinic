@@ -28,11 +28,14 @@ type TransactionPaymentActionsProps = {
   payment: TransactionPaymentRecord;
   /** Compact icon row for desktop tables; stack layout for mobile cards. */
   variant?: "table" | "card";
+  /** Called after a successful mutation so parent can refresh lazy-loaded lists. */
+  onMutated?: () => void;
 };
 
 export function TransactionPaymentActions({
   payment,
   variant = "card",
+  onMutated,
 }: Readonly<TransactionPaymentActionsProps>) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -76,6 +79,7 @@ export function TransactionPaymentActions({
 
       setDraftValues(null);
       setIsEditOpen(false);
+      onMutated?.();
 
       if (result.warning) {
         setWarning(result.warning);
@@ -98,6 +102,7 @@ export function TransactionPaymentActions({
       }
 
       setIsDeleteOpen(false);
+      onMutated?.();
     });
   };
 
@@ -111,7 +116,10 @@ export function TransactionPaymentActions({
 
       if (!result.ok) {
         setError(result.error);
+        return;
       }
+
+      onMutated?.();
     });
   };
 
