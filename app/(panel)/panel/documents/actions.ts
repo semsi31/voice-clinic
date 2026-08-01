@@ -30,8 +30,30 @@ export type DocumentFormValues = {
 const documentFormFields = ["title", "description"] as const;
 
 export type DocumentActionResult =
-  | { ok: true }
-  | { ok: false; error: string; values?: DocumentFormValues };
+  | {
+      ok: true;
+      _perf?: {
+        total: number;
+        auth: number;
+        db: number;
+        r2: number;
+        revalidate: number;
+        queries: number;
+      };
+    }
+  | {
+      ok: false;
+      error: string;
+      values?: DocumentFormValues;
+      _perf?: {
+        total: number;
+        auth: number;
+        db: number;
+        r2: number;
+        revalidate: number;
+        queries: number;
+      };
+    };
 
 export type DocumentDownloadResult =
   | { ok: true; url: string }
@@ -269,8 +291,9 @@ export async function deleteDocumentAction(
   await timer.timeRevalidate(() => {
     revalidatePath("/panel/documents");
   });
+  const _perf = timer.snapshot();
   timer.end({ deferredR2: true });
-  return { ok: true };
+  return { ok: true, _perf };
 }
 
 export async function deleteDocumentRecords(

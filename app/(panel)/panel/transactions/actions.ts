@@ -135,9 +135,18 @@ export type NewTransactionFormValues = {
   first_payment_description: string;
 };
 
+export type MutationPerfSnapshot = {
+  total: number;
+  auth: number;
+  db: number;
+  r2: number;
+  revalidate: number;
+  queries: number;
+};
+
 export type DeviceDeliveryActionResult =
-  | { ok: true }
-  | { ok: false; error: string };
+  | { ok: true; _perf?: MutationPerfSnapshot }
+  | { ok: false; error: string; _perf?: MutationPerfSnapshot };
 
 export type PaymentFormValues = {
   payment_date: string;
@@ -166,11 +175,20 @@ type FormActionState<TValues> =
 
 export type NewTransactionActionState = FormActionState<NewTransactionFormValues>;
 
-export type TransactionActionState = FormActionState<PaymentFormValues>;
+export type TransactionActionState =
+  | (NonNullable<FormActionState<PaymentFormValues>> & {
+      _perf?: MutationPerfSnapshot;
+    })
+  | undefined;
 
 export type PaymentActionResult =
-  | { ok: true; warning?: string }
-  | { ok: false; error: string; values?: PaymentFormValues };
+  | { ok: true; warning?: string; _perf?: MutationPerfSnapshot }
+  | {
+      ok: false;
+      error: string;
+      values?: PaymentFormValues;
+      _perf?: MutationPerfSnapshot;
+    };
 
 export type PaymentReceiptUrlResult =
   | { ok: true; url: string }
@@ -734,8 +752,9 @@ export async function updateDeviceDeliveryStatus(
   await timer.timeRevalidate(() => {
     revalidateDeviceDeliveryPaths(transactionId);
   });
+  const _perf = timer.snapshot();
   timer.end();
-  return { ok: true };
+  return { ok: true, _perf };
 }
 
 export async function addTransactionPayment(
@@ -828,8 +847,9 @@ export async function addTransactionPayment(
   await timer.timeRevalidate(() => {
     revalidatePaymentMutationPaths(transactionId);
   });
+  const _perf = timer.snapshot();
   timer.end({ deferredReceipt: true });
-  return { success: true };
+  return { success: true, _perf };
 }
 
 function paymentActionError(
@@ -1006,8 +1026,9 @@ export async function deleteTransactionPaymentAction(
   await timer.timeRevalidate(() => {
     revalidatePaymentMutationPaths(payment.transaction_id);
   });
+  const _perf = timer.snapshot();
   timer.end({ deferredR2: Boolean(payment.receipt_document_id) });
-  return { ok: true };
+  return { ok: true, _perf };
 }
 
 export async function regeneratePaymentReceiptAction(
@@ -1398,8 +1419,9 @@ async function deletePatientTransactionById(
     });
   }
 
+  const _perf = timer.snapshot();
   timer.end({ touchedStock, skipRevalidate: Boolean(options?.skipRevalidate) });
-  return { ok: true, touchedStock, touchedDocuments: true };
+  return { ok: true, touchedStock, touchedDocuments: true, _perf };
 }
 
 export async function deletePatientTransaction(
