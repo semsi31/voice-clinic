@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { Save } from "lucide-react";
 import {
@@ -65,6 +65,18 @@ export function NewTransactionForm({
   const values = state?.values;
   const today = new Date().toISOString().slice(0, 10);
   const formRestoreKey = getFormRestoreKey(values);
+
+  useEffect(() => {
+    if (state?.success && state._perf) {
+      const p = state._perf;
+      console.info(
+        `[mutation-perf-bridge] action=createPatientTransaction total=${p.total} auth=${p.auth} db=${p.db} r2=${p.r2} revalidate=${p.revalidate} queries=${p.queries} clientRefresh=0 redirect=0`,
+      );
+      if (state.transactionId) {
+        console.info(`[mutation-bench-id] ${state.transactionId}`);
+      }
+    }
+  }, [state]);
 
   return (
     <form key={formRestoreKey} action={formAction} className="space-y-5">

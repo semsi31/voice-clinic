@@ -173,7 +173,13 @@ type FormActionState<TValues> =
     }
   | undefined;
 
-export type NewTransactionActionState = FormActionState<NewTransactionFormValues>;
+export type NewTransactionActionState =
+  | (NonNullable<FormActionState<NewTransactionFormValues>> & {
+      success?: boolean;
+      transactionId?: string;
+      _perf?: MutationPerfSnapshot;
+    })
+  | undefined;
 
 export type TransactionActionState =
   | (NonNullable<FormActionState<PaymentFormValues>> & {
@@ -670,12 +676,23 @@ export async function createPatientTransaction(
   }
 
   // redirect loads the detail page — do not revalidate sibling panel routes.
+  const _perf = timer.snapshot();
   timer.setRedirect(true);
   timer.end({
     scheduledReceipt,
     reminderCreated,
     stockDeductEnabled,
   });
+
+  // Hidden field used by production benches to capture _perf without redirect.
+  if (formData.get("measure_return") === "1") {
+    return {
+      success: true,
+      transactionId: transaction.id,
+      _perf,
+    };
+  }
+
   redirect(`/panel/transactions/${transaction.id}`);
 }
 
