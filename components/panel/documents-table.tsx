@@ -93,6 +93,12 @@ function UploadDocumentForm({ onClose }: UploadDocumentFormProps) {
 
   useEffect(() => {
     if (state?.ok) {
+      if (state._perf) {
+        const p = state._perf;
+        console.info(
+          `[mutation-perf-bridge] action=createDocument total=${p.total} auth=${p.auth} db=${p.db} r2=${p.r2} revalidate=${p.revalidate} queries=${p.queries} clientRefresh=0`,
+        );
+      }
       onClose();
     }
   }, [onClose, state]);

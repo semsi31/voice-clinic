@@ -199,8 +199,9 @@ export async function createDocumentAction(
   await timer.timeRevalidate(() => {
     revalidatePath("/panel/documents");
   });
+  const _perf = timer.snapshot();
   timer.end();
-  return { ok: true };
+  return { ok: true, _perf };
 }
 
 export async function updateDocumentAction(
