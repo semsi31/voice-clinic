@@ -1308,7 +1308,13 @@ export async function updateTransactionReminderAction(
 async function deletePatientTransactionById(
   id: string,
   options?: { skipRevalidate?: boolean },
-): Promise<BulkDeleteActionResult & { touchedStock?: boolean; touchedDocuments?: boolean }> {
+): Promise<
+  BulkDeleteActionResult & {
+    touchedStock?: boolean;
+    touchedDocuments?: boolean;
+    _perf?: MutationPerfSnapshot;
+  }
+> {
   const timer = createMutationTimer({ name: "deletePatientTransaction" });
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
