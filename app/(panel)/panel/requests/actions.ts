@@ -5,6 +5,7 @@ import {
   getPanelAuthErrorMessage,
   requireActivePanelUser,
 } from "@/lib/panel-auth";
+import { createMutationTimer } from "@/lib/mutation-timing";
 import { deleteRecordsInChunks } from "@/lib/supabase-bulk-delete";
 
 const allowedStatuses = new Set(["new", "contacted", "completed", "cancelled"]);
@@ -18,6 +19,8 @@ export async function updateWebRequestStatus(
   status: string,
   statusNote: string,
 ): Promise<RequestActionResult> {
+  const timer = createMutationTimer({ name: "updateWebRequestStatus" });
+
   if (!id) {
     return { ok: false, error: "Talep kaydı bulunamadı." };
   }
@@ -28,50 +31,66 @@ export async function updateWebRequestStatus(
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return { ok: false, error: getPanelAuthErrorMessage(error) };
   }
 
   const { supabase } = auth;
-  const { error } = await supabase
-    .from("web_requests")
-    .update({
-      status,
-      status_note: statusNote.trim() || null,
-    })
-    .eq("id", id);
+  const { error } = await timer.timeDb(() =>
+    supabase
+      .from("web_requests")
+      .update({
+        status,
+        status_note: statusNote.trim() || null,
+      })
+      .eq("id", id),
+  );
 
   if (error) {
+    timer.end({ error: "update" });
     return { ok: false, error: "Talep durumu güncellenemedi." };
   }
 
-  revalidatePath("/panel/requests");
+  await timer.timeRevalidate(() => {
+    revalidatePath("/panel/requests");
+  });
+  timer.end();
   return { ok: true };
 }
 
 export async function deleteWebRequest(
   id: string,
 ): Promise<RequestActionResult> {
+  const timer = createMutationTimer({ name: "deleteWebRequest" });
+
   if (!id) {
     return { ok: false, error: "Talep kaydı bulunamadı." };
   }
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return { ok: false, error: getPanelAuthErrorMessage(error) };
   }
 
   const { supabase } = auth;
-  const { error } = await supabase.from("web_requests").delete().eq("id", id);
+  const { error } = await timer.timeDb(() =>
+    supabase.from("web_requests").delete().eq("id", id),
+  );
 
   if (error) {
+    timer.end({ error: "delete" });
     return { ok: false, error: "Talep silinemedi." };
   }
 
-  revalidatePath("/panel/requests");
+  await timer.timeRevalidate(() => {
+    revalidatePath("/panel/requests");
+  });
+  timer.end();
   return { ok: true };
 }
 

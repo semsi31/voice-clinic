@@ -7,7 +7,6 @@ import {
   useState,
   useTransition,
 } from "react";
-import { useRouter } from "next/navigation";
 import { Download, FileSearch, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import {
   createDocumentAction,
@@ -16,6 +15,7 @@ import {
   updateDocumentAction,
   type DocumentActionResult,
 } from "@/app/(panel)/panel/documents/actions";
+import { runTimedMutation } from "@/lib/run-timed-mutation";
 import {
   ActionModal,
   FormField,
@@ -258,15 +258,18 @@ function DeleteDocumentButton({
   document,
   onDeleted,
 }: Readonly<{ document: DocumentRecord; onDeleted: (ids: string[]) => void }>) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
+    if (isPending) return;
     setError(null);
     startTransition(async () => {
-      const result = await deleteDocumentAction(document.id);
+      const result = await runTimedMutation(
+        { action: "deleteDocument", clientRefresh: false },
+        () => deleteDocumentAction(document.id),
+      );
 
       if (!result.ok) {
         setError(result.error);
@@ -275,7 +278,6 @@ function DeleteDocumentButton({
 
       setIsOpen(false);
       onDeleted([document.id]);
-      router.refresh();
     });
   };
 

@@ -5,9 +5,7 @@ import { redirect } from "next/navigation";
 import {
   cleanupPaymentReceipt,
   cleanupTransactionPaymentReceipts,
-  createPaymentReceiptDocument,
   PAYMENT_RECEIPT_DELETE_ERROR,
-  recreatePaymentReceiptDocument,
   schedulePaymentReceiptDocument,
   scheduleRecreatePaymentReceiptDocument,
   TRANSACTION_RECEIPT_DELETE_ERROR,
@@ -272,8 +270,8 @@ function normalizeDeviceDeliveryStatus(
 }
 
 function revalidateDeviceDeliveryPaths(transactionId: string) {
+  // Detail is the active route for this mutation — list refreshes on navigate.
   revalidatePath(`/panel/transactions/${transactionId}`);
-  revalidatePath("/panel/transactions");
 }
 
 function extractPaymentFormValues(formData: FormData): PaymentFormValues {
@@ -348,10 +346,7 @@ function revalidatePaymentMutationPaths(transactionId: string) {
   revalidatePath(`/panel/transactions/${transactionId}`);
 }
 
-function revalidateTransactionDeletePaths(_options?: {
-  touchStock?: boolean;
-  touchDocuments?: boolean;
-}) {
+function revalidateTransactionDeletePaths() {
   // Delete happens from the list — only invalidate that route.
   revalidatePath("/panel/transactions");
 }
@@ -384,9 +379,9 @@ export async function createPatientTransaction(
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
-    timer.countAuthProfile();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return newTransactionFormError(
       formData,
       getPanelAuthErrorMessage(error),
@@ -454,20 +449,23 @@ export async function createPatientTransaction(
   > | null = null;
 
   if (stockDeductEnabled) {
-    const { data, error } = await supabase
-      .from("stock_products")
-      .select("id, name, brand, model, serial_no, quantity")
-      .eq("id", stockProductId)
-      .single();
-    timer.countSupabase();
+    const { data, error } = await timer.timeDb(() =>
+      supabase
+        .from("stock_products")
+        .select("id, name, brand, model, serial_no, quantity")
+        .eq("id", stockProductId)
+        .single(),
+    );
 
     if (error || !data) {
+      timer.end({ error: "stock_not_found" });
       return newTransactionFormError(formData, "Seçilen stok ürünü bulunamadı.");
     }
 
     stockProduct = data;
 
     if (stockProduct.quantity < (stockQuantity ?? 0)) {
+      timer.end({ error: "stock_insufficient" });
       return newTransactionFormError(
         formData,
         `Yetersiz stok. Mevcut adet: ${stockProduct.quantity}.`,
@@ -496,45 +494,47 @@ export async function createPatientTransaction(
     );
   }
 
-  const { data: transaction, error: transactionError } = await supabase
-    .from("patient_transactions")
-    .insert({
-      patient_name: patientName,
-      patient_phone: optionalText(formData.get("patient_phone")),
-      description: transactionDescription,
-      branch: optionalText(formData.get("branch")),
-      transaction_date: readDate(formData.get("transaction_date")),
-      hospital: optionalText(formData.get("hospital")),
-      doctor_name: optionalText(formData.get("doctor_name")),
-      reference_source: optionalText(formData.get("reference_source")),
-      operation_description: operationDescription,
-      staff_name: staffName,
-      brand,
-      model,
-      serial_no: serialNo,
-      ear_side: optionalText(formData.get("ear_side")),
-      device_delivery_status: deviceDeliveryStatus,
-      device_delivered_at:
-        deviceDeliveryStatus === "delivered" ? new Date().toISOString() : null,
-      sale_amount: saleAmount,
-      stock_deduct_enabled: stockDeductEnabled,
-      stock_product_id: stockDeductEnabled ? stockProductId : null,
-      stock_product_label: stockDeductEnabled
-        ? stockProduct
-          ? stockOptionLabel(stockProduct)
-          : null
-        : null,
-      stock_quantity:
-        stockDeductEnabled && Number.isFinite(stockQuantity)
-          ? stockQuantity
+  const { data: transaction, error: transactionError } = await timer.timeDb(() =>
+    supabase
+      .from("patient_transactions")
+      .insert({
+        patient_name: patientName,
+        patient_phone: optionalText(formData.get("patient_phone")),
+        description: transactionDescription,
+        branch: optionalText(formData.get("branch")),
+        transaction_date: readDate(formData.get("transaction_date")),
+        hospital: optionalText(formData.get("hospital")),
+        doctor_name: optionalText(formData.get("doctor_name")),
+        reference_source: optionalText(formData.get("reference_source")),
+        operation_description: operationDescription,
+        staff_name: staffName,
+        brand,
+        model,
+        serial_no: serialNo,
+        ear_side: optionalText(formData.get("ear_side")),
+        device_delivery_status: deviceDeliveryStatus,
+        device_delivered_at:
+          deviceDeliveryStatus === "delivered" ? new Date().toISOString() : null,
+        sale_amount: saleAmount,
+        stock_deduct_enabled: stockDeductEnabled,
+        stock_product_id: stockDeductEnabled ? stockProductId : null,
+        stock_product_label: stockDeductEnabled
+          ? stockProduct
+            ? stockOptionLabel(stockProduct)
+            : null
           : null,
-      notes: optionalText(formData.get("notes")),
-    })
-    .select("id, transaction_no")
-    .single();
-  timer.countSupabase();
+        stock_quantity:
+          stockDeductEnabled && Number.isFinite(stockQuantity)
+            ? stockQuantity
+            : null,
+        notes: optionalText(formData.get("notes")),
+      })
+      .select("id, transaction_no")
+      .single(),
+  );
 
   if (transactionError || !transaction) {
+    timer.end({ error: "insert_transaction" });
     return newTransactionFormError(formData, "İşlem kaydı oluşturulamadı.");
   }
 
@@ -545,22 +545,26 @@ export async function createPatientTransaction(
     const paymentDate = readDate(formData.get("first_payment_date"));
     const paymentDescription =
       optionalText(formData.get("first_payment_description")) ?? "İlk ödeme";
-    const { data: firstPayment, error: paymentError } = await supabase
-      .from("transaction_payments")
-      .insert({
-        transaction_id: transaction.id,
-        payment_date: paymentDate,
-        payment_method: firstPaymentMethod,
-        amount: firstPaymentAmount,
-        description: paymentDescription,
-        received_by: staffName,
-      })
-      .select("id")
-      .single();
-    timer.countSupabase();
+    const { data: firstPayment, error: paymentError } = await timer.timeDb(() =>
+      supabase
+        .from("transaction_payments")
+        .insert({
+          transaction_id: transaction.id,
+          payment_date: paymentDate,
+          payment_method: firstPaymentMethod,
+          amount: firstPaymentAmount,
+          description: paymentDescription,
+          received_by: staffName,
+        })
+        .select("id")
+        .single(),
+    );
 
     if (paymentError || !firstPayment) {
-      await supabase.from("patient_transactions").delete().eq("id", transaction.id);
+      await timer.timeDb(() =>
+        supabase.from("patient_transactions").delete().eq("id", transaction.id),
+      );
+      timer.end({ error: "first_payment" });
       return newTransactionFormError(
         formData,
         "İlk ödeme kaydedilemediği için işlem oluşturulmadı.",
@@ -596,20 +600,22 @@ export async function createPatientTransaction(
   }
 
   if (stockDeductEnabled && stockProduct && stockQuantity) {
-    const { error: stockMovementError } = await supabase
-      .from("stock_movements")
-      .insert({
+    const { error: stockMovementError } = await timer.timeDb(() =>
+      supabase.from("stock_movements").insert({
         stock_product_id: stockProduct.id,
         movement_type: "sale",
         quantity_change: -stockQuantity,
         transaction_id: transaction.id,
         staff_name: staffName ?? email,
         note: "Hasta işlem kaydı üzerinden stok düşüldü",
-      });
-    timer.countSupabase();
+      }),
+    );
 
     if (stockMovementError) {
-      await supabase.from("patient_transactions").delete().eq("id", transaction.id);
+      await timer.timeDb(() =>
+        supabase.from("patient_transactions").delete().eq("id", transaction.id),
+      );
+      timer.end({ error: "stock_movement" });
       return newTransactionFormError(
         formData,
         "Stok hareketi oluşturulamadığı için işlem kaydı geri alındı. Stok adedini kontrol edin.",
@@ -620,19 +626,21 @@ export async function createPatientTransaction(
   let reminderCreated = false;
 
   if (reminderDate) {
-    const { error: reminderError } = await supabase.from("reminders").insert({
-      reminder_date: reminderDate,
-      reminder_time: null,
-      title: "Hasta işlem hatırlatması",
-      patient_name: patientName,
-      related_record: transaction.transaction_no ?? transaction.id,
-      responsible_person: staffName,
-      status: "pending",
-      description: resolveReminderDescription(reminderDescription),
-    });
-    timer.countSupabase();
+    const { error: reminderError } = await timer.timeDb(() =>
+      supabase.from("reminders").insert({
+        reminder_date: reminderDate,
+        reminder_time: null,
+        title: "Hasta işlem hatırlatması",
+        patient_name: patientName,
+        related_record: transaction.transaction_no ?? transaction.id,
+        responsible_person: staffName,
+        status: "pending",
+        description: resolveReminderDescription(reminderDescription),
+      }),
+    );
 
     if (reminderError) {
+      timer.setRedirect(true);
       timer.end({ warning: "reminder_failed" });
       return newTransactionFormError(
         formData,
@@ -644,12 +652,11 @@ export async function createPatientTransaction(
   }
 
   // redirect loads the detail page — do not revalidate sibling panel routes.
+  timer.setRedirect(true);
   timer.end({
     scheduledReceipt,
     reminderCreated,
     stockDeductEnabled,
-    redirect: true,
-    revalidateCount: 0,
   });
   redirect(`/panel/transactions/${transaction.id}`);
 }
@@ -658,6 +665,8 @@ export async function updateDeviceDeliveryStatus(
   transactionId: string,
   status: DeviceDeliveryStatus,
 ): Promise<DeviceDeliveryActionResult> {
+  const timer = createMutationTimer({ name: "updateDeviceDeliveryStatus" });
+
   if (!transactionId) {
     return { ok: false, error: "İşlem kaydı bulunamadı." };
   }
@@ -668,28 +677,38 @@ export async function updateDeviceDeliveryStatus(
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return { ok: false, error: getPanelAuthErrorMessage(error) };
   }
 
   const { supabase } = auth;
 
-  const { data: existing, error: existingError } = await supabase
-    .from("patient_transactions")
-    .select("id, device_delivery_status, device_delivered_at, source_type")
-    .eq("id", transactionId)
-    .single();
+  const { data: existing, error: existingError } = await timer.timeDb(() =>
+    supabase
+      .from("patient_transactions")
+      .select("id, device_delivery_status, device_delivered_at, source_type")
+      .eq("id", transactionId)
+      .single(),
+  );
 
   if (existingError || !existing) {
+    timer.end({ error: "not_found" });
     return { ok: false, error: "İşlem kaydı bulunamadı." };
   }
 
   if (existing.source_type === "legacy_excel") {
+    timer.end({ error: "legacy" });
     return {
       ok: false,
       error: "Eski Excel kayıtlarında cihaz teslim durumu güncellenemez.",
     };
+  }
+
+  if (existing.device_delivery_status === status) {
+    timer.end({ noop: true });
+    return { ok: true };
   }
 
   const deliveredAt =
@@ -697,19 +716,25 @@ export async function updateDeviceDeliveryStatus(
       ? existing.device_delivered_at ?? new Date().toISOString()
       : null;
 
-  const { error: updateError } = await supabase
-    .from("patient_transactions")
-    .update({
-      device_delivery_status: status,
-      device_delivered_at: deliveredAt,
-    })
-    .eq("id", transactionId);
+  const { error: updateError } = await timer.timeDb(() =>
+    supabase
+      .from("patient_transactions")
+      .update({
+        device_delivery_status: status,
+        device_delivered_at: deliveredAt,
+      })
+      .eq("id", transactionId),
+  );
 
   if (updateError) {
+    timer.end({ error: "update" });
     return { ok: false, error: "Cihaz teslim durumu güncellenemedi." };
   }
 
-  revalidateDeviceDeliveryPaths(transactionId);
+  await timer.timeRevalidate(() => {
+    revalidateDeviceDeliveryPaths(transactionId);
+  });
+  timer.end();
   return { ok: true };
 }
 
@@ -736,22 +761,26 @@ export async function addTransactionPayment(
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
-    timer.countAuthProfile();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return paymentFormError(formData, getPanelAuthErrorMessage(error));
   }
 
   timer.mark("auth");
   const { supabase, userId, email } = auth;
-  const limitContext = await getPaymentLimitContext(supabase, transactionId);
-  timer.countSupabase(2);
+  const limitContext = await timer.timeDb(
+    () => getPaymentLimitContext(supabase, transactionId),
+    2,
+  );
 
   if (!limitContext.ok) {
+    timer.end({ error: "limit_context" });
     return paymentFormError(formData, limitContext.error);
   }
 
   if (limitContext.isLegacyExcelRecord) {
+    timer.end({ error: "legacy" });
     return paymentFormError(
       formData,
       "Eski Excel kayıtlarına ödeme eklenemez.",
@@ -759,6 +788,7 @@ export async function addTransactionPayment(
   }
 
   if (limitContext.paymentsTotal + amount > limitContext.saleAmount) {
+    timer.end({ error: "exceeds_sale" });
     return paymentFormError(formData, PAYMENT_EXCEEDS_SALE_ERROR);
   }
 
@@ -766,21 +796,23 @@ export async function addTransactionPayment(
   const paymentDescription = optionalText(formData.get("description"));
   const receivedBy = optionalText(formData.get("received_by"));
 
-  const { data: payment, error } = await supabase
-    .from("transaction_payments")
-    .insert({
-      transaction_id: transactionId,
-      payment_date: paymentDate,
-      payment_method: paymentMethod,
-      amount,
-      description: paymentDescription,
-      received_by: receivedBy,
-    })
-    .select("id")
-    .single();
-  timer.countSupabase();
+  const { data: payment, error } = await timer.timeDb(() =>
+    supabase
+      .from("transaction_payments")
+      .insert({
+        transaction_id: transactionId,
+        payment_date: paymentDate,
+        payment_method: paymentMethod,
+        amount,
+        description: paymentDescription,
+        received_by: receivedBy,
+      })
+      .select("id")
+      .single(),
+  );
 
   if (error || !payment) {
+    timer.end({ error: "insert" });
     return paymentFormError(formData, "Ödeme kaydı eklenemedi.");
   }
 
@@ -793,8 +825,9 @@ export async function addTransactionPayment(
     createdByUserId: userId,
   });
 
-  revalidatePaymentMutationPaths(transactionId);
-  timer.countRevalidate();
+  await timer.timeRevalidate(() => {
+    revalidatePaymentMutationPaths(transactionId);
+  });
   timer.end({ deferredReceipt: true });
   return { success: true };
 }
@@ -829,35 +862,38 @@ export async function updateTransactionPaymentAction(
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
-    timer.countAuthProfile();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return paymentActionError(formData, getPanelAuthErrorMessage(error));
   }
 
   const { supabase, userId, email } = auth;
-  const { data: payment, error: fetchError } = await supabase
-    .from("transaction_payments")
-    .select("transaction_id, amount, receipt_document_id")
-    .eq("id", paymentId)
-    .single();
-  timer.countSupabase();
+  const { data: payment, error: fetchError } = await timer.timeDb(() =>
+    supabase
+      .from("transaction_payments")
+      .select("transaction_id, amount, receipt_document_id")
+      .eq("id", paymentId)
+      .single(),
+  );
 
   if (fetchError || !payment) {
+    timer.end({ error: "not_found" });
     return paymentActionError(formData, "Ödeme kaydı bulunamadı.");
   }
 
-  const limitContext = await getPaymentLimitContext(
-    supabase,
-    payment.transaction_id,
+  const limitContext = await timer.timeDb(
+    () => getPaymentLimitContext(supabase, payment.transaction_id),
+    2,
   );
-  timer.countSupabase(2);
 
   if (!limitContext.ok) {
+    timer.end({ error: "limit_context" });
     return paymentActionError(formData, limitContext.error);
   }
 
   if (limitContext.isLegacyExcelRecord) {
+    timer.end({ error: "legacy" });
     return paymentActionError(
       formData,
       "Eski Excel kayıtlarında ödeme işlemi yapılamaz.",
@@ -868,22 +904,25 @@ export async function updateTransactionPaymentAction(
     limitContext.paymentsTotal - Number(payment.amount ?? 0) + amount;
 
   if (adjustedTotal > limitContext.saleAmount) {
+    timer.end({ error: "exceeds_sale" });
     return paymentActionError(formData, PAYMENT_EXCEEDS_SALE_ERROR);
   }
 
-  const { error } = await supabase
-    .from("transaction_payments")
-    .update({
-      payment_date: paymentDate,
-      payment_method: paymentMethod,
-      amount,
-      description: optionalText(formData.get("description")),
-      received_by: optionalText(formData.get("received_by")),
-    })
-    .eq("id", paymentId);
-  timer.countSupabase();
+  const { error } = await timer.timeDb(() =>
+    supabase
+      .from("transaction_payments")
+      .update({
+        payment_date: paymentDate,
+        payment_method: paymentMethod,
+        amount,
+        description: optionalText(formData.get("description")),
+        received_by: optionalText(formData.get("received_by")),
+      })
+      .eq("id", paymentId),
+  );
 
   if (error) {
+    timer.end({ error: "update" });
     return paymentActionError(formData, "Ödeme kaydı güncellenemedi.");
   }
 
@@ -895,8 +934,9 @@ export async function updateTransactionPaymentAction(
     createdByUserId: userId,
   });
 
-  revalidatePaymentMutationPaths(payment.transaction_id);
-  timer.countRevalidate();
+  await timer.timeRevalidate(() => {
+    revalidatePaymentMutationPaths(payment.transaction_id);
+  });
   timer.end({ deferredReceipt: true });
   return { ok: true };
 }
@@ -911,125 +951,136 @@ export async function deleteTransactionPaymentAction(
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
-    timer.countAuthProfile();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return { ok: false, error: getPanelAuthErrorMessage(error) };
   }
 
   const { supabase } = auth;
-  const { data: payment, error: fetchError } = await supabase
-    .from("transaction_payments")
-    .select("transaction_id, receipt_document_id")
-    .eq("id", paymentId)
-    .single();
-  timer.countSupabase();
+  const { data: payment, error: fetchError } = await timer.timeDb(() =>
+    supabase
+      .from("transaction_payments")
+      .select("transaction_id, receipt_document_id")
+      .eq("id", paymentId)
+      .single(),
+  );
 
   if (fetchError || !payment) {
+    timer.end({ error: "not_found" });
     return { ok: false, error: "Ödeme kaydı bulunamadı." };
   }
 
   if (payment.receipt_document_id) {
-    const receiptDeleteResult = await cleanupPaymentReceipt({
-      supabase,
-      paymentId,
-      clearPaymentReference: true,
-      receiptDocumentId: payment.receipt_document_id,
-    });
-    timer.countSupabase(2);
+    // DB cleanup is sync; R2 file delete is deferred inside cleanupPaymentReceipt.
+    const receiptDeleteResult = await timer.timeDb(
+      () =>
+        cleanupPaymentReceipt({
+          supabase,
+          paymentId,
+          clearPaymentReference: true,
+          receiptDocumentId: payment.receipt_document_id,
+        }),
+      3,
+    );
 
     if (!receiptDeleteResult.ok) {
       console.error(receiptDeleteResult.error, {
         transactionId: payment.transaction_id,
         paymentId,
       });
+      timer.end({ error: "receipt_cleanup" });
       return { ok: false, error: PAYMENT_RECEIPT_DELETE_ERROR };
     }
   }
 
-  const { error } = await supabase
-    .from("transaction_payments")
-    .delete()
-    .eq("id", paymentId);
-  timer.countSupabase();
+  const { error } = await timer.timeDb(() =>
+    supabase.from("transaction_payments").delete().eq("id", paymentId),
+  );
 
   if (error) {
+    timer.end({ error: "delete" });
     return { ok: false, error: "Ödeme kaydı silinemedi." };
   }
 
-  revalidatePaymentMutationPaths(payment.transaction_id);
-  timer.countRevalidate();
-  timer.end();
+  await timer.timeRevalidate(() => {
+    revalidatePaymentMutationPaths(payment.transaction_id);
+  });
+  timer.end({ deferredR2: Boolean(payment.receipt_document_id) });
   return { ok: true };
 }
 
 export async function regeneratePaymentReceiptAction(
   paymentId: string,
 ): Promise<PaymentActionResult> {
+  const timer = createMutationTimer({ name: "regeneratePaymentReceipt" });
+
   if (!paymentId) {
     return { ok: false, error: "Ödeme kaydı bulunamadı." };
   }
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return { ok: false, error: getPanelAuthErrorMessage(error) };
   }
 
   const { supabase, userId, email } = auth;
-  const { data: payment, error: fetchError } = await supabase
-    .from("transaction_payments")
-    .select("transaction_id, receipt_document_id")
-    .eq("id", paymentId)
-    .single();
+  const { data: payment, error: fetchError } = await timer.timeDb(() =>
+    supabase
+      .from("transaction_payments")
+      .select("transaction_id, receipt_document_id")
+      .eq("id", paymentId)
+      .single(),
+  );
 
   if (fetchError || !payment) {
+    timer.end({ error: "not_found" });
     return { ok: false, error: "Ödeme kaydı bulunamadı." };
   }
 
-  const transactionPaymentContext = await getTransactionSaleAmount(
-    supabase,
-    payment.transaction_id,
+  const transactionPaymentContext = await timer.timeDb(() =>
+    getTransactionSaleAmount(supabase, payment.transaction_id),
   );
 
   if (transactionPaymentContext === null) {
+    timer.end({ error: "transaction_not_found" });
     return { ok: false, error: "İşlem kaydı bulunamadı." };
   }
 
   if (transactionPaymentContext.isLegacyExcelRecord) {
+    timer.end({ error: "legacy" });
     return {
       ok: false,
       error: "Eski Excel kayıtlarında makbuz oluşturulamaz.",
     };
   }
 
-  const receiptResult = payment.receipt_document_id
-    ? await recreatePaymentReceiptDocument({
-        supabase,
-        transactionId: payment.transaction_id,
-        paymentId,
-        fallbackReceivedBy: email,
-        createdByUserId: userId,
-      })
-    : await createPaymentReceiptDocument({
-        supabase,
-        transactionId: payment.transaction_id,
-        paymentId,
-        fallbackReceivedBy: email,
-        createdByUserId: userId,
-      });
-
-  if (!receiptResult.ok) {
-    return {
-      ok: false,
-      error: payment.receipt_document_id
-        ? "Makbuz yeniden oluşturulamadı."
-        : "Makbuz oluşturulamadı.",
-    };
+  // PDF + R2 after response — same deferred path as add/update payment.
+  if (payment.receipt_document_id) {
+    scheduleRecreatePaymentReceiptDocument({
+      supabase,
+      transactionId: payment.transaction_id,
+      paymentId,
+      fallbackReceivedBy: email,
+      createdByUserId: userId,
+    });
+  } else {
+    schedulePaymentReceiptDocument({
+      supabase,
+      transactionId: payment.transaction_id,
+      paymentId,
+      fallbackReceivedBy: email,
+      createdByUserId: userId,
+    });
   }
 
-  revalidatePaymentMutationPaths(payment.transaction_id);
+  await timer.timeRevalidate(() => {
+    revalidatePaymentMutationPaths(payment.transaction_id);
+  });
+  timer.end({ deferredReceipt: true });
   return { ok: true };
 }
 
@@ -1240,46 +1291,50 @@ async function deletePatientTransactionById(
   const timer = createMutationTimer({ name: "deletePatientTransaction" });
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
-    timer.countAuthProfile();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return { ok: false, error: getPanelAuthErrorMessage(error) };
   }
 
   const { supabase, email } = auth;
   if (!id) {
+    timer.end({ error: "missing_id" });
     return { ok: false, error: "İşlem kaydı bulunamadı." };
   }
 
-  const { data: transaction, error: transactionError } = await supabase
-    .from("patient_transactions")
-    .select("id")
-    .eq("id", id)
-    .maybeSingle();
-  timer.countSupabase();
+  const { data: transaction, error: transactionError } = await timer.timeDb(() =>
+    supabase.from("patient_transactions").select("id").eq("id", id).maybeSingle(),
+  );
 
   if (transactionError || !transaction) {
+    timer.end({ error: "not_found" });
     return { ok: false, error: "İşlem kaydı bulunamadı." };
   }
 
-  // Receipt cleanup and stock-return check are independent until final delete.
-  const [receiptCleanupResult, existingReturnsResult] = await Promise.all([
-    cleanupTransactionPaymentReceipts({
-      supabase,
-      transactionId: id,
-    }),
-    supabase
-      .from("stock_movements")
-      .select("id")
-      .eq("transaction_id", id)
-      .eq("movement_type", "return")
-      .limit(1),
-  ]);
-  timer.countSupabase(2);
+  // Receipt DB cleanup and stock-return check are independent until final delete.
+  // R2 file deletes are deferred inside receipt cleanup.
+  const [receiptCleanupResult, existingReturnsResult] = await timer.timeDb(
+    () =>
+      Promise.all([
+        cleanupTransactionPaymentReceipts({
+          supabase,
+          transactionId: id,
+        }),
+        supabase
+          .from("stock_movements")
+          .select("id")
+          .eq("transaction_id", id)
+          .eq("movement_type", "return")
+          .limit(1),
+      ]),
+    2,
+  );
   timer.mark("parallel_cleanup");
 
   if (!receiptCleanupResult.ok) {
     console.error(receiptCleanupResult.error, { transactionId: id });
+    timer.end({ error: "receipt_cleanup" });
     return { ok: false, error: TRANSACTION_RECEIPT_DELETE_ERROR };
   }
 
@@ -1287,15 +1342,18 @@ async function deletePatientTransactionById(
   const existingReturns = existingReturnsResult.data;
 
   if (!existingReturns?.length) {
-    const { data: deductionMovements, error: movementsError } = await supabase
-      .from("stock_movements")
-      .select("stock_product_id, quantity_change, movement_type")
-      .eq("transaction_id", id)
-      .in("movement_type", ["sale", "out"])
-      .lt("quantity_change", 0);
-    timer.countSupabase();
+    const { data: deductionMovements, error: movementsError } = await timer.timeDb(
+      () =>
+        supabase
+          .from("stock_movements")
+          .select("stock_product_id, quantity_change, movement_type")
+          .eq("transaction_id", id)
+          .in("movement_type", ["sale", "out"])
+          .lt("quantity_change", 0),
+    );
 
     if (movementsError) {
+      timer.end({ error: "stock_read" });
       return { ok: false, error: "Stok hareketleri okunamadı." };
     }
 
@@ -1309,12 +1367,12 @@ async function deletePatientTransactionById(
         note: "İşlem silindiği için stok iadesi",
       }));
 
-      const { error: returnError } = await supabase
-        .from("stock_movements")
-        .insert(returnMovements);
-      timer.countSupabase();
+      const { error: returnError } = await timer.timeDb(() =>
+        supabase.from("stock_movements").insert(returnMovements),
+      );
 
       if (returnError) {
+        timer.end({ error: "stock_return" });
         return {
           ok: false,
           error: "Stok iadesi yapılamadığı için işlem silinmedi.",
@@ -1325,19 +1383,19 @@ async function deletePatientTransactionById(
     }
   }
 
-  const { error } = await supabase.from("patient_transactions").delete().eq("id", id);
-  timer.countSupabase();
+  const { error } = await timer.timeDb(() =>
+    supabase.from("patient_transactions").delete().eq("id", id),
+  );
 
   if (error) {
+    timer.end({ error: "delete" });
     return { ok: false, error: "İşlem kaydı silinemedi." };
   }
 
   if (!options?.skipRevalidate) {
-    revalidateTransactionDeletePaths({
-      touchStock: touchedStock,
-      touchDocuments: true,
+    await timer.timeRevalidate(() => {
+      revalidateTransactionDeletePaths();
     });
-    timer.countRevalidate(touchedStock ? 3 : 2);
   }
 
   timer.end({ touchedStock, skipRevalidate: Boolean(options?.skipRevalidate) });
@@ -1359,30 +1417,17 @@ export async function deletePatientTransactions(
     return { ok: false, error: getPanelAuthErrorMessage(error) };
   }
 
-  let touchedStock = false;
-  let touchedDocuments = false;
-
   const result = await deleteRecordsSequentially(
     ids,
-    async (id) => {
-      const deleteResult = await deletePatientTransactionById(id, {
+    (id) =>
+      deletePatientTransactionById(id, {
         skipRevalidate: true,
-      });
-      if (deleteResult.ok) {
-        touchedStock = touchedStock || Boolean(deleteResult.touchedStock);
-        touchedDocuments =
-          touchedDocuments || Boolean(deleteResult.touchedDocuments);
-      }
-      return deleteResult;
-    },
+      }),
     "işlem kayıtları silinemedi",
   );
 
   if (result.ok || (result.deletedCount ?? 0) > 0) {
-    revalidateTransactionDeletePaths({
-      touchStock: touchedStock,
-      touchDocuments: touchedDocuments,
-    });
+    revalidateTransactionDeletePaths();
   }
 
   return result;

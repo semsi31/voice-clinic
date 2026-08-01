@@ -7,7 +7,6 @@ import {
   useState,
   useTransition,
 } from "react";
-import { useRouter } from "next/navigation";
 import {
   ExternalLink,
   FileSearch,
@@ -226,7 +225,6 @@ function DeleteFinanceRecordButton({
   record,
   onDeleted,
 }: Readonly<{ record: FinanceRecord; onDeleted: (ids: string[]) => void }>) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -243,7 +241,6 @@ function DeleteFinanceRecordButton({
 
       setIsOpen(false);
       onDeleted([record.id]);
-      router.refresh();
     });
   };
 

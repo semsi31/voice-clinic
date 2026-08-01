@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Pencil, Plus } from "lucide-react";
 import {
   createTransactionReminderAction,
@@ -42,7 +41,6 @@ export function TransactionReminderCard({
   transaction,
   reminder,
 }: Readonly<TransactionReminderCardProps>) {
-  const router = useRouter();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [draftValues, setDraftValues] = useState<Record<string, string> | null>(
@@ -83,7 +81,6 @@ export function TransactionReminderCard({
 
       setDraftValues(null);
       setIsFormOpen(false);
-      router.refresh();
     });
   };
 

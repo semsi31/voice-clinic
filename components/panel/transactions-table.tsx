@@ -25,6 +25,7 @@ import {
 } from "@/components/panel/panel-styles";
 import { StatusBadge, DeviceDeliveryBadge } from "@/components/panel/status-badge";
 import { deletePatientTransaction, deletePatientTransactions } from "@/app/(panel)/panel/transactions/actions";
+import { runTimedMutation } from "@/lib/run-timed-mutation";
 import {
   formatCurrency,
   formatDate,
@@ -126,15 +127,18 @@ function TransactionDeleteAction({
   transaction: PatientTransactionRecord;
   onDeleted: (ids: string[]) => void;
 }>) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
+    if (isPending) return;
     setError(null);
     startTransition(async () => {
-      const result = await deletePatientTransaction(transaction.id);
+      const result = await runTimedMutation(
+        { action: "deletePatientTransaction", clientRefresh: false },
+        () => deletePatientTransaction(transaction.id),
+      );
 
       if (!result.ok) {
         setError(result.error);
@@ -143,7 +147,6 @@ function TransactionDeleteAction({
 
       setIsOpen(false);
       onDeleted([transaction.id]);
-      router.refresh();
     });
   };
 

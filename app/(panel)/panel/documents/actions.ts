@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { deleteRecordsSequentially } from "@/lib/supabase-bulk-delete";
 import {
@@ -88,6 +89,23 @@ async function uploadDocumentFile(
   };
 }
 
+function scheduleRemoveDocumentFile(filePath: string | null) {
+  if (!filePath) {
+    return;
+  }
+
+  after(async () => {
+    try {
+      await deleteFileFromR2(filePath);
+    } catch (error) {
+      console.error("R2 document delete failed after DB delete", {
+        key: filePath,
+        error,
+      });
+    }
+  });
+}
+
 async function removeDocumentFile(filePath: string | null) {
   if (!filePath) {
     return { ok: true as const };
@@ -124,39 +142,41 @@ export async function createDocumentAction(
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
-    timer.countAuthProfile();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return documentFormError(formData, getPanelAuthErrorMessage(error));
   }
 
   const { supabase, userId } = auth;
-  const r2StartedAt = performance.now();
-  const uploadResult = await uploadDocumentFile(file);
-  timer.addR2Ms(performance.now() - r2StartedAt);
+  const uploadResult = await timer.timeR2(() => uploadDocumentFile(file));
 
   if (!uploadResult.ok) {
+    timer.end({ error: "r2_upload" });
     return documentFormError(formData, uploadResult.error);
   }
 
-  const { error } = await supabase.from("documents").insert({
-    title,
-    description: optionalText(formData.get("description")),
-    file_name: file.name || null,
-    file_path: uploadResult.data.file_path,
-    file_type: uploadResult.data.file_type,
-    file_size: uploadResult.data.file_size,
-    created_by: userId,
-  });
-  timer.countSupabase();
+  const { error } = await timer.timeDb(() =>
+    supabase.from("documents").insert({
+      title,
+      description: optionalText(formData.get("description")),
+      file_name: file.name || null,
+      file_path: uploadResult.data.file_path,
+      file_type: uploadResult.data.file_type,
+      file_size: uploadResult.data.file_size,
+      created_by: userId,
+    }),
+  );
 
   if (error) {
-    await removeDocumentFile(uploadResult.data.file_path);
+    await timer.timeR2(() => removeDocumentFile(uploadResult.data.file_path));
+    timer.end({ error: "insert" });
     return documentFormError(formData, "Belge kaydı oluşturulamadı.");
   }
 
-  revalidatePath("/panel/documents");
-  timer.countRevalidate();
+  await timer.timeRevalidate(() => {
+    revalidatePath("/panel/documents");
+  });
   timer.end();
   return { ok: true };
 }
@@ -165,6 +185,7 @@ export async function updateDocumentAction(
   _prevState: DocumentActionResult | undefined,
   formData: FormData,
 ): Promise<DocumentActionResult | undefined> {
+  const timer = createMutationTimer({ name: "updateDocument" });
   const id = readText(formData.get("id"));
   const title = readText(formData.get("title"));
 
@@ -178,25 +199,32 @@ export async function updateDocumentAction(
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return documentFormError(formData, getPanelAuthErrorMessage(error));
   }
 
   const { supabase } = auth;
-  const { error } = await supabase
-    .from("documents")
-    .update({
-      title,
-      description: optionalText(formData.get("description")),
-    })
-    .eq("id", id);
+  const { error } = await timer.timeDb(() =>
+    supabase
+      .from("documents")
+      .update({
+        title,
+        description: optionalText(formData.get("description")),
+      })
+      .eq("id", id),
+  );
 
   if (error) {
+    timer.end({ error: "update" });
     return documentFormError(formData, "Belge güncellenemedi.");
   }
 
-  revalidatePath("/panel/documents");
+  await timer.timeRevalidate(() => {
+    revalidatePath("/panel/documents");
+  });
+  timer.end();
   return { ok: true };
 }
 
@@ -210,47 +238,38 @@ export async function deleteDocumentAction(
 
   let auth: Awaited<ReturnType<typeof requireActivePanelUser>>;
   try {
-    auth = await requireActivePanelUser();
-    timer.countAuthProfile();
+    auth = await timer.timeAuth(() => requireActivePanelUser());
   } catch (error) {
+    timer.end({ error: "auth" });
     return { ok: false, error: getPanelAuthErrorMessage(error) };
   }
 
   const { supabase } = auth;
-  const { data: document, error: fetchError } = await supabase
-    .from("documents")
-    .select("file_path")
-    .eq("id", id)
-    .single();
-  timer.countSupabase();
+  const { data: document, error: fetchError } = await timer.timeDb(() =>
+    supabase.from("documents").select("file_path").eq("id", id).single(),
+  );
 
   if (fetchError || !document) {
+    timer.end({ error: "not_found" });
     return { ok: false, error: "Belge bulunamadı." };
   }
 
-  // Delete DB row first so RLS/consistency wins; R2 orphan is cleaned best-effort.
-  const { error } = await supabase.from("documents").delete().eq("id", id);
-  timer.countSupabase();
+  // Delete DB row first so RLS/consistency wins; R2 orphan cleaned after response.
+  const { error } = await timer.timeDb(() =>
+    supabase.from("documents").delete().eq("id", id),
+  );
 
   if (error) {
+    timer.end({ error: "delete" });
     return { ok: false, error: "Belge silinemedi." };
   }
 
-  const r2StartedAt = performance.now();
-  const removeResult = await removeDocumentFile(document.file_path);
-  timer.addR2Ms(performance.now() - r2StartedAt);
+  scheduleRemoveDocumentFile(document.file_path);
 
-  if (!removeResult.ok) {
-    console.error("Document R2 cleanup failed after DB delete", {
-      id,
-      filePath: document.file_path,
-      error: removeResult.error,
-    });
-  }
-
-  revalidatePath("/panel/documents");
-  timer.countRevalidate();
-  timer.end({ r2CleanupOk: removeResult.ok });
+  await timer.timeRevalidate(() => {
+    revalidatePath("/panel/documents");
+  });
+  timer.end({ deferredR2: true });
   return { ok: true };
 }
 

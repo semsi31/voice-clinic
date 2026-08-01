@@ -7,7 +7,6 @@ import {
   useState,
   useTransition,
 } from "react";
-import { useRouter } from "next/navigation";
 import { FileSearch, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import {
   createReminderAction,
@@ -246,7 +245,6 @@ function DeleteReminderButton({
   reminder,
   onDeleted,
 }: Readonly<{ reminder: ReminderRecord; onDeleted: (ids: string[]) => void }>) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -263,7 +261,6 @@ function DeleteReminderButton({
 
       setIsOpen(false);
       onDeleted([reminder.id]);
-      router.refresh();
     });
   };
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { Plus } from "lucide-react";
 import {
@@ -11,6 +10,7 @@ import {
 } from "@/app/(panel)/panel/transactions/actions";
 import { getFormRestoreKey } from "@/lib/panel-form";
 import { panelPrimaryButtonClassName } from "@/components/panel/panel-styles";
+import { runTimedMutation } from "@/lib/run-timed-mutation";
 
 const inputClassName =
   "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-300 focus:ring-4 focus:ring-sky-100";
@@ -61,7 +61,6 @@ export function TransactionPaymentForm({
   defaultReceivedBy: string;
   onSuccess?: () => void;
 }>) {
-  const router = useRouter();
   const [state, setState] = useState<TransactionActionState>(undefined);
   const [isPending, startTransition] = useTransition();
   const today = new Date().toISOString().slice(0, 10);
@@ -71,12 +70,16 @@ export function TransactionPaymentForm({
   const formRestoreKey = getFormRestoreKey(values);
 
   const handleSubmit = (formData: FormData) => {
+    if (isPending) return;
     startTransition(async () => {
-      const result = await addTransactionPayment(undefined, formData);
+      const result = await runTimedMutation(
+        { action: "addTransactionPayment", clientRefresh: false },
+        () => addTransactionPayment(undefined, formData),
+      );
       setState(result);
 
       if (result?.success) {
-        router.refresh();
+        // Server revalidatePath already refreshes the active detail route.
         onSuccess?.();
       }
     });

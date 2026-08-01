@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useTransition, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { PanelDetailGrid } from "@/components/panel/panel-detail-fields";
 import { PanelLink } from "@/components/panel/panel-link";
 import {
@@ -51,6 +50,7 @@ import {
   reminderStatusOptions,
   type ReminderRecord,
 } from "@/lib/reminders";
+import { runTimedMutation } from "@/lib/run-timed-mutation";
 import {
   earSideLabels,
   formatCurrency,
@@ -144,21 +144,31 @@ function DeviceDeliveryActions({
   transactionId: string;
   status: DeviceDeliveryStatus;
 }>) {
-  const router = useRouter();
+  const [currentStatus, setCurrentStatus] = useState(status);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    setCurrentStatus(status);
+  }, [status]);
+
   const markStatus = (nextStatus: DeviceDeliveryStatus) => {
-    if (isPending || nextStatus === status) return;
+    if (isPending || nextStatus === currentStatus) {
+      return;
+    }
     setError(null);
+    const previous = currentStatus;
+    setCurrentStatus(nextStatus);
 
     startTransition(async () => {
-      const result = await updateDeviceDeliveryStatus(transactionId, nextStatus);
+      const result = await runTimedMutation(
+        { action: "updateDeviceDeliveryStatus", clientRefresh: false },
+        () => updateDeviceDeliveryStatus(transactionId, nextStatus),
+      );
       if (!result.ok) {
+        setCurrentStatus(previous);
         setError(result.error);
-        return;
       }
-      router.refresh();
     });
   };
 
@@ -167,7 +177,7 @@ function DeviceDeliveryActions({
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <button
           type="button"
-          disabled={isPending || status === "delivered"}
+          disabled={isPending || currentStatus === "delivered"}
           onClick={() => markStatus("delivered")}
           className={`${panelPrimaryButtonClassName} w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto`}
         >
@@ -176,7 +186,7 @@ function DeviceDeliveryActions({
         </button>
         <button
           type="button"
-          disabled={isPending || status === "pending"}
+          disabled={isPending || currentStatus === "pending"}
           onClick={() => markStatus("pending")}
           className={`${panelSecondaryButtonClassName} w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto`}
         >
@@ -232,7 +242,6 @@ export function TransactionDetailWorkspace({
   payments,
   reminder,
 }: Readonly<TransactionDetailWorkspaceProps>) {
-  const router = useRouter();
   const isLegacyExcelRecord = transaction.source_type === "legacy_excel";
   const [activeTab, setActiveTab] = useState<TabId>("general");
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
@@ -360,7 +369,6 @@ export function TransactionDetailWorkspace({
 
       setReminderDraft(null);
       setIsReminderOpen(false);
-      router.refresh();
     });
   };
 

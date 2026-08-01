@@ -422,16 +422,19 @@ async function cleanupReceiptDocumentById(
       return { ok: true };
     }
 
-    try {
-      await deleteFileFromR2(document.file_path);
-    } catch (error) {
-      console.error("Receipt PDF R2 delete failed after DB cleanup", {
-        documentId,
-        key: document.file_path,
-        error: errorDetails(error),
-      });
-      // DB already consistent; orphan R2 object is acceptable.
-    }
+    // DB is already consistent — do not block the mutation on R2 latency.
+    const r2Key = document.file_path;
+    after(async () => {
+      try {
+        await deleteFileFromR2(r2Key);
+      } catch (error) {
+        console.error("Receipt PDF R2 delete failed after DB cleanup", {
+          documentId,
+          key: r2Key,
+          error: errorDetails(error),
+        });
+      }
+    });
   }
 
   return { ok: true };

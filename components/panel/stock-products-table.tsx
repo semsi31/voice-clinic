@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { FileSearch, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import {
   createStockProduct,
@@ -235,7 +234,6 @@ function DeleteStockProductButton({
   product,
   onDeleted,
 }: Readonly<{ product: StockProductRecord; onDeleted: (ids: string[]) => void }>) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -252,7 +250,6 @@ function DeleteStockProductButton({
 
       setIsOpen(false);
       onDeleted([product.id]);
-      router.refresh();
     });
   };
 

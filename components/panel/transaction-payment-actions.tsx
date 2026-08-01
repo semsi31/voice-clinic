@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { FileText, Pencil, Trash2 } from "lucide-react";
 import {
   deleteTransactionPaymentAction,
@@ -22,6 +21,7 @@ import {
 import { rowActionButtonClassName } from "@/components/panel/row-actions";
 import { getFormRestoreKey } from "@/lib/panel-form";
 import { getDocumentDownloadPath } from "@/lib/documents";
+import { runTimedMutation } from "@/lib/run-timed-mutation";
 import type { TransactionPaymentRecord } from "@/lib/transactions";
 
 type TransactionPaymentActionsProps = {
@@ -34,7 +34,6 @@ export function TransactionPaymentActions({
   payment,
   variant = "card",
 }: Readonly<TransactionPaymentActionsProps>) {
-  const router = useRouter();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,10 +57,14 @@ export function TransactionPaymentActions({
   };
 
   const handleUpdate = (formData: FormData) => {
+    if (isPending) return;
     setError(null);
     setWarning(null);
     startTransition(async () => {
-      const result = await updateTransactionPaymentAction(payment.id, formData);
+      const result = await runTimedMutation(
+        { action: "updateTransactionPayment", clientRefresh: false },
+        () => updateTransactionPaymentAction(payment.id, formData),
+      );
 
       if (!result.ok) {
         setError(result.error);
@@ -73,7 +76,6 @@ export function TransactionPaymentActions({
 
       setDraftValues(null);
       setIsEditOpen(false);
-      router.refresh();
 
       if (result.warning) {
         setWarning(result.warning);
@@ -82,9 +84,13 @@ export function TransactionPaymentActions({
   };
 
   const handleDelete = () => {
+    if (isPending) return;
     setError(null);
     startTransition(async () => {
-      const result = await deleteTransactionPaymentAction(payment.id);
+      const result = await runTimedMutation(
+        { action: "deleteTransactionPayment", clientRefresh: false },
+        () => deleteTransactionPaymentAction(payment.id),
+      );
 
       if (!result.ok) {
         setError(result.error);
@@ -92,20 +98,20 @@ export function TransactionPaymentActions({
       }
 
       setIsDeleteOpen(false);
-      router.refresh();
     });
   };
 
   const handleCreateReceipt = () => {
+    if (isCreateReceiptPending) return;
     startCreateReceiptTransition(async () => {
-      const result = await regeneratePaymentReceiptAction(payment.id);
+      const result = await runTimedMutation(
+        { action: "regeneratePaymentReceipt", clientRefresh: false },
+        () => regeneratePaymentReceiptAction(payment.id),
+      );
 
       if (!result.ok) {
         setError(result.error);
-        return;
       }
-
-      router.refresh();
     });
   };
 

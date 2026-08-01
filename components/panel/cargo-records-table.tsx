@@ -7,7 +7,6 @@ import {
   useState,
   useTransition,
 } from "react";
-import { useRouter } from "next/navigation";
 import { FileSearch, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import {
   createCargoRecord,
@@ -206,7 +205,6 @@ function DeleteCargoRecordButton({
   record,
   onDeleted,
 }: Readonly<{ record: CargoRecord; onDeleted: (ids: string[]) => void }>) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -223,7 +221,6 @@ function DeleteCargoRecordButton({
 
       setIsOpen(false);
       onDeleted([record.id]);
-      router.refresh();
     });
   };
 
@@ -289,7 +286,6 @@ function BulkDeleteCargoRecordsButton({
   selectedRecords: CargoRecord[];
   onDeleted: (ids: string[]) => void;
 }>) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -309,7 +305,7 @@ function BulkDeleteCargoRecordsButton({
             : "";
         setError(`Kargo kayıtları silinemedi: ${result.error}${partialMessage}`);
         if (result.deletedCount && result.deletedCount > 0) {
-          router.refresh();
+          onDeleted(idsToDelete.slice(0, result.deletedCount));
         }
         return;
       }
@@ -319,7 +315,6 @@ function BulkDeleteCargoRecordsButton({
         `${result.deletedCount ?? idsToDelete.length} kargo kaydı silindi.`,
       );
       onDeleted(idsToDelete);
-      router.refresh();
     });
   };
 

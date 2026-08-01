@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Eye, FileSearch, Pencil, Search, Trash2 } from "lucide-react";
 import {
   ActionModal,
@@ -107,7 +106,6 @@ type WebRequestActionsProps = {
 };
 
 function WebRequestActions({ request, onDeleted }: WebRequestActionsProps) {
-  const router = useRouter();
   const [activeModal, setActiveModal] = useState<"view" | "edit" | "delete" | null>(
     null,
   );
@@ -139,11 +137,11 @@ function WebRequestActions({ request, onDeleted }: WebRequestActionsProps) {
       }
 
       setActiveModal(null);
-      router.refresh();
     });
   };
 
   const handleDelete = () => {
+    if (isPending) return;
     setError(null);
     startTransition(async () => {
       const result = await deleteWebRequest(request.id);
@@ -155,7 +153,6 @@ function WebRequestActions({ request, onDeleted }: WebRequestActionsProps) {
 
       setActiveModal(null);
       onDeleted?.([request.id]);
-      router.refresh();
     });
   };
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, useTransition, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { ActionModal } from "@/components/panel/action-modal";
 import {
@@ -173,7 +172,6 @@ export function BulkDeleteRecordsButton({
   onDeleted,
   selectedIds,
 }: Readonly<BulkDeleteRecordsButtonProps>) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -193,7 +191,6 @@ export function BulkDeleteRecordsButton({
         setError(`${errorPrefix}: ${result.error}${partialMessage}`);
         if (result.deletedCount && result.deletedCount > 0) {
           onDeleted(selectedIds.slice(0, result.deletedCount));
-          router.refresh();
         }
         return;
       }
@@ -203,7 +200,6 @@ export function BulkDeleteRecordsButton({
         `${result.deletedCount ?? selectedCount} ${successLabel}`,
       );
       onDeleted(selectedIds);
-      router.refresh();
     });
   };
 
