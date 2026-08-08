@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { SiteIcon } from "@/components/site/site-icon";
@@ -17,6 +17,12 @@ import { cdnImageSrc } from "@/lib/cdn-image";
 import { cn } from "@/lib/utils";
 
 const LOGO_SRC = cdnImageSrc("/images/voice-logo.png");
+
+const PHONE_DISPLAY = "0 532 217 31 58";
+const PHONE_HREF = "tel:+905322173158";
+const WHATSAPP_HREF =
+  siteSocialLinks.find((item) => item.title === "WhatsApp")?.href ??
+  "https://wa.me/905322173158";
 
 const socialIconMap = {
   Instagram: FaInstagram,
@@ -141,15 +147,15 @@ export function MobileSiteMenu() {
             <nav
               id="mobile-site-menu"
               className={cn(
-                "site-menu-drawer absolute inset-y-0 right-0 flex h-dvh max-h-dvh w-[min(100%,20.5rem)] max-w-[min(85vw,20.5rem)] flex-col border-l border-[#D4AF37]/20 bg-[#fffdf8] shadow-[-12px_0_40px_rgba(7,18,37,0.18)]",
+                "site-menu-drawer absolute inset-y-0 right-0 flex h-dvh max-h-dvh w-[min(88vw,380px)] flex-col border-l border-[#D4AF37]/25 bg-[#fffdf8] shadow-[-8px_0_28px_rgba(7,18,37,0.12)]",
                 isOpen && !isClosing && "site-menu-drawer--open",
                 isClosing && "site-menu-drawer--closing",
               )}
               aria-label="Mobil site menüsü"
             >
-              <div className="flex items-center justify-between border-b border-[#eadfca] px-4 py-4">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-xl border border-[#D4AF37]/30 bg-white shadow-sm">
+              <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[#eadfca] px-4 py-3">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-[#D4AF37]/30 bg-white shadow-sm">
                     <Image
                       src={LOGO_SRC}
                       alt=""
@@ -157,19 +163,21 @@ export function MobileSiteMenu() {
                       width={645}
                       height={823}
                       unoptimized
-                      className="h-7 w-auto object-contain"
+                      className="h-6 w-auto object-contain"
                     />
                   </span>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B88A28]">
+                  <div className="min-w-0">
+                    <p className="truncate text-[15px] font-bold leading-tight text-[#071225]">
                       Voice Klinik
                     </p>
-                    <p className="text-sm font-bold text-[#071225]">Menü</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#B88A28]">
+                      Menü
+                    </p>
                   </div>
                 </div>
                 <button
                   type="button"
-                  className="inline-flex size-11 items-center justify-center rounded-xl border border-[#eadfca] bg-white text-[#071225] shadow-sm hover:bg-[#f7f2e7]"
+                  className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-[#eadfca] bg-white text-[#071225] shadow-sm transition-colors hover:bg-[#f7f2e7] active:bg-[#f0e8d8]"
                   aria-label="Menüyü kapat"
                   onClick={closeMenu}
                 >
@@ -177,9 +185,9 @@ export function MobileSiteMenu() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-4">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3.5 pb-2 pt-2.5">
                 <div className="flex flex-col gap-0.5">
-                  {sitePrimaryNavigation.map((item) => {
+                  {sitePrimaryNavigation.map((item, index) => {
                     const isActive = isNavigationItemActive(
                       pathname,
                       item.href,
@@ -187,13 +195,21 @@ export function MobileSiteMenu() {
                     );
 
                     return (
-                      <div key={`${item.title}-${item.href}`}>
+                      <div
+                        key={`${item.title}-${item.href}`}
+                        style={
+                          {
+                            "--menu-item-index": index,
+                          } as CSSProperties
+                        }
+                      >
                         <Link
                           href={item.href}
                           className={cn(
-                            "site-menu-item flex min-h-11 items-center rounded-xl px-3 py-2.5 text-[15px] font-bold text-[#071225] transition-colors hover:bg-[#f7f2e7] hover:text-[#B88A28]",
-                            isActive &&
-                              "bg-[#C49A3A] text-white shadow-md shadow-[#C49A3A]/25 hover:bg-[#B88A28] hover:text-white",
+                            "site-menu-item flex min-h-11 items-center rounded-lg border-l-[3px] border-transparent px-3.5 py-2 text-[15px] font-semibold tracking-[-0.01em] text-[#071225] transition-colors",
+                            isActive
+                              ? "border-l-[#C49A3A] bg-[#C49A3A]/12 font-bold text-[#071225] hover:bg-[#C49A3A]/16"
+                              : "hover:bg-slate-900/[0.035] active:bg-slate-900/[0.05]",
                           )}
                           onClick={closeMenu}
                         >
@@ -201,15 +217,16 @@ export function MobileSiteMenu() {
                         </Link>
 
                         {item.children?.length ? (
-                          <div className="mb-2 ml-3 flex flex-col gap-0.5 border-l-2 border-[#D4AF37]/25 pl-3">
+                          <div className="mb-1 ml-3 flex flex-col gap-0.5 border-l border-[#D4AF37]/25 pl-3">
                             {item.children.map((child) => (
                               <Link
                                 key={child.href}
                                 href={child.href}
                                 className={cn(
-                                  "site-menu-item flex min-h-11 items-center rounded-lg px-2 py-2 text-sm font-medium text-[#071225]/75 transition-colors hover:bg-[#f7f2e7] hover:text-[#B88A28]",
-                                  pathname.startsWith(child.href) &&
-                                    "bg-[#fff8e8] font-semibold text-[#B88A28]",
+                                  "site-menu-item flex min-h-10 items-center rounded-md px-2.5 py-1.5 text-sm font-medium text-[#071225]/75 transition-colors",
+                                  pathname.startsWith(child.href)
+                                    ? "bg-[#C49A3A]/10 font-semibold text-[#071225]"
+                                    : "hover:bg-slate-900/[0.035] active:bg-slate-900/[0.05]",
                                 )}
                                 onClick={closeMenu}
                               >
@@ -222,23 +239,80 @@ export function MobileSiteMenu() {
                     );
                   })}
                 </div>
+
+                <div className="mt-5 px-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#B88A28]">
+                    Hızlı İletişim
+                  </p>
+                  <div className="mt-2">
+                    <a
+                      href={PHONE_HREF}
+                      className="flex min-h-10 items-center gap-2.5 text-sm font-medium text-[#071225] transition-colors hover:text-[#B88A28] active:text-[#B88A28]"
+                      onClick={closeMenu}
+                    >
+                      <SiteIcon name="phone" className="size-4 shrink-0 text-[#C49A3A]" />
+                      <span className="whitespace-nowrap tracking-wide">
+                        {PHONE_DISPLAY}
+                      </span>
+                    </a>
+                    <div className="my-0.5 border-t border-[#eadfca]/70" />
+                    <a
+                      href={WHATSAPP_HREF}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex min-h-10 items-center gap-2.5 text-sm font-medium text-[#071225] transition-colors hover:text-[#B88A28] active:text-[#B88A28]"
+                      onClick={closeMenu}
+                    >
+                      <FaWhatsapp
+                        aria-hidden="true"
+                        className="size-4 shrink-0 text-[#25D366]"
+                      />
+                      <span>WhatsApp ile Yazın</span>
+                    </a>
+                  </div>
+                </div>
               </div>
 
-              <div className="border-t border-[#eadfca] px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-                <div className="flex items-center gap-2">
+              <div className="shrink-0 border-t border-[#d6c7a8] bg-[#fffdf8] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-medium text-[#5d6675]">
+                  <Link
+                    href="/kvkk-gizlilik"
+                    className="transition-colors hover:text-[#071225]"
+                    onClick={closeMenu}
+                  >
+                    KVKK ve Gizlilik
+                  </Link>
+                  <span aria-hidden="true" className="text-[#d6c7a8]">
+                    ·
+                  </span>
+                  <Link
+                    href="/cerez-politikasi"
+                    className="transition-colors hover:text-[#071225]"
+                    onClick={closeMenu}
+                  >
+                    Çerez Politikası
+                  </Link>
+                </div>
+
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   {siteSocialLinks.map((item) => {
-                    const Icon = socialIconMap[item.title as keyof typeof socialIconMap];
+                    const Icon =
+                      socialIconMap[item.title as keyof typeof socialIconMap];
 
                     return (
                       <Link
                         key={item.title}
                         href={item.href}
-                        target={item.href.startsWith("http") ? "_blank" : undefined}
+                        target={
+                          item.href.startsWith("http") ? "_blank" : undefined
+                        }
                         rel={
-                          item.href.startsWith("http") ? "noopener noreferrer" : undefined
+                          item.href.startsWith("http")
+                            ? "noopener noreferrer"
+                            : undefined
                         }
                         aria-label={item.title}
-                        className="inline-flex size-11 items-center justify-center rounded-full border border-[#eadfca] bg-white text-lg text-[#071225] shadow-sm hover:border-[#C49A3A]/70 hover:bg-[#C49A3A] hover:text-[#071225]"
+                        className="inline-flex size-10 items-center justify-center rounded-full border border-[#eadfca] bg-white text-base text-[#071225] shadow-sm transition-colors hover:border-[#C49A3A]/55 hover:bg-[#C49A3A]/10 hover:text-[#071225] active:bg-[#C49A3A]/15"
                         onClick={closeMenu}
                       >
                         <Icon aria-hidden="true" />
@@ -247,10 +321,15 @@ export function MobileSiteMenu() {
                   })}
                 </div>
 
+                <p className="mt-2 flex items-center gap-1.5 text-[12px] font-medium text-[#5d6675]">
+                  <SiteIcon name="clock" className="size-3.5 shrink-0 text-[#C49A3A]" />
+                  <span>Pzt–Cum 09:00–18:00</span>
+                </p>
+
                 {siteAppointmentLink ? (
                   <Link
                     href={siteAppointmentLink.href}
-                    className="site-btn-motion mt-3 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#C49A3A] px-5 text-sm font-bold text-white shadow-lg shadow-[#C49A3A]/25 hover:bg-[#B88A28]"
+                    className="site-btn-motion mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#C49A3A] px-5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(196,154,58,0.28)] hover:bg-[#B88A28] active:bg-[#A67B22]"
                     onClick={closeMenu}
                   >
                     <SiteIcon name="calendar" className="size-4" />
